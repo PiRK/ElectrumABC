@@ -214,7 +214,7 @@ class NodesListWidget(QTreeWidget):
 
         # restore selection, if there was any
         if restore_sel:
-            restore_sel[0].setCurrentItem(restore_sel[1])
+            self.setCurrentItem(restore_sel[1])
 
         h = self.header()
         h.setStretchLastSection(False)
