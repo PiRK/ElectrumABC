@@ -175,23 +175,29 @@ class NodesListWidget(QTreeWidget):
 
     def update(self, network, servers):
         item = self.currentItem()
-        sel = None
+        selection_data = None
         if item:
-            sel = item.data(1, Qt.UserRole)
+            selection_data = item.data(1, Qt.UserRole)
         self.clear()
-        self.addChild = self.addTopLevelItem
         chains = network.get_blockchains()
         n_chains = len(chains)
-        restore_sel = tuple()
+        previous_server_item = None
         for k, items in chains.items():
             b = network.blockchains[k]
             name = b.get_name()
             if n_chains > 1:
-                x = QTreeWidgetItem([name + '@%d'%b.get_base_height(), '', '%d'%b.height()])
-                x.setData(0, Qt.UserRole, 1)
-                x.setData(1, Qt.UserRole, b.base_height)
+                # group the servers as children of a parent chain item
+                blockchain_root_item = QTreeWidgetItem(
+                    [name + f'@{b.get_base_height()}', '', f'{b.height()}'])
+                blockchain_root_item.setData(0, Qt.UserRole, 1)
+                blockchain_root_item.setData(1, Qt.UserRole, b.base_height)
+                self.addTopLevelItem(blockchain_root_item)
             else:
-                x = self
+                # group servers as direct children of the tree widget
+                # (simple list)
+                blockchain_root_item = self.invisibleRootItem()
+
+            # Add servers
             for i in items:
                 star = ' ◀' if i == network.interface else ''
 
@@ -203,18 +209,17 @@ class NodesListWidget(QTreeWidget):
                 item = QTreeWidgetItem([display_text + star, '', '%d'%i.tip])
                 item.setData(0, Qt.UserRole, 0)
                 item.setData(1, Qt.UserRole, i.server)
-                if i.server == sel:
-                    restore_sel = (x, item)
+                if i.server == selection_data:
+                    previous_server_item = item
                 if is_onion:
                     item.setIcon(1, QIcon(":icons/tor_logo.svg"))
-                x.addChild(item)
-            if n_chains > 1:
-                self.addTopLevelItem(x)
-                x.setExpanded(True)
+                blockchain_root_item.addChild(item)
+
+            blockchain_root_item.setExpanded(True)
 
         # restore selection, if there was any
-        if restore_sel:
-            self.setCurrentItem(restore_sel[1])
+        if previous_server_item:
+            self.setCurrentItem(previous_server_item)
 
         h = self.header()
         h.setStretchLastSection(False)
