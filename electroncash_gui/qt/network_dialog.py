@@ -173,7 +173,7 @@ class NodesListWidget(QTreeWidget):
         pt.setX(50)
         self.customContextMenuRequested.emit(pt)
 
-    def update(self, network, servers):
+    def update_servers(self, network, servers):
         item = self.currentItem()
         selection_data = None
         if item:
@@ -845,7 +845,7 @@ class NetworkChoiceLayout(QObject, PrintError):
         self.req_max_sb.setValue(params.max)
         self.req_chunk_sb.setValue(params.chunkSize)
 
-        self.nodes_list_widget.update(self.network, self.servers)
+        self.nodes_list_widget.update_servers(self.network, self.servers)
 
     def fill_in_proxy_settings(self):
         host, port, protocol, proxy_config, auto_connect = self.network.get_parameters()
