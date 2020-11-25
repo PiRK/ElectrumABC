@@ -12,6 +12,8 @@ import decimal
 from decimal import Decimal as PyDecimal  # Qt 5.12 also exports Decimal
 from collections import defaultdict
 
+from typing import Dict, List
+
 from .bitcoin import COIN
 from .constants import PROJECT_NAME, INV_BASE_UNITS
 from .i18n import _
@@ -240,9 +242,11 @@ class CoinCap(ExchangeBase):
 class CoinGecko(ExchangeBase):
 
     def get_rates(self, ccy):
-        json = self.get_json('api.coingecko.com', '/api/v3/coins/bitcoin-cash?localization=False&sparkline=false')
+        json = self.get_json(
+            'api.coingecko.com',
+            '/api/v3/coins/bitcoin-cash-abc-2?localization=False&sparkline=false')
         prices = json["market_data"]["current_price"]
-        return dict([(a[0].upper(),PyDecimal(a[1])) for a in prices.items()])
+        return {a[0].upper(): PyDecimal(a[1]) for a in prices.items()}
 
     def history_ccys(self):
         return ['AED', 'ARS', 'AUD', 'BTD', 'BHD', 'BMD', 'BRL', 'BTC',
@@ -253,11 +257,13 @@ class CoinGecko(ExchangeBase):
                 'TRY', 'TWD', 'USD', 'VEF', 'XAG', 'XAU', 'XDR', 'ZAR']
 
     def request_history(self, ccy):
-        history = self.get_json('api.coingecko.com', '/api/v3/coins/bitcoin-cash/market_chart?vs_currency=%s&days=max' % ccy)
+        history = self.get_json(
+            'api.coingecko.com',
+            '/api/v3/coins/bitcoin-cash-abc-2/market_chart?vs_currency=%s&days=max' % ccy)
 
-        from datetime import datetime as dt
-        return dict([(dt.utcfromtimestamp(h[0]/1000).strftime('%Y-%m-%d'), h[1])
-                     for h in history['prices']])
+        return {
+            datetime.utcfromtimestamp(h[0] / 1000).strftime('%Y-%m-%d'): h[1]
+            for h in history['prices']}
 
 
 def dictinvert(d):
@@ -268,14 +274,16 @@ def dictinvert(d):
             keys.append(k)
     return inv
 
-def get_exchanges_and_currencies():
-    try:
-        data = pkgutil.get_data(__name__, 'currencies.json')
-        return json.loads(data.decode('utf-8'))
-    except:
-        pass
 
-    path = os.path.join(os.path.dirname(__file__), 'currencies.json')
+def _initial_get_exchanges_and_currencies() -> Dict[str, List[str]]:
+    """Get a list of currencies supported by all exchanges for
+    which we define an ExchangeBase class in this module.
+
+    This function queries the exchange API.
+
+    :return: The return value is a dict indexed by exchange name whose
+        values are lists of currency tickers supported by this exchange.
+    """
     d = {}
     is_exchange = lambda obj: (inspect.isclass(obj)
                                and issubclass(obj, ExchangeBase)
@@ -289,8 +297,28 @@ def get_exchanges_and_currencies():
         except:
             print_error(name, "error")
             continue
+    return d
+
+
+def _save_exchanges_and_currencies(exch_curr: Dict[str, List[str]]):
+    """Save the list of exchanges and their supported currencies
+    in a json file
+    """
+    path = os.path.join(os.path.dirname(__file__), 'currencies.json')
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(json.dumps(d, indent=4, sort_keys=True))
+        f.write(json.dumps(exch_curr,
+                           indent=4, sort_keys=True))
+
+
+def get_exchanges_and_currencies():
+    try:
+        data = pkgutil.get_data(__name__, 'currencies.json')
+        return json.loads(data.decode('utf-8'))
+    except:
+        pass
+
+    d = _initial_get_exchanges_and_currencies()
+    _save_exchanges_and_currencies()
     return d
 
 
