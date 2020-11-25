@@ -147,7 +147,7 @@ python3 -m pip install -I --user -r contrib/osx/requirements-osx-build.txt \
 info "Installing Python Smartcard Module (pyscard)"
 mkdir -p $BUILDDIR
 PYSCARD_FNAME="pyscard-1.9.9-cp36-cp36m-macosx_10_11_x86_64.whl"
-curl -L https://github.com/cculianu/Electron-Cash-Build-Tools/releases/download/v1.0/$PYSCARD_FNAME > $BUILDDIR/$PYSCARD_FNAME
+curl -L https://github.com/PiRK/Electron-Cash-Build-Tools/releases/download/v1.0/$PYSCARD_FNAME > $BUILDDIR/$PYSCARD_FNAME
 verify_hash $BUILDDIR/$PYSCARD_FNAME 336b1cc335049e3ac5fad125c63d4e8fd4d25e85147f999359cdc6a9fde36fa7
 python3 -m pip install $BUILDDIR/$PYSCARD_FNAME --user && pyenv rehash \
     || fail "Could not install pyscard"
@@ -159,7 +159,8 @@ if ((USE_CUSTOM_PYINSTALLER)); then
     # patch has been submitted to the PyInstaller project but has yet to be
     # merged-in (they are very backlogged).
     mkdir -p $BUILDDIR
-    curl -L https://github.com/cculianu/pyinstaller/releases/download/v3.6_AE_Release_1/PyInstaller36_AppleEvents.zip > $BUILDDIR/PyInstaller36_AppleEvents.zip
+    curl -L https://github.com/PiRK/pyinstaller/releases/download/v3.6_AE_Release_1/PyInstaller36_AppleEvents.zip > $BUILDDIR/PyInstaller36_AppleEvents.zip
+
     verify_hash $BUILDDIR/PyInstaller36_AppleEvents.zip 0b2865c6e788abf26717a1c72f0164cba34d10836b9263a4e777a19ee8a79a2c
     python3 -m pip install $BUILDDIR/PyInstaller36_AppleEvents.zip --user --upgrade && pyenv rehash \
         || fail "Could not install PyInstaller"
@@ -183,13 +184,13 @@ info "Making locale..."
 python3 ./contrib/make_locale || fail "Failed to make locale..."
 
 info "Downloading libusb..."
-curl -L https://github.com/cculianu/Electron-Cash-Build-Tools/releases/download/v1.0/libusb-1.0.21.el_capitan.bottle.tar.gz | \
+curl -L https://github.com/PiRK/Electron-Cash-Build-Tools/releases/download/v1.0/libusb-1.0.21.el_capitan.bottle.tar.gz | \
     tar xz --directory $BUILDDIR || fail "Could not download libusb"
 verify_hash $BUILDDIR/libusb/1.0.21/lib/libusb-1.0.dylib d147e7382dfa676d93e8b17d160d50f68e4b01f58f3647c90a8899a7a0519ca3  # this exits on failure
 cp -fp $BUILDDIR/libusb/1.0.21/lib/libusb-1.0.dylib contrib/osx || fail "Could not copy libusb"
 
 info "Downloading ZBar dylib..."
-curl -L https://github.com/cculianu/Electron-Cash-Build-Tools/releases/download/v1.0/v0.23-libzbar.0.dylib.xz | \
+curl -L https://github.com/PiRK/Electron-Cash-Build-Tools/releases/download/v1.0/v0.23-libzbar.0.dylib.xz | \
     xz -d -c > contrib/osx/libzbar.0.dylib || fail "Could not download libzbar"
 verify_hash contrib/osx/libzbar.0.dylib 7b82238dd73e56d9f57913230ea5418c247b292cf96c8996becda961ab001c85
 
