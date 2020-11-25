@@ -54,25 +54,19 @@ prepare_wine() {
         here=`pwd`
         # Please update these carefully, some versions won't work under Wine
 
-        # !!! WARNING !!! READ THIS BEFORE UPGRADING NSIS
-        # NSIS has a bug in its icon group generation code that causes builds that have not exactly 7 icons to include uninitialized memory.
-        # If you upgrade NSIS, you need to check if the bug still exists in Source/icon.cpp line 267:
-        # https://sourceforge.net/p/nsis/code/HEAD/tree/NSIS/tags/v3021/Source/icon.cpp#l267
-        # Where they are incorrectly using order.size() instead of icon.size() to allocate the buffer and also don't zero the memory.
-        # If the bug hasn't been fixed, you need to check the NSIS generated uninstaller for number of icons and match that count exactly in your .ico file.
-        # See: https://github.com/spesmilo/electrum/commit/570c0aeca39e56c742b77380ec274d178d660c29
-        NSIS_URL='https://github.com/cculianu/Electron-Cash-Build-Tools/releases/download/v1.0/nsis-3.02.1-setup.exe'
-        NSIS_SHA256=736c9062a02e297e335f82252e648a883171c98e0d5120439f538c81d429552e
+        NSIS_URL='https://github.com/PiRK/Electron-Cash-Build-Tools/releases/download/v1.0/nsis-3.06.1-setup.exe'
+        NSIS_SHA256=f60488a676308079bfdf6845dc7114cfd4bbff47b66be4db827b89bb8d7fdc52
 
+        # libusb 1.0.23
         LIBUSB_REPO='https://github.com/libusb/libusb.git'
-        LIBUSB_COMMIT=a5990ab10f68e5ec7498f627d1664b1f842fec4e
+        LIBUSB_COMMIT=e782eeb2514266f6738e242cdcb18e3ae1ed06fa
 
-        PYINSTALLER_REPO='https://github.com/EchterAgo/pyinstaller.git'
+        PYINSTALLER_REPO='https://github.com/PiRK/pyinstaller.git'
         PYINSTALLER_COMMIT=1a8b2d47c277c451f4e358d926a47c096a5615ec
 
         # Satochip pyscard
         PYSCARD_FILENAME=pyscard-1.9.9-cp36-cp36m-win32.whl  # python 3.6, 32-bit
-        PYSCARD_URL=https://github.com/cculianu/Electron-Cash-Build-Tools/releases/download/v1.0/pyscard-1.9.9-cp36-cp36m-win32.whl
+        PYSCARD_URL=https://github.com/PiRK/Electron-Cash-Build-Tools/releases/download/v1.0/pyscard-1.9.9-cp36-cp36m-win32.whl
         PYSCARD_SHA256=99d2b450f322f9ed9682fd2a99d95ce781527e371006cded38327efca8158fe7
 
         ## These settings probably don't need change
@@ -80,13 +74,8 @@ prepare_wine() {
         #export WINEARCH='win32'
         export WINEDEBUG=-all
 
-        PYHOME=c:/python$PYTHON_VERSION  # NB: PYTON_VERSION comes from ../base.sh
+        PYHOME=c:/python$PYTHON_VERSION
         PYTHON="wine $PYHOME/python.exe -OO -B"
-
-        # Clean up Wine environment. Breaks docker so leave this commented-out.
-        #echo "Cleaning $WINEPREFIX"
-        #rm -rf $WINEPREFIX
-        #echo "done"
 
         wine 'wineboot'
 
