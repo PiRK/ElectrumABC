@@ -162,12 +162,12 @@ class CoinGecko(ExchangeBase):
         return dict([(a[0].upper(), PyDecimal(a[1])) for a in prices.items()])
 
     def history_ccys(self):
-        return ['AED', 'ARS', 'AUD', 'BTD', 'BHD', 'BMD', 'BRL', 'BTC',
-                'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'ETH', 'EUR',
-                'GBP', 'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'JPY', 'KRW',
-                'KWD', 'LKR', 'LTC', 'MMK', 'MXH', 'MYR', 'NOK', 'NZD',
-                'PHP', 'PKR', 'PLN', 'RUB', 'SAR', 'SEK', 'SGD', 'THB',
-                'TRY', 'TWD', 'USD', 'VEF', 'XAG', 'XAU', 'XDR', 'ZAR']
+        return ['AED', 'ARS', 'AUD', 'BCH', 'BTD', 'BHD', 'BMD', 'BRL', 'BTC',
+                'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'ETH', 'EUR', 'GBP',
+                'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'JPY', 'KRW', 'KWD', 'LKR',
+                'LTC', 'MMK', 'MXH', 'MYR', 'NOK', 'NZD', 'PHP', 'PKR', 'PLN',
+                'RUB', 'SAR', 'SEK', 'SGD', 'THB', 'TRY', 'TWD', 'USD', 'VEF',
+                'XAG', 'XAU', 'XDR', 'ZAR']
 
     def request_history(self, ccy):
         history = self.get_json(
