@@ -11,6 +11,7 @@ import csv
 import decimal
 from decimal import Decimal as PyDecimal  # Qt 5.12 also exports Decimal
 from collections import defaultdict
+from typing import Dict, List
 
 from .bitcoin import COIN
 from .constants import PROJECT_NAME, INV_BASE_UNITS
@@ -268,15 +269,32 @@ def dictinvert(d):
             keys.append(k)
     return inv
 
-def get_exchanges_and_currencies():
-    try:
-        data = pkgutil.get_data(__name__, 'currencies.json')
-        return json.loads(data.decode('utf-8'))
-    except:
-        pass
 
+def load_exchanges_and_currencies() -> Dict[str, List[str]]:
+    """Load exchanges and supported currencies from the
+    currencies.json data file. If this data file does not
+    exist, create it by querying the exchanges' public API.
+
+    The returned dictionary has exchange names as its keys
+    and lists of supported currency tickers for that exchange
+    as its values.
+    """
     path = os.path.join(os.path.dirname(__file__), 'currencies.json')
-    d = {}
+    if not os.path.isfile(path):
+        query_save_exchanges_and_currencies()
+    data = pkgutil.get_data(__name__, 'currencies.json')
+    return json.loads(data.decode('utf-8'))
+
+
+def query_save_exchanges_and_currencies():
+    """Query the API of all defined exchanges to get the list of
+    supported currencies.
+    Save the result to a currencies.json data file in the same directory
+    as this module.
+
+    """
+    path = os.path.join(os.path.dirname(__file__), 'currencies.json')
+    currencies = {}
     is_exchange = lambda obj: (inspect.isclass(obj)
                                and issubclass(obj, ExchangeBase)
                                and obj != ExchangeBase)
@@ -284,17 +302,15 @@ def get_exchanges_and_currencies():
     for name, klass in exchanges.items():
         exchange = klass(None, None)
         try:
-            d[name] = exchange.get_currencies()
+            currencies[name] = exchange.get_currencies()
             print_error(name, "ok")
-        except:
-            print_error(name, "error")
-            continue
+        except Exception as e:
+            print_error(name, f"error:\n{str(e)}")
     with open(path, 'w', encoding='utf-8') as f:
-        f.write(json.dumps(d, indent=4, sort_keys=True))
-    return d
+        f.write(json.dumps(currencies, indent=4, sort_keys=True))
 
 
-CURRENCIES = get_exchanges_and_currencies()
+CURRENCIES = load_exchanges_and_currencies()
 
 
 def get_exchanges_by_ccy(history=True):
