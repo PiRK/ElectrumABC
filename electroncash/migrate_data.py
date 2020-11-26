@@ -84,12 +84,6 @@ def migrate_data_from_ec():
             if "rpcpassword" in config:
                 del config["rpcpassword"]
 
-            # Make sure the fiat columns are hidden, because the menu to change
-            # this setting is hidden for now.
-            config["fiat_address"] = False
-            config["history_rates"] = False
-            config["use_exchange_rate"] = False
-
             # Disable plugins that can not be selected in the Electrum ABC menu.
             config["use_labels"] = False
             config["use_cosigner_pool"] = False
