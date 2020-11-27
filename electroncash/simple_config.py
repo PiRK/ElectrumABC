@@ -202,9 +202,28 @@ class SimpleConfig(PrintError):
             return
         save_user_config(self.user_config, self.path)
 
-    def get_wallet_path(self):
-        """Set the path of the wallet."""
+    def get_new_wallet_directory(self):
+        """Return the path to the directory where new wallets are saved.
 
+        If the program was started with the wallet path (-w or --wallet
+        argument), the directory of that wallet is used.
+        Else, the default wallet directory inside the user data directory
+        is used.
+        """
+        # command line -w option
+        if self.get('wallet_path'):
+            return os.path.dirname(os.path.join(self.get('cwd', ''),
+                                                self.get('wallet_path')))
+        return os.path.join(self.path, "wallets")
+
+    def get_wallet_path(self):
+        """Return the path of the current wallet.
+
+        On program startup, this is either the wallet path specified on the
+        command line (-w or --wallet argument), or the wallet used the last
+        time the program was used, or by default a new wallet named
+        "default_wallet" in the user directory.
+        """
         # command line -w option
         if self.get('wallet_path'):
             return os.path.join(self.get('cwd', ''), self.get('wallet_path'))
@@ -218,14 +237,7 @@ class SimpleConfig(PrintError):
         util.assert_datadir_available(self.path)
         dirpath = os.path.join(self.path, "wallets")
         make_dir(dirpath)
-
         new_path = os.path.join(self.path, "wallets", "default_wallet")
-
-        # default path in pre 1.9 versions
-        old_path = os.path.join(self.path, "electrum.dat")
-        if os.path.exists(old_path) and not os.path.exists(new_path):
-            os.rename(old_path, new_path)
-
         return new_path
 
     def remove_from_recently_open(self, filename):

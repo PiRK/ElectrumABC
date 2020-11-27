@@ -563,15 +563,15 @@ class ElectrumGui(QObject, PrintError):
         return w
 
     def get_wallet_folder(self):
-        ''' may raise FileNotFoundError '''
+        """Get path to directory containing the current wallet.
+        """
         return os.path.dirname(os.path.abspath(self.config.get_wallet_path()))
 
     def get_new_wallet_path(self):
-        ''' may raise FileNotFoundError '''
-        wallet_folder = self.get_wallet_folder()
+        """Return path to a new wallet file to be created."""
+        wallet_folder = self.config.get_new_wallet_directory()
         filename = get_new_wallet_name(wallet_folder)
-        full_path = os.path.join(wallet_folder, filename)
-        return full_path
+        return os.path.join(wallet_folder, filename)
 
     def on_focus_change(self, ignored, new_focus_widget):
         ''' Remember the last wallet window that was activated because
