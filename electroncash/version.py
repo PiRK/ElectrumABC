@@ -1,8 +1,10 @@
 
 import re
 
-PACKAGE_VERSION = '4.3.0'   # version of the client package
-PROTOCOL_VERSION = '1.4'     # protocol version requested
+# version of the client package
+PACKAGE_VERSION = '4.3.1'
+# protocol version requested
+PROTOCOL_VERSION = '1.4'
 
 # The hash of the Electrum mnemonic seed must begin with this
 SEED_PREFIX = '01'      # Standard wallet, Electrum seed
