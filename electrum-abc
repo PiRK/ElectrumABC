@@ -40,8 +40,8 @@ if sys.platform == "win32" and hasattr(sys, 'frozen') and hasattr(sys, '_MEIPASS
 os.environ['PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION'] = 'python'
 
 if sys.version_info < (3, 6):
-    sys.exit(f"*** {PROJECT_NAME} support for Python 3.5 has been discontinued.\n"
-             f"*** Please run {PROJECT_NAME} with Python 3.6 or above.")
+    sys.exit(f"*** Support for Python 3.5 has been discontinued.\n"
+             f"*** Please run the application with Python 3.6 or above.")
 
 # from https://gist.github.com/tito/09c42fb4767721dc323d
 import threading
