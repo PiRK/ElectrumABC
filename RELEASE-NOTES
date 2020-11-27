@@ -1,6 +1,6 @@
 Electrum ABC is a fork of the open source Electron Cash wallet
 (www.electroncash.org) for BCHA. The first release is based on the
-Electron Cash 4.2.0 codebase with patches to
+Electron Cash 4.2.0 codebase with the following changes
 
 - updated list of electrum servers
 - updated icons and branding
@@ -54,3 +54,20 @@ with a new name.
 
 In the meantime you can find out more about BCHA here:
 https://bitcoinabc.org/bcha/
+
+
+# Release 4.3.1
+
+- Fixed a bug happening when clicking on a server in the network overview
+  dialog.
+- Enable the fiat display again, using CoinGecko's price for BCHA.
+- Add a checkpoint to ensure only BCHA servers can be used. When splitting
+  coins, it is now recommended to run both Electrum ABC and Electron Cash.
+- Improve the automatic importing of wallets and user settings from
+  Electron Cash, for new users: clear fiat historic exchange rates to avoid
+  displaying BCH prices for pre-fork transactions, clear the server blacklist
+  and whitelist, copy also testnet wallets and settings.
+- When creating a new wallet, always save the file in the standard user
+  directory. Previously, wallets were saved in the same directory as the
+  most recently opened wallet.
+
