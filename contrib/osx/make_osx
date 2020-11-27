@@ -42,7 +42,7 @@ function DoCodeSignMaybe { # ARGS: infoName fileOrDirName codesignIdentity
       # is required for notarization.
       # See: https://github.com/pyinstaller/pyinstaller/issues/4629
       preserve_arg=""
-      hardened_arg="--entitlements=${build_dir}/entitlements.plist -o runtime"
+      hardened_arg="--entitlements=${build_dir}/entitlements.plist -o runtime --timestamp"
       hardened_info=" (Hardened Runtime)"
     fi
     info "Code signing ${infoName}${hardened_info}..."
