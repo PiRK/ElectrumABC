@@ -373,7 +373,6 @@ if __name__ == '__main__':
     config_options = {key: config_options[key] for key in filter(f, config_options.keys())}
     if config_options.get('server'):
         config_options['auto_connect'] = False
-    config_options['cwd'] = os.getcwd()
 
     # fixme: this can probably be achieved with a runtime hook (pyinstaller)
     try:

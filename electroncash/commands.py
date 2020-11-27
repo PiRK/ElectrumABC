@@ -28,6 +28,7 @@ import ast
 import base64
 import datetime
 import json
+import os
 import queue
 import sys
 import time
@@ -1006,7 +1007,7 @@ def add_global_options(parser):
     group.add_argument("-v", "--verbose", action="store_true", dest="verbose", default=False, help="Show debugging information")
     group.add_argument("-D", "--dir", dest="data_path", help=f"{PROJECT_NAME} directory")
     group.add_argument("-P", "--portable", action="store_true", dest="portable", default=False, help="Use local 'electron_cash_data' directory")
-    group.add_argument("-w", "--wallet", dest="wallet_path", help="wallet path")
+    group.add_argument("-w", "--wallet", dest="wallet_path", help="wallet path", type=os.path.abspath)
     group.add_argument("-wp", "--walletpassword", dest="wallet_password", default=None, help="Supply wallet password")
     group.add_argument("--testnet", action="store_true", dest="testnet", default=False, help="Use Testnet")
     group.add_argument("--testnet4", action="store_true", dest="testnet4", default=False, help="Use Testnet4")
