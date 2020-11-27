@@ -24,7 +24,7 @@
 
 import json, pkgutil
 
-from .asert_daa import ASERTDaa
+from .asert_daa import ASERTDaa, Anchor
 
 def _read_json_dict(filename):
     try:
@@ -36,7 +36,6 @@ def _read_json_dict(filename):
 
 class AbstractNet:
     TESTNET = False
-    asert_daa = ASERTDaa()
     LEGACY_POW_TARGET_TIMESPAN = 14 * 24 * 60 * 60   # 2 weeks
     LEGACY_POW_TARGET_INTERVAL = 10 * 60  # 10 minutes
     LEGACY_POW_RETARGET_BLOCKS = LEGACY_POW_TARGET_TIMESPAN // LEGACY_POW_TARGET_INTERVAL  # 2016 blocks
@@ -73,6 +72,11 @@ class MainNet(AbstractNet):
     # Consult the ElectrumX documentation for more details.
     VERIFICATION_BLOCK_MERKLE_ROOT = "575401e2c601590926742fc806339d99dfdbd65b867231c3d799ea9a22cf9355"
     VERIFICATION_BLOCK_HEIGHT = 645000
+    asert_daa = ASERTDaa(is_testnet=False)
+    # Note: We *must* specify the anchor if the checkpoint is after the anchor, due to the way
+    # blockchain.py skips headers after the checkpoint.  So all instances that have a checkpoint
+    # after the anchor must specify the anchor as well.
+    asert_daa.anchor = Anchor(height=661647, bits=402971390, prev_time=1605447844)
 
     # Version numbers for BIP32 extended keys
     # standard: xprv, xpub
@@ -88,6 +92,7 @@ class MainNet(AbstractNet):
 class TestNet(AbstractNet):
     TESTNET = True
     asert_daa = ASERTDaa()
+
     WIF_PREFIX = 0xef
     ADDRTYPE_P2PKH = 111
     ADDRTYPE_P2PKH_BITPAY = 111  # Unsure
