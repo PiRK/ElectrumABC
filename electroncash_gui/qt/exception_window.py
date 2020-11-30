@@ -22,27 +22,27 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-
+import html
 import json
 import locale
 import platform
+import sys
 import traceback
-import html
 
 import requests
-from PyQt5.QtCore import QObject
+
 import PyQt5.QtCore as QtCore
+from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 
-from electroncash.i18n import _
-import sys
 from electroncash import PACKAGE_VERSION
-from electroncash.util import print_error, finalization_print_error
 from electroncash.constants import PROJECT_NAME
+from electroncash.i18n import _
+from electroncash.util import finalization_print_error, print_error
+
 from .main_window import ElectrumWindow
 from .util import destroyed_print_error
-
 
 issue_template = """<h2>Traceback</h2>
 <pre>
@@ -61,7 +61,7 @@ issue_template = """<h2>Traceback</h2>
 report_server = "https://crashhub.electroncash.org/crash"
 
 
-class Exception_Window(QWidget):
+class ExceptionWindow(QWidget):
     _active_window = None
 
     def __init__(self, config, exctype, value, tb):
@@ -143,7 +143,7 @@ class Exception_Window(QWidget):
         self.close()
 
     def on_close(self):
-        Exception_Window._active_window = None
+        ExceptionWindow._active_window = None
         sys.__excepthook__(*self.exc_args)
         self.close()
 
@@ -186,8 +186,8 @@ class Exception_Window(QWidget):
 
 
 def _show_window(config, exctype, value, tb):
-    if not Exception_Window._active_window:
-        Exception_Window._active_window = Exception_Window(
+    if ExceptionWindow._active_window is None:
+        ExceptionWindow._active_window = ExceptionWindow(
             config, exctype, value, tb)
 
 
@@ -206,7 +206,7 @@ def _get_current_wallet_types():
     return ",".join(list(wtypes)) or "Unknown"
 
 
-class Exception_Hook(QObject):
+class ExceptionHook(QObject):
     """Exception Hook singleton.  Only one of these will be extant. It is
     created by the ElectrumGui singleton, and it lives forever until app exit.
     (But ONLY if the `show_crash_reporter` config key is set.)"""
@@ -216,11 +216,11 @@ class Exception_Hook(QObject):
 
     def __init__(self, config):
         super().__init__()
-        if Exception_Hook._instance is not None:
+        if ExceptionHook._instance is not None:
             # This is ok, we will be GC'd later.
             return
         # strong reference to self keeps us alive until uninstall() is called
-        Exception_Hook._instance = self
+        ExceptionHook._instance = self
         self.config = config
         sys.excepthook = self.handler
         self._report_exception.connect(_show_window)
@@ -232,9 +232,9 @@ class Exception_Hook(QObject):
     @staticmethod
     def uninstall():
         sys.excepthook = sys.__excepthook__
-        if Exception_Hook._instance:
+        if ExceptionHook._instance is not None:
             print_error(f"[{__class__.__qualname__}] Uninstalled.")
-            Exception_Hook._instance = None
+            ExceptionHook._instance = None
 
     def handler(self, exctype, value, tb):
         if exctype is KeyboardInterrupt or exctype is SystemExit or not is_enabled(self.config):

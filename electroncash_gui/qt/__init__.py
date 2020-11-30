@@ -70,7 +70,7 @@ from . import icons # This needs to be imported once app-wide then the :icons/ n
 from .util import *   # * needed for plugins
 from .main_window import ElectrumWindow
 from .network_dialog import NetworkDialog
-from .exception_window import Exception_Hook
+from .exception_window import ExceptionHook
 from .update_checker import UpdateChecker
 
 
@@ -1017,8 +1017,8 @@ class ElectrumGui(QObject, PrintError):
         self.app.lastWindowClosed.connect(self._quit_after_last_window)
 
         def clean_up():
-            # Just in case we get an exception as we exit, uninstall the Exception_Hook
-            Exception_Hook.uninstall()
+            # Just in case we get an exception as we exit, uninstall the ExceptionHook
+            ExceptionHook.uninstall()
             # Shut down the timer cleanly
             self.timer.stop()
             self.gc_timer.stop()
@@ -1029,7 +1029,7 @@ class ElectrumGui(QObject, PrintError):
             self.tray.hide()
         self.app.aboutToQuit.connect(clean_up)
 
-        Exception_Hook(self.config) # This wouldn't work anyway unless the app event loop is active, so we must install it once here and no earlier.
+        ExceptionHook(self.config) # This wouldn't work anyway unless the app event loop is active, so we must install it once here and no earlier.
         # main loop
         self.app.exec_()
         # on some platforms the exec_ call may not return, so use clean_up()
