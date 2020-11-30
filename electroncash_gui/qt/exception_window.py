@@ -65,14 +65,16 @@ class Exception_Window(QWidget):
     _active_window = None
 
     def __init__(self, config, exctype, value, tb):
-        super().__init__(None) # Top-level window. Note PyQt top level windows are kept alive by strong references, hence _active_window
+        # Top-level window. Note PyQt top level windows are kept alive
+        # by strong references, hence _active_window
+        super().__init__(None)
         self.exc_args = (exctype, value, tb)
         self.config = config
         self.setWindowTitle(f'{PROJECT_NAME} - ' + _('An Error Occurred'))
         self.setMinimumSize(600, 300)
 
         main_box = QVBoxLayout()
-        main_box.setContentsMargins(20,20,20,20)
+        main_box.setContentsMargins(20, 20, 20, 20)
 
         heading = QLabel('<h2>' + _('Sorry!') + '</h2>')
         main_box.addWidget(heading)
@@ -86,20 +88,21 @@ class Exception_Window(QWidget):
         main_box.addWidget(l)
 
         label = QLabel(
-            '<br/>' + _("Please briefly describe what led to the error (optional):")
+            '<br/>' +
+            _("Please briefly describe what led to the error (optional):")
             + '<br/><br/>' + '<i>' +
-            _("Feel free to add your email address if you are willing to provide"
-              " further detail, but note that it will appear in the relevant"
-              " github issue.") + '</i>')
+            _("Feel free to add your email address if you are willing to "
+              "provide further detail, but note that it will appear in the "
+              "relevant github issue.") + '</i>')
         label.setWordWrap(True)
         label.setTextFormat(QtCore.Qt.RichText)
         main_box.addWidget(label)
 
         self.description_textfield = QTextEdit()
-        self.description_textfield.setAcceptRichText(False)  # Force plain 'ol text descriptions.. no rich-text pastes
+        # Force plain 'ol text descriptions.. no rich-text pastes
+        self.description_textfield.setAcceptRichText(False)
         self.description_textfield.setFixedHeight(50)
         main_box.addWidget(self.description_textfield)
-
 
         buttons = QHBoxLayout()
 
@@ -109,7 +112,9 @@ class Exception_Window(QWidget):
         buttons.addWidget(l)
 
         collapse_info = QPushButton(_("Show report contents"))
-        collapse_info.clicked.connect(lambda: QMessageBox.about(self, "Report contents", self.get_report_string()))
+        collapse_info.clicked.connect(
+            lambda: QMessageBox.about(self, "Report contents",
+                                      self.get_report_string()))
 
         buttons.addWidget(collapse_info)
 
@@ -150,7 +155,7 @@ class Exception_Window(QWidget):
         exc_string = str(self.exc_args[1])
         stack = traceback.extract_tb(self.exc_args[2])
         readable_trace = "".join(traceback.format_list(stack))
-        id = {
+        id_ = {
             "file": stack[-1].filename,
             "name": stack[-1].name,
             "type": self.exc_args[0].__name__
@@ -158,7 +163,7 @@ class Exception_Window(QWidget):
         return {
             "exc_string": exc_string,
             "stack": readable_trace,
-            "id": id
+            "id": id_
         }
 
     def get_additional_info(self):
@@ -174,50 +179,61 @@ class Exception_Window(QWidget):
 
     def get_report_string(self):
         info = self.get_additional_info()
-        info["traceback"] = html.escape("".join(traceback.format_exception(*self.exc_args)), quote=False)
+        info["traceback"] = html.escape(
+            "".join(traceback.format_exception(*self.exc_args)),
+            quote=False)
         return issue_template.format(**info)
 
 
 def _show_window(config, exctype, value, tb):
     if not Exception_Window._active_window:
-        Exception_Window._active_window = Exception_Window(config, exctype, value, tb)
+        Exception_Window._active_window = Exception_Window(
+            config, exctype, value, tb)
+
 
 def is_enabled(config) -> bool:
     return bool(config.get("show_crash_reporter2", default=True))
 
+
 def set_enabled(config, b: bool):
     config.set_key("show_crash_reporter2", bool(b))
 
+
 def _get_current_wallet_types():
-    wtypes = { str(getattr(w.wallet, 'wallet_type', 'Unknown'))
-               for w in QApplication.instance().topLevelWidgets()
-               if isinstance(w, ElectrumWindow) and w.is_alive() }
+    wtypes = {str(getattr(w.wallet, 'wallet_type', 'Unknown'))
+              for w in QApplication.instance().topLevelWidgets()
+              if isinstance(w, ElectrumWindow) and w.is_alive()}
     return ",".join(list(wtypes)) or "Unknown"
 
+
 class Exception_Hook(QObject):
-    ''' Exception Hook singleton.  Only one of these will be extant. It is
+    """Exception Hook singleton.  Only one of these will be extant. It is
     created by the ElectrumGui singleton, and it lives forever until app exit.
-    (But ONLY if the `show_crash_reporter` config key is set.) '''
+    (But ONLY if the `show_crash_reporter` config key is set.)"""
 
     _report_exception = QtCore.pyqtSignal(object, object, object, object)
     _instance = None
 
     def __init__(self, config):
-        super().__init__(None) # Top-level Object
-        if Exception_Hook._instance: return # This is ok, we will be GC'd later.
-        Exception_Hook._instance = self # strong reference to self should keep us alive until uninstall() is called
+        super().__init__()
+        if Exception_Hook._instance is not None:
+            # This is ok, we will be GC'd later.
+            return
+        # strong reference to self keeps us alive until uninstall() is called
+        Exception_Hook._instance = self
         self.config = config
-        sys.excepthook = self.handler # yet another strong reference. We really won't die unless uninstall() is called
+        sys.excepthook = self.handler
         self._report_exception.connect(_show_window)
-        print_error("[{}] Installed.".format(__class__.__qualname__))
-        finalization_print_error(self, "[{}] Finalized.".format(__class__.__qualname__))
+        print_error(f"[{__class__.__qualname__}] Installed.")
+        finalization_print_error(self,
+                                 f"[{__class__.__qualname__}] Finalized.")
         destroyed_print_error(self)
 
     @staticmethod
     def uninstall():
         sys.excepthook = sys.__excepthook__
         if Exception_Hook._instance:
-            print_error("[{}] Uninstalled.".format(__class__.__qualname__))
+            print_error(f"[{__class__.__qualname__}] Uninstalled.")
             Exception_Hook._instance = None
 
     def handler(self, exctype, value, tb):
