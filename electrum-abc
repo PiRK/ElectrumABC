@@ -5,7 +5,7 @@
 # Copyright (C) 2011 thomasv@gitorious
 #
 # Electron Cash - lightweight Bitcoin Cash client
-# Copyright (C) 2017-2019 The Electron Cash Developers
+# Copyright (C) 2017-2020 The Electron Cash Developers
 #
 # Permission is hereby granted, free of charge, to any person
 # obtaining a copy of this software and associated documentation files
@@ -112,8 +112,8 @@ from electroncash.constants import SCRIPT_NAME, PROJECT_NAME, PORTABLE_DATA_DIR
 from electroncash.migrate_data import migrate_data_from_ec
 
 
-# get password routine
 def prompt_password(prompt, confirm=True) -> str:
+    """Get password routine"""
     import getpass
     password = getpass.getpass(prompt, stream=None)
     if password and confirm:
@@ -137,6 +137,8 @@ def run_non_rpc(simple_config: SimpleConfig):
         wallet = restore_wallet(simple_config, storage)
     elif cmd_name == 'create':
         wallet = create_wallet(simple_config, storage)
+    else:
+        raise RuntimeError(f"run_non_rpc called with invalid cmd: {cmd_name}")
 
     wallet.storage.write()
     print_msg("Wallet saved in '%s'" % wallet.storage.path)
@@ -347,7 +349,8 @@ def init_plugins(config, gui_name):
     return Plugins(config, gui_name)
 
 
-if __name__ == '__main__':
+def main():
+    """Main entry point into this script"""
     # This copies the Electron Cash data dir if we don't already
     # have a Electrum ABC data directory.
     migrate_data_from_ec()
@@ -360,7 +363,7 @@ if __name__ == '__main__':
         require_console = '-v' in sys.argv or '--verbose' in sys.argv
         console_title = _(f"{PROJECT_NAME} - Verbose Output") if require_console else None
         # Attempt to attach to ancestor process console. If create=True we will
-        # create a new conole window if no ancestor process console exists.
+        # create a new console window if no ancestor process console exists.
         # (Presumably if user ran with -v, they expect console output).
         # The below is required to be able to get verbose or console output
         # if running from cmd.exe (see spesmilo#2592, Electron-Cash#1295).
@@ -397,8 +400,11 @@ if __name__ == '__main__':
 
     # config is an object passed to the various constructors (wallet, interface, gui)
     config_options = args.__dict__
-    f = lambda key: config_options[key] is not None and key not in config_variables.get(args.cmd, {}).keys()
-    config_options = {key: config_options[key] for key in filter(f, config_options.keys())}
+
+    def filter_func(key):
+        return config_options[key] is not None and key not in config_variables.get(args.cmd, {}).keys()
+
+    config_options = {key: config_options[key] for key in filter(filter_func, config_options.keys())}
     if config_options.get('server'):
         config_options['auto_connect'] = False
 
@@ -514,3 +520,7 @@ if __name__ == '__main__':
     elif result is not None:
         print_msg(json_encode(result))
     sys.exit(0)
+
+
+if __name__ == '__main__':
+    main()
