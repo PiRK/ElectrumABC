@@ -779,7 +779,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         msg = ' '.join([
             _("Please report any bugs as issues on github:<br/>"),
             f"<a href=\"{REPOSITORY_URL}/issues\">"
-            f"https://github.com/PiRK/ElectrumBCHA/issues</a><br/><br/>",
+            f"{REPOSITORY_URL}/issues</a><br/><br/>",
             _(f"Before reporting a bug, upgrade to the most recent version of "
               f"{PROJECT_NAME} (latest release or git HEAD), and include the "
               f"version number in your report."),

@@ -23,13 +23,15 @@
 # SOFTWARE.
 
 import html
-import json
 import locale
 import platform
 import sys
 import traceback
+import urllib.parse
+import webbrowser
 
-import requests
+from typing import Optional
+
 
 import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import QObject
@@ -37,14 +39,14 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import *
 
 from electroncash import PACKAGE_VERSION
-from electroncash.constants import PROJECT_NAME
+from electroncash.constants import PROJECT_NAME, REPOSITORY_URL
 from electroncash.i18n import _
 from electroncash.util import finalization_print_error, print_error
 
 from .main_window import ElectrumWindow
 from .util import destroyed_print_error
 
-issue_template = """<h2>Traceback</h2>
+issue_template_html = """<h2>Traceback</h2>
 <pre>
 {traceback}
 </pre>
@@ -58,20 +60,36 @@ issue_template = """<h2>Traceback</h2>
   <li>Locale: {locale}</li>
 </ul>
 """ % PROJECT_NAME
-report_server = "https://crashhub.electroncash.org/crash"
+
+issue_template_markdown = """
+# Description
+<!--- Please add under this line additional information, such as a description
+ of what action led to the error--->
+
+# Traceback
+```
+{traceback}
+```
+
+# System information
+
+- %s version: {app_version}
+- Python version: {python_version}
+- Operating system: {os}
+- Wallet type: {wallet_type}
+- Locale: {locale}
+
+""" % PROJECT_NAME
 
 
-class ExceptionWindow(QWidget):
-    _active_window = None
+class ExceptionDialog(QDialog):
 
     def __init__(self, config, exctype, value, tb):
-        # Top-level window. Note PyQt top level windows are kept alive
-        # by strong references, hence _active_window
-        super().__init__(None)
+        super().__init__()
         self.exc_args = (exctype, value, tb)
         self.config = config
         self.setWindowTitle(f'{PROJECT_NAME} - ' + _('An Error Occurred'))
-        self.setMinimumSize(600, 300)
+        self.setMinimumSize(600, 600)
 
         main_box = QVBoxLayout()
         main_box.setContentsMargins(20, 20, 20, 20)
@@ -87,46 +105,30 @@ class ExceptionWindow(QWidget):
         l.setWordWrap(True)
         main_box.addWidget(l)
 
+        self.report_textfield = QTextEdit()
+        self.report_textfield.setReadOnly(True)
+        self.report_textfield.setText(self.get_report_string("html"))
+
+        main_box.addWidget(self.report_textfield)
+
         label = QLabel(
-            '<br/>' +
-            _("Please briefly describe what led to the error (optional):")
-            + '<br/><br/>' + '<i>' +
-            _("Feel free to add your email address if you are willing to "
-              "provide further detail, but note that it will appear in the "
-              "relevant github issue.") + '</i>')
+            "<br/>You will be able to add more information after clicking on"
+            " <i>Open a Bug Report</i><br/><br/>")
         label.setWordWrap(True)
         label.setTextFormat(QtCore.Qt.RichText)
         main_box.addWidget(label)
 
-        self.description_textfield = QTextEdit()
-        # Force plain 'ol text descriptions.. no rich-text pastes
-        self.description_textfield.setAcceptRichText(False)
-        self.description_textfield.setFixedHeight(50)
-        main_box.addWidget(self.description_textfield)
-
         buttons = QHBoxLayout()
-
-        l = QLabel(_("Do you want to send this report?"))
-        l.setWordWrap(True)
-
-        buttons.addWidget(l)
-
-        collapse_info = QPushButton(_("Show report contents"))
-        collapse_info.clicked.connect(
-            lambda: QMessageBox.about(self, "Report contents",
-                                      self.get_report_string()))
-
-        buttons.addWidget(collapse_info)
 
         buttons.addStretch(1)
 
-        report_button = QPushButton(_('Send Bug Report'))
+        report_button = QPushButton(_('Open a Bug Report'))
         report_button.clicked.connect(self.send_report)
         report_button.setIcon(QIcon(":icons/tab_send.png"))
         buttons.addWidget(report_button)
 
-        close_button = QPushButton(_('Not Now'))
-        close_button.clicked.connect(self.close)
+        close_button = QPushButton('Close')
+        close_button.clicked.connect(self.reject)
         buttons.addWidget(close_button)
 
         main_box.addLayout(buttons)
@@ -135,36 +137,16 @@ class ExceptionWindow(QWidget):
         self.show()
 
     def send_report(self):
-        report = self.get_traceback_info()
-        report.update(self.get_additional_info())
-        report = json.dumps(report)
-        response = requests.post(report_server, data=report)
-        QMessageBox.about(self, "Crash report", response.text)
-        self.close()
-
-    def on_close(self):
-        ExceptionWindow._active_window = None
-        sys.__excepthook__(*self.exc_args)
-        self.close()
+        title = urllib.parse.quote(self.get_issue_title())
+        body = urllib.parse.quote(self.get_report_string())
+        labels = "bug, crash report"
+        webbrowser.open_new_tab(
+            f'{REPOSITORY_URL}/issues/new?'
+            f'title={title}&body={body}&labels={labels}')
 
     def closeEvent(self, event):
-        self.on_close()
+        sys.__excepthook__(*self.exc_args)
         event.accept()
-
-    def get_traceback_info(self):
-        exc_string = str(self.exc_args[1])
-        stack = traceback.extract_tb(self.exc_args[2])
-        readable_trace = "".join(traceback.format_list(stack))
-        id_ = {
-            "file": stack[-1].filename,
-            "name": stack[-1].name,
-            "type": self.exc_args[0].__name__
-        }
-        return {
-            "exc_string": exc_string,
-            "stack": readable_trace,
-            "id": id_
-        }
 
     def get_additional_info(self):
         args = {
@@ -172,23 +154,25 @@ class ExceptionWindow(QWidget):
             "python_version": sys.version,
             "os": platform.platform(),
             "locale": locale.getdefaultlocale()[0],
-            "description": self.description_textfield.toPlainText(),
+            "description": self.report_textfield.toPlainText(),
             "wallet_type": _get_current_wallet_types()
         }
         return args
 
-    def get_report_string(self):
+    def get_report_string(self, fmt: str = "markdown") -> str:
         info = self.get_additional_info()
         info["traceback"] = html.escape(
             "".join(traceback.format_exception(*self.exc_args)),
             quote=False)
-        return issue_template.format(**info)
+        if fmt == "html":
+            return issue_template_html.format(**info)
+        return issue_template_markdown.format(**info)
 
-
-def _show_window(config, exctype, value, tb):
-    if ExceptionWindow._active_window is None:
-        ExceptionWindow._active_window = ExceptionWindow(
-            config, exctype, value, tb)
+    def get_issue_title(self):
+        """Return the actual error which is printed on the
+        last line of the exception stack"""
+        lines = traceback.format_exception(*self.exc_args)
+        return lines[-1].strip()
 
 
 def is_enabled(config) -> bool:
@@ -216,6 +200,7 @@ class ExceptionHook(QObject):
 
     def __init__(self, config):
         super().__init__()
+        self.dialog: Optional[ExceptionDialog] = None
         if ExceptionHook._instance is not None:
             # This is ok, we will be GC'd later.
             return
@@ -223,7 +208,7 @@ class ExceptionHook(QObject):
         ExceptionHook._instance = self
         self.config = config
         sys.excepthook = self.handler
-        self._report_exception.connect(_show_window)
+        self._report_exception.connect(self._show_window)
         print_error(f"[{__class__.__qualname__}] Installed.")
         finalization_print_error(self,
                                  f"[{__class__.__qualname__}] Finalized.")
@@ -241,3 +226,8 @@ class ExceptionHook(QObject):
             sys.__excepthook__(exctype, value, tb)
         else:
             self._report_exception.emit(self.config, exctype, value, tb)
+
+    def _show_window(self, config, exctype, value, tb):
+        self.dialog = ExceptionDialog(
+            config, exctype, value, tb)
+        self.dialog.show()
