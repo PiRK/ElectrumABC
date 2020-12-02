@@ -70,4 +70,6 @@ https://bitcoinabc.org/bcha/
 - When creating a new wallet, always save the file in the standard user
   directory. Previously, wallets were saved in the same directory as the
   most recently opened wallet.
+- Change the crash report window to redirect users to github in their
+  web browser, with a pre-filled issue ready to be submitted.
 
