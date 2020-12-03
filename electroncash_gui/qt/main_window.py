@@ -721,10 +721,16 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             return
         d = {}
         spv_address = self.network.get_donation_address()
-        spv_prefix = _("Blockchain Server")
         donation_for = _("Donation for")
-        if spv_address:
+        if spv_address == "bitcoincash:qplw0d304x9fshz420lkvys2jxup38m9symky6k028":
+            # Fulcrum servers without a donation address specified in the
+            # configuration file broadcast the fulcrum donation address
+            spv_prefix = "Fulcrum developers"
+            host = "https://github.com/cculianu/Fulcrum"
+        else:
+            spv_prefix = _("Blockchain Server")
             host = self.network.get_parameters()[0]
+        if spv_address:
             d[spv_prefix + ": " + host] = spv_address
         plugin_servers = run_hook('donation_address', self, multi=True)
         for tup in plugin_servers:
