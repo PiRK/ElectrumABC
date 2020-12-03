@@ -72,4 +72,5 @@ https://bitcoinabc.org/bcha/
   most recently opened wallet.
 - Change the crash report window to redirect users to github in their
   web browser, with a pre-filled issue ready to be submitted.
-
+- Fix a bug when attempting to interact with a Trezor T hardware wallet
+  with the autolock feature enabled, when the device is locked.
