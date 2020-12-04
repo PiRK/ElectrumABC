@@ -53,12 +53,6 @@ def pgettext(context: str, message: str) -> str:
     translated = language.gettext(formatted)
     return message if '\x04' in translated else translated
 
-def npgettext(context: str, singular: str, plural: str, n: int) -> str:
-    global language
-    formatted_singular = f"{context}\x04{singular}"
-    formatted_plural = f"{context}\x04{plural}"
-    translated = language.ngettext(formatted_singular, formatted_plural, n)
-    return message if '\x04' in translated else translated
 
 def set_language(x):
     global language, set_language_called
