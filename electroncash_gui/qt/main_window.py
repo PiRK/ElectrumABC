@@ -62,10 +62,7 @@ from electroncash.util import (format_time, format_satoshis, PrintError,
                                print_error)
 from electroncash.wallet import Multisig_Wallet, sweep_preparations
 
-try:
-    from electroncash.plot import plot_history
-except ImportError:
-    plot_history = None
+
 import electroncash.web as web
 
 from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, BTCkBEdit, BTCSatsByteEdit
@@ -643,7 +640,6 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         invoices_menu = wallet_menu.addMenu(_("Invoices"))
         invoices_menu.addAction(_("Import") + "...", lambda: self.invoice_list.import_invoices())
         hist_menu = wallet_menu.addMenu(_("&History"))
-        #hist_menu.addAction(_("Plot"), self.plot_history_dialog).setEnabled(plot_history is not None)
         hist_menu.addAction(_("Export") + "...", self.export_history_dialog)
 
         wallet_menu.addSeparator()
@@ -3727,15 +3723,6 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         else:
             if success:
                 self.show_message(_("Your wallet history has been successfully exported."))
-
-    def plot_history_dialog(self):
-        if plot_history is None:
-            return
-        wallet = self.wallet
-        history = wallet.get_history()
-        if len(history) > 0:
-            plt = plot_history(self.wallet, history)
-            plt.show()
 
     def is_fetch_input_data(self):
         ''' default on if network.auto_connect is True, otherwise use config value '''
