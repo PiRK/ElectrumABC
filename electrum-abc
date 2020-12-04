@@ -113,7 +113,7 @@ from electroncash.migrate_data import migrate_data_from_ec
 
 
 # get password routine
-def prompt_password(prompt, confirm=True):
+def prompt_password(prompt, confirm=True) -> str:
     import getpass
     password = getpass.getpass(prompt, stream=None)
     if password and confirm:
@@ -125,34 +125,34 @@ def prompt_password(prompt, confirm=True):
     return password
 
 
-def run_non_rpc(simple_config):
-    " Run non RPC commands "
+def run_non_rpc(simple_config: SimpleConfig):
+    """Run non RPC commands"""
     cmd_name = simple_config.get('cmd')
 
     storage = WalletStorage(simple_config.get_wallet_path())
     if storage.file_exists():
         sys.exit("Error: Remove the existing wallet first!")
 
-    def password_dialog():
-        return prompt_password(
-            "Password (hit return if you do not wish to encrypt your wallet):"
-        )
-
     if cmd_name == 'restore':
-        wallet = restore_wallet(simple_config, password_dialog, storage)
+        wallet = restore_wallet(simple_config, storage)
     elif cmd_name == 'create':
-        wallet = create_wallet(simple_config, password_dialog, storage)
+        wallet = create_wallet(simple_config, storage)
 
     wallet.storage.write()
     print_msg("Wallet saved in '%s'" % wallet.storage.path)
     sys.exit(0)
 
 
-def restore_wallet(simple_config, password_dialog, storage):
-    " Restore an existing wallet "
+def restore_wallet(simple_config: SimpleConfig,
+                   storage: WalletStorage):
+    """Restore an existing wallet"""
     text = simple_config.get('text').strip()
     passphrase = simple_config.get('passphrase', '')
-    password = password_dialog() if keystore.is_private(text) else None
+    password = None
+    if keystore.is_private(text):
+        password = prompt_password(
+            "Password (hit return if you do not wish to encrypt "
+            "your wallet):")
     if keystore.is_address_list(text):
         wallet = ImportedAddressWallet.from_text(storage, text)
     elif keystore.is_private_key_list(text):
@@ -198,9 +198,11 @@ def restore_wallet(simple_config, password_dialog, storage):
     return wallet
 
 
-def create_wallet(simple_config, password_dialog, storage):
-    " Create a new wallet "
-    password = password_dialog()
+def create_wallet(simple_config: SimpleConfig,
+                  storage: WalletStorage):
+    """Create a new wallet"""
+    password = prompt_password("Password (hit return if you do not"
+                               " wish to encrypt your wallet):")
     passphrase = simple_config.get('passphrase', '')
     seed_type = simple_config.get('seed_type', 'bip39')
     if seed_type == 'bip39':
