@@ -944,29 +944,6 @@ config_variables = {
     }
 }
 
-def set_default_subparser(self, name, args=None):
-    """see http://stackoverflow.com/questions/5176691/argparse-how-to-specify-a-default-subcommand"""
-    subparser_found = False
-    for arg in sys.argv[1:]:
-        if arg in ['-h', '--help']:  # global help if no subparser
-            break
-    else:
-        for x in self._subparsers._actions:
-            if not isinstance(x, argparse._SubParsersAction):
-                continue
-            for sp_name in x._name_parser_map.keys():
-                if sp_name in sys.argv[1:]:
-                    subparser_found = True
-        if not subparser_found:
-            # insert default in first position, this implies no
-            # global options without a sub_parsers specified
-            if args is None:
-                sys.argv.insert(1, name)
-            else:
-                args.insert(0, name)
-
-argparse.ArgumentParser.set_default_subparser = set_default_subparser
-
 
 # workaround https://bugs.python.org/issue23058
 # see https://github.com/nickstenning/honcho/pull/121
@@ -1072,6 +1049,4 @@ def get_parser():
             for k, v in cvh.items():
                 group.add_argument(k, nargs='?', help=v)
 
-    # 'gui' is the default command
-    parser.set_default_subparser('gui')
     return parser

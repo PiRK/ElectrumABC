@@ -403,7 +403,7 @@ if __name__ == '__main__':
 
     # todo: defer this to gui
     config = SimpleConfig(config_options)
-    cmdname = config.get('cmd')
+    cmdname = args.cmd if args.cmd is not None else "gui"
 
     # run non-RPC commands separately
     if cmdname in ['create', 'restore']:
