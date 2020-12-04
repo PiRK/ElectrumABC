@@ -945,34 +945,6 @@ config_variables = {
 }
 
 
-# workaround https://bugs.python.org/issue23058
-# see https://github.com/nickstenning/honcho/pull/121
-
-def subparser_call(self, parser, namespace, values, option_string=None):
-    from argparse import ArgumentError, SUPPRESS, _UNRECOGNIZED_ARGS_ATTR
-    parser_name = values[0]
-    arg_strings = values[1:]
-    # set the parser name if requested
-    if self.dest is not SUPPRESS:
-        setattr(namespace, self.dest, parser_name)
-    # select the parser
-    try:
-        parser = self._name_parser_map[parser_name]
-    except KeyError:
-        tup = parser_name, ', '.join(self._name_parser_map)
-        msg = _('unknown parser {!r} (choices: {})').format(*tup)
-        raise ArgumentError(self, msg)
-    # parse all the remaining options into the namespace
-    # store any unrecognized options on the object, so that the top
-    # level parser can decide what to do with them
-    namespace, arg_strings = parser.parse_known_args(arg_strings, namespace)
-    if arg_strings:
-        vars(namespace).setdefault(_UNRECOGNIZED_ARGS_ATTR, [])
-        getattr(namespace, _UNRECOGNIZED_ARGS_ATTR).extend(arg_strings)
-
-argparse._SubParsersAction.__call__ = subparser_call
-
-
 def add_network_options(parser):
     parser.add_argument("-1", "--oneserver", action="store_true", dest="oneserver", default=False, help="connect to one server only")
     parser.add_argument("-s", "--server", dest="server", default=None, help="set server host:port:protocol, where protocol is either t (tcp) or s (ssl)")
