@@ -137,7 +137,6 @@ def migrate_data_from_ec():
             # Disable by default other plugins that depend on servers that
             # do not exist yet for BCHA.
             config["use_fusion"] = False
-            config["use_shuffle_deprecated"] = False
 
             # adjust all paths to point to the new user dir
             replace_src_dest_in_config(src, dest, config)
