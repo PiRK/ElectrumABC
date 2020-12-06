@@ -442,7 +442,6 @@ def verify_cert_chain(chain):
             verify = pubkey.verify(sig, x509.PREFIX_RSA_SHA512 + hashBytes)
         else:
             raise BaseException("Algorithm not supported")
-            util.print_error(self.error, algo.getComponentByName('algorithm'))
         if not verify:
             raise BaseException("Certificate not Signed by Provided CA Certificate Chain")
 
