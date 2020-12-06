@@ -366,8 +366,6 @@ class TrezorPlugin(HW_PluginBase):
         # prepare multisig, if available
         xpubs = wallet.get_master_public_keys()
         if len(xpubs) > 1:
-            def f(xpub):
-                return self._make_node_path(xpub, [change, index])
             pubkeys = wallet.get_public_keys(address)
             # sort xpubs using the order of pubkeys
             sorted_pairs = sorted(zip(pubkeys, xpubs))
