@@ -757,12 +757,6 @@ class JSONSocketPipe(PrintError):
                     # EBADF. Someone called close() locally so FD is bad.
                     raise self.Closed('closed by local')
                 raise self.Closed('closing due to {}: {}'.format(type(exc).__name__, str(exc)))
-            except ssl.SSLError as exc:
-                # Note: rarely an SSLWantWriteError can happen if we renegotiate
-                # SSL and buffers are full. This is pretty annoying to handle
-                # right and we don't expect to renegotiate, so just drop
-                # connection.
-                raise self.Closed('closing due to {}: {}'.format(type(exc).__name__, str(exc)))
 
             if not data:
                 raise self.Closed('closed by remote')
@@ -804,12 +798,6 @@ class JSONSocketPipe(PrintError):
                 if exc.errno == 9:
                     # EBADF. Someone called close() locally so FD is bad.
                     raise self.Closed('closed by local')
-                raise self.Closed('closing due to {}: {}'.format(type(exc).__name__, str(exc)))
-            except ssl.SSLError as e:
-                # Note: rarely an SSLWantReadError can happen if we renegotiate
-                # SSL and buffers are full. This is pretty annoying to handle
-                # right and we don't expect to renegotiate, so just drop
-                # connection.
                 raise self.Closed('closing due to {}: {}'.format(type(exc).__name__, str(exc)))
 
             if sent == 0:
