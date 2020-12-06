@@ -35,7 +35,8 @@ from . import encrypt
 from .protocol import Protocol
 
 from electroncash.address import Address
-from electroncash.transaction import TYPE_ADDRESS, get_address_from_output_script
+from electroncash.bitcoin import TYPE_ADDRESS
+from electroncash.transaction import get_address_from_output_script
 import electroncash.schnorr as schnorr
 
 from google.protobuf.message import DecodeError
