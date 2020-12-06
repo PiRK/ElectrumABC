@@ -359,7 +359,9 @@ class FusionServer(GenericServer):
             client.tags.append(ClientTag(ip, tag.id, tag.limit))
 
         try:
-            mytierpools = {t: self.waiting_pools[t] for t in msg.tiers}
+            mytierpools = {}
+            for t in msg.tiers:
+                mytierpools[t] = self.waiting_pools[t]
         except KeyError:
             if self.stopping:
                 return
