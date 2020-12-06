@@ -97,7 +97,7 @@ class TrezorClientBase(PrintError):
             elif issubclass(exc_type, TrezorFailure):
                 raise RuntimeError(str(exc_value)) from exc_value
             elif issubclass(exc_type, OutdatedFirmwareError):
-                raise UserFacingException(exc_value) from exc_value
+                raise OutdatedFirmwareError(exc_value) from exc_value
             else:
                 return False
         return True
