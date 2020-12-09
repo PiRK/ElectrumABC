@@ -31,7 +31,7 @@ class FeeSlider(UISlider):
         self = ObjCInstance(send_super(__class__, self, 'init'))
         if self is not None: self.commonInit()
         return self
-    
+
     @objc_method
     def commonInit(self) -> None:
         self.dyn = False
@@ -42,14 +42,14 @@ class FeeSlider(UISlider):
                                             UIControlStateNormal)
         self.setThumbImage_forState_(UIImage.imageNamed_("slider_knob"), UIControlStateNormal)
         self.reset()
-    
+
     @objc_method
     def initWithCoder_(self, coder : ObjCInstance) -> ObjCInstance:
         #utils.NSLog("Fee Slider initWithCoder!")
         self = ObjCInstance(send_super(__class__, self, 'initWithCoder:', coder.ptr, argtypes=[objc_id]))
         if self is not None: self.commonInit()
         return self
-    
+
     @objc_method
     def dealloc(self) -> None:
         #utils.NSLog("Fee Slider dealloc!")
@@ -61,7 +61,7 @@ class FeeSlider(UISlider):
     @objc_method
     def onMoved(self) -> None:
         pos = int(self.value)
-        self.feeRate = int(config().dynfee(pos) if self.dyn else config().static_fee(pos))
+        self.feeRate = config().static_fee(pos))
         #tooltip = self.get_tooltip(pos, fee_rate)
         #QToolTip.showText(QCursor.pos(), tooltip, self)
         #self.setToolTip(tooltip)
@@ -78,9 +78,6 @@ class FeeSlider(UISlider):
             tooltip = fee_levels[pos] + '\n' + rate_str
         else:
             tooltip = 'Fixed rate: ' + rate_str
-            if config().has_fee_estimates():
-                i = config().reverse_dynfee(fee_rate)
-                #tooltip += '\n' + (_('Low fee') if i < 0 else 'Within %d blocks'%i)
         return ns_from_py(tooltip)
 
     @objc_method
@@ -89,6 +86,6 @@ class FeeSlider(UISlider):
         self.feeRate = int(config().fee_per_kb())
         pos = int(min(self.feeRate / self.feeStep, 9.0))
         self.minimumValue = 0.0
-        self.maximumValue = 9.0        
+        self.maximumValue = 9.0
         self.value = float(pos)
         #print("ToolTip: %s"%(str(self.getToolTip(pos, fee_rate))))

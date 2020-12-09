@@ -481,7 +481,6 @@ class Network(util.DaemonThread):
         self.queue_request('server.banner', [])
         self.queue_request('server.donation_address', [])
         self.queue_request('server.peers.subscribe', [])
-        self.request_fee_estimates()
         self.queue_request('blockchain.relayfee', [])
         n_defunct = 0
         method = 'blockchain.scripthash.subscribe'
@@ -503,22 +502,11 @@ class Network(util.DaemonThread):
                 n_defunct += 1
         self.print_error('sent subscriptions to', self.interface.server, len(old_reqs),"reqs", len(self.subscribed_addresses), "subs", n_defunct, "defunct subs")
 
-    def request_fee_estimates(self):
-        self.config.requested_fee_estimates()
-        try:
-            for i in bitcoin.FEE_TARGETS:
-                self.queue_request('blockchain.estimatefee', [i])
-        except AssertionError:
-            # No interface available.
-            pass
-
     def get_status_value(self, key):
         if key == 'status':
             value = self.connection_status
         elif key == 'banner':
             value = self.banner
-        elif key == 'fee':
-            value = self.config.fee_estimates
         elif key == 'blockchain_updated':
             value = (self.get_local_height(), self.get_server_height())
         elif key == 'updated':
@@ -805,16 +793,6 @@ class Network(util.DaemonThread):
         elif method == 'server.donation_address':
             if error is None and isinstance(result, str):
                 self.donation_address = result
-        elif method == 'blockchain.estimatefee':
-            try:
-                if error is None and isinstance(result, (int, float)) and result > 0:
-                    i = params[0]
-                    fee = int(result * bitcoin.COIN)
-                    self.config.update_fee_estimates(i, fee)
-                    self.print_error("fee_estimates[%d]" % i, fee)
-                    self.notify('fee')
-            except (TypeError, ValueError) as e:
-                self.print_error("bad server data in blockchain.estimatefee:", result, "error:", repr(e))
         elif method == 'blockchain.relayfee':
             try:
                 if error is None and isinstance(result, (int, float)):
@@ -1067,9 +1045,6 @@ class Network(util.DaemonThread):
                             self.server_retry_time = now
                     else:
                         self.switch_to_interface(self.default_server, self.SWITCH_SOCKET_LOOP)
-            else:
-                if self.config.is_fee_estimates_update_required():
-                    self.request_fee_estimates()
 
     def request_chunk(self, interface, chunk_index):
         if chunk_index in self.requested_chunks:

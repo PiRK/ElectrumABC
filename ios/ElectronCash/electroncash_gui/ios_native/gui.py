@@ -363,7 +363,7 @@ class ElectrumGui(PrintError):
             self.daemon.network.register_callback(self.on_quotes, ['on_quotes'])
             interests = ['wallet_updated', 'blockchain_updated',
                          'new_transaction', 'status', 'banner', 'verified2',
-                         'fee', 'interfaces']
+                         'interfaces']
             # To avoid leaking references to "self" that prevent the
             # window from being GC-ed when closed, callbacks should be
             # methods of this class only, and specifically not be
@@ -544,9 +544,6 @@ class ElectrumGui(PrintError):
             wallet = args[0]
             if wallet is self.wallet:  # this should always be the case. But we check anyway in case in the future we support multiple wallets open at once.
                 self.refresh_components('history', 'addresses', 'helper')
-        elif event == 'fee':
-            # todo: handle fee stuff here
-            pass
         elif event in ('interfaces',):
             self.refresh_components('network')
         else:

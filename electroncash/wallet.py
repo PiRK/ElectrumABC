@@ -77,7 +77,6 @@ def _(message): return message
 
 TX_STATUS = [
     _('Unconfirmed parent'),
-    _('Low fee'),
     _('Unconfirmed'),
     _('Not Verified'),
 ]
@@ -881,13 +880,6 @@ class Abstract_Wallet(PrintError, SPVDelegate):
                     status_enum = self.StatusEnum.Unconfirmed
                     if fee is None:
                         fee = self.tx_fees.get(tx_hash)
-                    if fee and self.network and self.network.config.has_fee_estimates():
-                        # NB: this branch will not be taken as has_fee_estimates()
-                        # will always return false since we disabled querying
-                        # the fee histogram as it's useless for BCH anyway.
-                        size = tx.estimated_size()
-                        fee_per_kb = fee * 1000 / size
-                        exp_n = self.network.config.reverse_dynfee(fee_per_kb)
             else:
                 status = _("Signed")
                 status_enum = self.StatusEnum.Signed
@@ -1731,17 +1723,8 @@ class Abstract_Wallet(PrintError, SPVDelegate):
             tx = self.transactions.get(tx_hash)
             if not tx:
                 return 3, 'unknown'
-            fee = self.tx_fees.get(tx_hash)
-            if fee and self.network and self.network.config.has_fee_estimates():
-                size = len(tx.raw) / 2
-                low_fee = int(self.network.config.dynfee(0) * size / 1000)
-                is_lowfee = fee < low_fee * 0.5
-            else:
-                is_lowfee = False
             if height < 0:
                 status = 0
-            elif height == 0 and is_lowfee:
-                status = 1
             elif height == 0:
                 status = 2
             else:

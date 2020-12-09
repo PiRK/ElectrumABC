@@ -9,8 +9,6 @@ from copy import deepcopy
 from .util import get_user_dir, make_dir, print_error, PrintError
 from .constants import SCRIPT_NAME
 
-from .bitcoin import MAX_FEE_RATE, FEE_TARGETS
-
 config = None
 
 
@@ -51,10 +49,6 @@ class SimpleConfig(PrintError):
         # This lock needs to be acquired for updating and reading the config in
         # a thread-safe way.
         self.lock = threading.RLock()
-
-        self.fee_estimates = {}
-        self.fee_estimates_last_updated = {}
-        self.last_time_fee_estimates_requested = 0  # zero ensures immediate fees
 
         # The following two functions are there for dependency injection when
         # testing.
@@ -262,43 +256,9 @@ class SimpleConfig(PrintError):
 
     def max_fee_rate(self):
         return self.fee_rates[-1]
-        #
-        #f = self.get('max_fee_rate', MAX_FEE_RATE)
-        #if f==0:
-        #    f = MAX_FEE_RATE
-        #return f
-
-    def dynfee(self, i):
-        if i < 4:
-            j = FEE_TARGETS[i]
-            fee = self.fee_estimates.get(j)
-        else:
-            assert i == 4
-            fee = self.fee_estimates.get(2)
-            if fee is not None:
-                fee += fee/2
-        if fee is not None:
-            fee = min(5*MAX_FEE_RATE, fee)
-        return fee
-
-    def reverse_dynfee(self, fee_per_kb):
-        import operator
-        l = list(self.fee_estimates.items()) + [(1, self.dynfee(4))]
-        dist = map(lambda x: (x[0], abs(x[1] - fee_per_kb)), l)
-        min_target, min_value = min(dist, key=operator.itemgetter(1))
-        if fee_per_kb < self.fee_estimates.get(25)/2:
-            min_target = -1
-        return min_target
 
     def static_fee(self, i):
         return self.fee_rates[i]
-
-    def static_fee_index(self, value):
-        dist = list(map(lambda x: abs(x - value), self.fee_rates))
-        return min(range(len(dist)), key=dist.__getitem__)
-
-    def has_fee_estimates(self):
-        return len(self.fee_estimates) == 4
 
     def custom_fee_rate(self):
         f = self.get('customfee')
@@ -325,26 +285,10 @@ class SimpleConfig(PrintError):
             pass
         return i >= 0
 
-    def estimate_fee(self, size):
+    def estimate_fee(self, size) -> int:
+        """Return fee in satoshis for a given transaction size
+        in bytes."""
         return int(self.fee_per_kb() * size / 1000.)
-
-    def update_fee_estimates(self, key, value):
-        self.fee_estimates[key] = value
-        self.fee_estimates_last_updated[key] = time.time()
-
-    def is_fee_estimates_update_required(self):
-        """Checks time since last requested and updated fee estimates.
-        Returns True if an update should be requested.
-        """
-        now = time.time()
-        prev_updates = self.fee_estimates_last_updated.values()
-        oldest_fee_time = min(prev_updates) if prev_updates else 0
-        stale_fees = now - oldest_fee_time > 1200 # 20 mins.
-        old_request = now - self.last_time_fee_estimates_requested > 60
-        return stale_fees and old_request
-
-    def requested_fee_estimates(self):
-        self.last_time_fee_estimates_requested = time.time()
 
     def get_video_device(self):
         device = self.get("video_device", "default")
