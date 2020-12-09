@@ -112,7 +112,8 @@ from electroncash.constants import SCRIPT_NAME, PROJECT_NAME, PORTABLE_DATA_DIR
 from electroncash.migrate_data import migrate_data_from_ec
 
 
-def prompt_password(prompt, confirm=True) -> str:
+def prompt_password(prompt: str = "Password:",
+                    confirm: bool = False) -> str:
     """Get password routine"""
     import getpass
     password = getpass.getpass(prompt, stream=None)
@@ -123,6 +124,12 @@ def prompt_password(prompt, confirm=True) -> str:
     if not password:
         password = None
     return password
+
+
+def prompt_create_wallet_password() -> str:
+    return prompt_password(
+        "Password (hit enter if you do not wish to encrypt your wallet):",
+        True)
 
 
 def run_non_rpc(simple_config: SimpleConfig):
@@ -152,9 +159,7 @@ def restore_wallet(simple_config: SimpleConfig,
     passphrase = simple_config.get('passphrase', '')
     password = None
     if keystore.is_private(text):
-        password = prompt_password(
-            "Password (hit return if you do not wish to encrypt "
-            "your wallet):")
+        password = prompt_create_wallet_password()
     if keystore.is_address_list(text):
         wallet = ImportedAddressWallet.from_text(storage, text)
     elif keystore.is_private_key_list(text):
@@ -203,8 +208,7 @@ def restore_wallet(simple_config: SimpleConfig,
 def create_wallet(simple_config: SimpleConfig,
                   storage: WalletStorage):
     """Create a new wallet"""
-    password = prompt_password("Password (hit return if you do not"
-                               " wish to encrypt your wallet):")
+    password = prompt_create_wallet_password()
     passphrase = simple_config.get('passphrase', '')
     seed_type = simple_config.get('seed_type', 'bip39')
     if seed_type == 'bip39':
@@ -246,7 +250,7 @@ def init_daemon(config_options):
         elif config.get('password'):
             password = config.get('password')
         else:
-            password = prompt_password('Password:', False)
+            password = prompt_password()
             if not password:
                 print_msg("Error: Password required")
                 sys.exit(1)
@@ -290,7 +294,7 @@ def init_cmdline(config_options, server):
         if config.get('password'):
             password = config.get('password')
         else:
-            password = prompt_password('Password:', False)
+            password = prompt_password()
             if not password:
                 print_msg("Error: Password required")
                 sys.exit(1)
@@ -300,7 +304,7 @@ def init_cmdline(config_options, server):
     config_options['password'] = password
 
     if cmd.name == 'password':
-        new_password = prompt_password('New password:')
+        new_password = prompt_password('New password:', True)
         config_options['new_password'] = new_password
 
     return cmd, password
@@ -392,7 +396,7 @@ def main():
         elif arg == '?':
             sys.argv[i] = input("Enter argument:")
         elif arg == ':':
-            sys.argv[i] = prompt_password('Enter argument (will not echo):', False)
+            sys.argv[i] = prompt_password('Enter argument (will not echo):')
 
     # parse command line
     parser = get_parser()
