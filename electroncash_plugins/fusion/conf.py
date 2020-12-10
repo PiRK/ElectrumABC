@@ -30,6 +30,13 @@ CashFusion - conf.py - configuration & settings management
 from collections import namedtuple
 from typing import List, Optional, Tuple, Union
 
+
+CashFusionServer = namedtuple("CashFusionServer", ('hostname', 'port', 'ssl'))
+
+DEFAULT_SERVERS: List[Tuple[str, int, bool]] = [
+    CashFusionServer('fusion.tokamak.cash', 8788, True)]
+
+
 class Conf:
     """
     A class that's a simple wrapper around CashFusion per-wallet settings
@@ -133,21 +140,6 @@ class Conf:
         return self.wallet.storage.put('cashfusion_self_fuse_players', i)
 
 
-CashFusionServer = namedtuple("CashFusionServer", ('hostname', 'port', 'ssl'))
-
-def _get_default_server_list() -> List[Tuple[str, int, bool]]:
-    """
-    Maybe someday this can come from a file or something.  But can also
-    always be hard-coded.
-
-        Tuple fields: (hostname: str, port: int, ssl: bool)
-    """
-    return [
-        # first one is the default
-        CashFusionServer('cashfusion.electroncash.dk', 8788, True),
-    ]
-
-
 class Global:
     """
     A class that's a simple wrapper around CashFusion global settings
@@ -158,7 +150,7 @@ class Global:
     """
     class Defaults:
         HideHistoryTxs = False
-        ServerList : List[Tuple[str, int, bool]] = _get_default_server_list()
+        ServerList: List[Tuple[str, int, bool]] = DEFAULT_SERVERS
         TorHost = 'localhost'
         TorPortAuto = True
         TorPortManual = 9050
