@@ -507,10 +507,10 @@ class Old_KeyStore(Deterministic_KeyStore):
         return self.get_pubkey_from_mpk(self.mpk, for_change, n)
 
     def get_private_key_from_stretched_exponent(self, for_change, n, secexp):
-        order = ecdsa.generator_secp256k1.order()
+        order = ecdsa.ecdsa.generator_secp256k1.order()
         secexp = (secexp + self.get_sequence(self.mpk, for_change, n)) % order
         pk = ecdsa.util.number_to_string(
-            secexp, ecdsa.generator_secp256k1.order())
+            secexp, ecdsa.ecdsa.generator_secp256k1.order())
         return pk
 
     def get_private_key(self, sequence, password):
