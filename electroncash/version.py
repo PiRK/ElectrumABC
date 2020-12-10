@@ -2,7 +2,7 @@
 import re
 
 # version of the client package
-PACKAGE_VERSION = '4.3.1'
+PACKAGE_VERSION = '4.3.2'
 # protocol version requested
 PROTOCOL_VERSION = '1.4'
 
