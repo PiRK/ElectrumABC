@@ -82,6 +82,7 @@ https://bitcoinabc.org/bcha/
   for a QR code.
 - Add a documentation page [Contributing to Electrum ABC](CONTRIBUTING.md).
 - Remove the deprecated CashShuffle plugin.
+- Specify a default server for CashFusion.
 - Fix a bug introduced in 4.3.1 when starting the program from the source
   package when the `secp256k1` library is not available. This bug did not
   affect the released binary files.
