@@ -7,6 +7,7 @@ from .test_cashacct import TestCashAccounts
 from .test_cashaddrenc import TestCashAddrAddress
 from .test_commands import TestCommands
 from .test_dnssec import TestDnsSec
+from .test_imports import TestImportModules
 from .test_interface import TestInterface
 from .test_mnemonic import suite as test_mnemonic_suite
 from .test_paymentrequests import Test_PaymentRequests
@@ -30,6 +31,7 @@ def suite():
     test_suite.addTest(loadTests(TestCashAddrAddress))
     test_suite.addTest(loadTests(TestCommands))
     test_suite.addTest(loadTests(TestDnsSec))
+    test_suite.addTest(loadTests(TestImportModules))
     test_suite.addTest(loadTests(TestInterface))
     test_suite.addTest(test_mnemonic_suite())
     test_suite.addTest(loadTests(Test_PaymentRequests))
