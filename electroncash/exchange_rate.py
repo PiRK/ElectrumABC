@@ -337,7 +337,7 @@ class FxThread(ThreadJob):
 
     def run(self):
         """This runs from the Network thread. It is invoked roughly every
-        100ms (see network.py), with actual work being done every 2.5 minutes.
+        100ms (see network.py), with actual work being done every 10 minutes.
         """
         if self.is_enabled():
             if self.timeout <= time.time():
@@ -352,8 +352,8 @@ class FxThread(ThreadJob):
                     self.exchange.get_historical_rates(
                         self.ccy, self.cache_dir)
                 # And, finally, update self.timeout so we execute this branch
-                # every ~2.5 minutes
-                self.timeout = time.time() + 150
+                # every ~5 minutes
+                self.timeout = time.time() + 600
 
     def is_enabled(self):
         return self.config.get('use_exchange_rate', DEFAULT_ENABLED)
