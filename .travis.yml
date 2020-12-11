@@ -25,6 +25,7 @@ install:
   - pip install -r contrib/requirements/requirements-travis.txt
 cache:
   - pip
+  - ccache
 script:
   - if [ "$RUN_COVERAGE" == true ];
     then
