@@ -26,6 +26,7 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import logging
 import os
 import sys
 
@@ -109,7 +110,7 @@ from electroncash.winconsole import create_or_attach_console  # Import ok on oth
 import electroncash_plugins
 import electroncash.web as web
 from electroncash.constants import SCRIPT_NAME, PROJECT_NAME, PORTABLE_DATA_DIR
-from electroncash.migrate_data import migrate_data_from_ec
+from electroncash.migrate_data import migrate_data_from_ec, update_config
 
 
 def prompt_password(prompt, confirm=True) -> str:
@@ -351,9 +352,13 @@ def init_plugins(config, gui_name):
 
 def main():
     """Main entry point into this script"""
+    logging.basicConfig(level=logging.INFO)
     # This copies the Electron Cash data dir if we don't already
     # have a Electrum ABC data directory.
     migrate_data_from_ec()
+
+    # update some config
+    update_config()
 
     # The hook will only be used in the Qt GUI right now
     util.setup_thread_excepthook()
@@ -420,7 +425,9 @@ def main():
             os.path.dirname(os.path.realpath(__file__)),
             PORTABLE_DATA_DIR)
 
-    set_verbosity(config_options.get('verbose'))
+    is_verbose = config_options.get('verbose')
+    set_verbosity(is_verbose)
+    logging.basicConfig(level=logging.DEBUG if is_verbose else logging.INFO)
 
     have_testnet = config_options.get('testnet') or False
     if have_testnet:

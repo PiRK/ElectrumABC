@@ -16,5 +16,4 @@ from .commands import Commands, known_commands
 from . import address
 from . import cashacct  # has a side-effect: registers itself with ScriptOut protocol system
 
-logging.basicConfig()
 root_logger = logging.getLogger(__name__)

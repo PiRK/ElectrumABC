@@ -13,8 +13,18 @@ from typing import Optional
 from .network import DEFAULT_WHITELIST_SERVERS_ONLY, DEFAULT_AUTO_CONNECT
 from .simple_config import read_user_config, save_user_config
 from .util import get_user_dir
+from .version import VERSION_TUPLE, PACKAGE_VERSION
+
+from electroncash_plugins.fusion.conf import DEFAULT_SERVERS
 
 _logger = logging.getLogger(__name__)
+
+
+INVALID_FUSION_HOSTS = [
+    # Electron Cash server
+    'cashfusion.electroncash.dk',
+    # Test server
+    "161.97.82.60"]
 
 
 # function copied from https://github.com/Electron-Cash/Electron-Cash/blob/master/electroncash/util.py
@@ -108,6 +118,8 @@ def migrate_data_from_ec():
     This makes all the wallets and settings available to users.
     """
     if does_ec_user_dir_exist() and not does_user_dir_exist():
+        _logger.info("Importing Electron Cash user settings")
+
         src = get_ec_user_dir()
         dest = get_user_dir()
         shutil.copytree(src, dest)
@@ -158,3 +170,42 @@ def migrate_data_from_ec():
             reset_server_config(testnet_config)
             replace_src_dest_in_config(src, dest, testnet_config)
             save_user_config(testnet_config, testnet_dir_path)
+
+
+def _version_tuple_to_str(version_tuple):
+    return ".".join(map(str, version_tuple))
+
+
+def update_config():
+    """Update configuration parameters for old default parameters
+    that changed in newer releases. This function should only be
+    called if a data directory already exists."""
+    config = read_user_config(get_user_dir())
+    if not config:
+        return
+
+    # update config only when first running a new version
+    config_version = config.get("latest_version_used", (4, 3, 1))
+    if tuple(config_version) >= VERSION_TUPLE:
+        return
+
+    version_transition_msg = _version_tuple_to_str(config_version)
+    version_transition_msg += " 🠚 " + PACKAGE_VERSION
+    _logger.info("Updating configuration file " + version_transition_msg)
+
+    # The default fee set to 80000 in 4.3.0 was lowered to 10000 in 4.3.2
+    if config.get("fee_per_kb") == 80000:
+        _logger.info("Updating default transaction fee")
+        config["fee_per_kb"] = 10000
+
+    # Help users find the new default server if they tried the Electron Cash
+    # host or if they manually specified the test server.
+    if "cashfusion_server" in config:
+        previous_host = config["cashfusion_server"][0]
+        if previous_host in INVALID_FUSION_HOSTS:
+            _logger.info("Updating default CashFusion server")
+            config["cashfusion_server"] = DEFAULT_SERVERS[0]
+
+    # update version number, to avoid doing this again for this version
+    config["latest_version_used"] = VERSION_TUPLE
+    save_user_config(config, get_user_dir())
