@@ -72,17 +72,8 @@ from .contacts import Contacts
 from . import cashacct
 from . import slp
 
-
-def _(message): return message
-
-TX_STATUS = [
-    _('Unconfirmed parent'),
-    _('Unconfirmed'),
-    _('Not Verified'),
-]
-
-del _
 from .i18n import _
+
 
 DEFAULT_CONFIRMED_ONLY = False
 
@@ -1719,20 +1710,37 @@ class Abstract_Wallet(PrintError, SPVDelegate):
         return ''
 
     def get_tx_status(self, tx_hash, height, conf, timestamp):
+        """Return a status value and status string.
+        Meaning of the status flag:
+
+          - 0: unconfirmed parent
+          - 1: status no longer used (it used to mean low fee for BTC)
+          - 2: unconfirmed
+          - 3: not verified (included in latest block)
+          - 4: verified by 1 block
+          - 5: verified by 2 blocks
+          - 6: verified by 3 blocks
+          - 7: verified by 4 blocks
+          - 8: verified by 5 blocks
+          - 9: verified by 6 blocks or more
+        """
         if conf == 0:
             tx = self.transactions.get(tx_hash)
             if not tx:
-                return 3, 'unknown'
-            if height < 0:
+                status = 3
+                status_str = 'unknown'
+            elif height < 0:
                 status = 0
+                status_str = 'Unconfirmed parent'
             elif height == 0:
                 status = 2
+                status_str = 'Unconfirmed'
             else:
                 status = 3
+                status_str = 'Not Verified'
         else:
             status = 3 + min(conf, 6)
-        time_str = format_time(timestamp) if timestamp else _("unknown")
-        status_str = _(TX_STATUS[status]) if status < 4 else time_str
+            status_str = format_time(timestamp) if timestamp else _("unknown")
         return status, status_str
 
     def relayfee(self):
