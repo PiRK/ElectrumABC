@@ -85,7 +85,7 @@ from .update_checker import UpdateChecker
 class ElectrumGui(QObject, PrintError):
     new_window_signal = pyqtSignal(str, object)
     update_available_signal = pyqtSignal(bool)
-    cashaddr_toggled_signal = pyqtSignal()  # app-wide signal for when cashaddr format is toggled. This used to live in each ElectrumWindow instance but it was recently refactored to here.
+    addr_fmt_changed = pyqtSignal()  # app-wide signal for when cashaddr format is toggled. This used to live in each ElectrumWindow instance but it was recently refactored to here.
     cashaddr_status_button_hidden_signal = pyqtSignal(bool)  # app-wide signal for when cashaddr toggle button is hidden from the status bar
     shutdown_signal = pyqtSignal()  # signal for requesting an app-wide full shutdown
     do_in_main_thread_signal = pyqtSignal(object, object, object)
@@ -130,7 +130,7 @@ class ElectrumGui(QObject, PrintError):
         self.gc_timer = QTimer(self); self.gc_timer.setSingleShot(True); self.gc_timer.timeout.connect(ElectrumGui.gc); self.gc_timer.setInterval(500) #msec
         self.nd = None
         self._last_active_window = None  # we remember the last activated ElectrumWindow as a Weak.ref
-        Address.show_cashaddr(self.is_cashaddr())
+        Address.set_address_format(self.get_config_addr_format())
         # Dark Theme -- ideally set this before any widgets are created.
         self.set_dark_theme_if_needed()
         # /
@@ -910,31 +910,25 @@ class ElectrumGui(QObject, PrintError):
                                       QSystemTrayIcon.Information, 20000)
 
     def is_cashaddr(self) -> bool:
-        return bool(self.get_address_format() == Address.FMT_CASHADDR_BCH)
+        return bool(self.get_config_addr_format() == Address.FMT_CASHADDR)
 
-    def get_address_format(self) -> str:
-        return self.config.get('address_format', Address.FMT_CASHADDR_BCH)
+    def is_cashaddr_bch(self) -> bool:
+        return bool(self.get_config_addr_format() == Address.FMT_CASHADDR_BCH)
+
+    def get_config_addr_format(self) -> str:
+        return self.config.get('address_format', Address.FMT_CASHADDR)
 
     def toggle_cashaddr(self):
-        """switch between available address formats"""
+        """cycle between available address formats"""
         Address.toggle_address_format()
         self.config.set_key('address_format', Address.FMT_UI)
-        self.cashaddr_toggled_signal.emit()
+        self.addr_fmt_changed.emit()
 
-    def use_cashaddr_bch(self, on):
-        """toggle between Address.FMT_CASHADDR_BCH  and FMT_LEGACY"""
-        self.print_error("use_cashaddr_bch is deprecated")
-        was = self.is_cashaddr()
-        if on is None:
-            on = not was
-        else:
-            on = bool(on)
-        self.config.set_key(
-            'address_format',
-            Address.FMT_CASHADDR_BCH if on else Address.FMT_LEGACY)
-        Address.show_cashaddr(on)
-        if was != on:
-            self.cashaddr_toggled_signal.emit()
+    def set_address_format(self, fmt):
+        """Specify which address format to use."""
+        self.config.set_key('address_format', fmt)
+        Address.set_address_format(fmt)
+        self.addr_fmt_changed.emit()
 
     def is_cashaddr_status_button_hidden(self):
         return bool(self.config.get('hide_cashaddr_button', False))

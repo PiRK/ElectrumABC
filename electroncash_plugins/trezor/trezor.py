@@ -465,15 +465,21 @@ class TrezorPlugin(HW_PluginBase):
                     raise Exception(_("Unsupported output script."))
             elif _type == TYPE_ADDRESS:
                 txoutputtype.script_type = OutputScriptType.PAYTOADDRESS
+
+                # ecash: addresses are not supported yet by trezor
+                ui_addr_fmt = address.FMT_UI
+                if ui_addr_fmt == address.FMT_CASHADDR:
+                    ui_addr_fmt = address.FMT_CASHADDR_BCH
+
                 addr_format = address.FMT_LEGACY
                 if client.get_trezor_model() == 'T':
                     if client.atleast_version(2, 0, 8):
-                        addr_format = address.FMT_UI
+                        addr_format = ui_addr_fmt
                     elif client.atleast_version(2, 0, 7):
                         addr_format = address.FMT_CASHADDR_BCH
                 else:
                     if client.atleast_version(1, 6, 2):
-                        addr_format = address.FMT_UI
+                        addr_format = ui_addr_fmt
                 txoutputtype.address = address.to_full_string(addr_format)
             return txoutputtype
 

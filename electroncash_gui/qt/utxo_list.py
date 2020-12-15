@@ -69,7 +69,7 @@ class UTXOList(MyTreeWidget):
         self.setSortingEnabled(True)
         self.wallet = self.parent.wallet
         self.parent.ca_address_default_changed_signal.connect(self._ca_on_address_default_change)
-        self.parent.gui_object.cashaddr_toggled_signal.connect(self.update)
+        self.parent.gui_object.addr_fmt_changed.connect(self.update)
         self.utxos = list()
         # cache some values to avoid constructing Qt objects for every pass through self.on_update (this is important for large wallets)
         self.monospaceFont = QFont(MONOSPACE_FONT)
@@ -86,7 +86,7 @@ class UTXOList(MyTreeWidget):
         self.cleaned_up = True
         try: self.parent.ca_address_default_changed_signal.disconnect(self._ca_on_address_default_change)
         except TypeError: pass
-        try: self.parent.gui_object.cashaddr_toggled_signal.disconnect(self.update)
+        try: self.parent.gui_object.addr_fmt_changed.disconnect(self.update)
         except TypeError: pass
 
     def if_not_dead(func):
@@ -250,7 +250,7 @@ class UTXOList(MyTreeWidget):
                     # Determine the "alt copy text" "Legacy Address" or "Cash Address"
                     copy_text = addr.to_full_ui_string()
                     if Address.FMT_UI == Address.FMT_LEGACY:
-                        alt_copy_text, alt_column_title = addr.to_full_string(Address.FMT_CASHADDR_BCH), _('Cash Address')
+                        alt_copy_text, alt_column_title = addr.to_full_string(Address.FMT_CASHADDR), _('Cash Address')
                     else:
                         alt_copy_text, alt_column_title = addr.to_full_string(Address.FMT_LEGACY), _('Legacy Address')
                     ca_info = item.data(0, self.DataRoles.cash_account)  # may be None

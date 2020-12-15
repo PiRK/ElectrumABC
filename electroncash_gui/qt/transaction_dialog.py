@@ -317,7 +317,7 @@ class TxDialog(QDialog, MessageBoxMixin, PrintError):
                 try: parent.labels_updated_signal.disconnect(self.update_tx_if_in_wallet)
                 except TypeError: pass
                 for slot in self.cashaddr_signal_slots:
-                    try: parent.gui_object.cashaddr_toggled_signal.disconnect(slot)
+                    try: parent.gui_object.addr_fmt_changed.disconnect(slot)
                     except TypeError: pass
                 self.cashaddr_signal_slots = []
 
@@ -600,7 +600,7 @@ class TxDialog(QDialog, MessageBoxMixin, PrintError):
         o_text.setTextInteractionFlags(o_text.textInteractionFlags() | Qt.LinksAccessibleByMouse | Qt.LinksAccessibleByKeyboard)
         vbox.addWidget(o_text)
         self.cashaddr_signal_slots.append(self.update_io)
-        self.main_window.gui_object.cashaddr_toggled_signal.connect(self.update_io)
+        self.main_window.gui_object.addr_fmt_changed.connect(self.update_io)
         self.update_io()
 
     def update_io(self):

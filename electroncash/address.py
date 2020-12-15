@@ -495,10 +495,10 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
     FMT_BITPAY = "BitPay"   # Supported temporarily only for compatibility
 
     # Default to CashAddr
-    FMT_UI = FMT_CASHADDR_BCH
+    FMT_UI = FMT_CASHADDR
     """Current address format used in the UI"""
 
-    FMTS_UI = [FMT_CASHADDR_BCH, FMT_LEGACY]
+    FMTS_UI = [FMT_CASHADDR, FMT_CASHADDR_BCH, FMT_LEGACY]
     """All address formats that can be used in the UI"""
 
     FMT_UI_IDX = FMTS_UI.index(FMT_UI)
@@ -516,8 +516,8 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
         return ret
 
     @classmethod
-    def show_cashaddr(cls, on):
-        cls.FMT_UI = cls.FMT_CASHADDR_BCH if on else cls.FMT_LEGACY
+    def set_address_format(cls, fmt):
+        cls.FMT_UI = fmt
         cls.FMT_UI_IDX = cls.FMTS_UI.index(cls.FMT_UI)
 
     @classmethod
@@ -692,6 +692,14 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
             kind  = cashaddr.SCRIPT_TYPE
         return cashaddr.encode(net.CASHADDR_PREFIX, kind, self.hash160)
 
+    def to_cashaddr_bch(self, *, net=None):
+        if net is None: net = networks.net
+        if self.kind == self.ADDR_P2PKH:
+            kind  = cashaddr.PUBKEY_TYPE
+        else:
+            kind  = cashaddr.SCRIPT_TYPE
+        return cashaddr.encode(net.CASHADDR_PREFIX_BCH, kind, self.hash160)
+
     def to_string(self, fmt, *, net=None):
         '''Converts to a string of the given format.'''
         if net is None: net = networks.net
@@ -703,10 +711,14 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
             except (IndexError, TypeError):
                 raise AddressError('unrecognised format')
 
+        cached = None
         try:
-            cached = None
-            if fmt == self.FMT_CASHADDR_BCH:
+            if fmt == self.FMT_CASHADDR:
                 cached = self.to_cashaddr(net=net)
+                return cached
+
+            if fmt == self.FMT_CASHADDR_BCH:
+                cached = self.to_cashaddr_bch(net=net)
                 return cached
 
             if fmt == self.FMT_LEGACY:
@@ -726,15 +738,17 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
             cached = Base58.encode_check(bytes([verbyte]) + self.hash160)
             return cached
         finally:
-            if cached and net is networks.net:
+            if cached is not None and net is networks.net:
                 self._addr2str_cache[fmt] = cached
 
     def to_full_string(self, fmt, *, net=None):
         '''Convert to text, with a URI prefix for cashaddr format.'''
         if net is None: net = networks.net
         text = self.to_string(fmt, net=net)
-        if fmt == self.FMT_CASHADDR_BCH:
+        if fmt == self.FMT_CASHADDR:
             text = ':'.join([net.CASHADDR_PREFIX, text])
+        if fmt == self.FMT_CASHADDR_BCH:
+            text = ':'.join([net.CASHADDR_PREFIX_BCH, text])
         return text
 
     def to_ui_string(self, *, net=None):

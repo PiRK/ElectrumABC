@@ -40,6 +40,7 @@ from .i18n import _
 
 DEFAULT_EXPLORER = "Blockchair.com"
 
+# TODO: updated addr format when explorers support the new prefix
 mainnet_block_explorers = {
     'Blockchair.com': ('https://blockchair.com/bitcoin-abc',
                        Address.FMT_CASHADDR_BCH,
