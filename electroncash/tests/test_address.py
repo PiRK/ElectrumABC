@@ -13,8 +13,6 @@ from ..address import Address, AddressError
 LEGACY_ADDRESS = "1F6UYGAwkzZKqFwyiwc54b7SNvHsNgcZ6h"
 BCH_CASHADDR_NO_PREFIX = "qzdf44zy632zk4etztvmaqav0y2cest4evjvrwf70z"
 BCH_CASHADDR_WITH_PREFIX = "bitcoincash:" + BCH_CASHADDR_NO_PREFIX
-ECASH_CASHADDR_NO_PREFIX = "qzdf44zy632zk4etztvmaqav0y2cest4evtph9jyf4"
-ECASH_CASHADDR_WITH_PREFIX = "ecash:" + ECASH_CASHADDR_NO_PREFIX
 
 
 class TestAddressFromString(unittest.TestCase):
@@ -33,18 +31,6 @@ class TestAddressFromString(unittest.TestCase):
         self._test_addr(Address.from_string(BCH_CASHADDR_NO_PREFIX))
         self._test_addr(Address.from_string(BCH_CASHADDR_WITH_PREFIX.upper()))
         self._test_addr(Address.from_string(BCH_CASHADDR_NO_PREFIX.upper()))
-
-    def test_from_cashaddr_arbitrary_prefix(self):
-        self._test_addr(Address.from_string(ECASH_CASHADDR_WITH_PREFIX,
-                                            support_arbitrary_prefix=True))
-        with self.assertRaises(AddressError):
-            # default (support_arbitrary_prefix=False) is to not support
-            # unusual prefixes
-            Address.from_string(ECASH_CASHADDR_WITH_PREFIX)
-        with self.assertRaises(AddressError):
-            # unusual prefixes are only supported if the prefix is specified
-            Address.from_string(ECASH_CASHADDR_NO_PREFIX,
-                                support_arbitrary_prefix=True)
 
 
 if __name__ == '__main__':
