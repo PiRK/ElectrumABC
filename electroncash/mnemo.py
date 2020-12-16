@@ -167,8 +167,8 @@ def is_bip39_seed(seed: str, lang: Optional[str]=None) -> bool:
     """ Checks if `seed` is a valid BIP39 seed phrase (passes wordlist AND
     checksum tests). If lang=None, then the English wordlist is assumed. This
     function is added here as a convenience. """
-    from . import mnemonic
-    return mnemonic.Mnemonic(lang).is_seed(seed)
+    from . import mnemo
+    return mnemo.Mnemonic(lang).is_seed(seed)
 
 def is_electrum_seed(seed: str, prefix: str=version.SEED_PREFIX) -> bool:
     """ Checks if `seed` is a valid Electrum seed phrase.
@@ -176,8 +176,8 @@ def is_electrum_seed(seed: str, prefix: str=version.SEED_PREFIX) -> bool:
     Returns True if the text in question matches the checksum for Electrum
     seeds. Does not depend on any particular word list, just checks unicode
     data.  Very fast. """
-    from . import mnemonic
-    return mnemonic.Mnemonic_Electrum.verify_checksum_only(seed, prefix)
+    from . import mnemo
+    return mnemo.Mnemonic_Electrum.verify_checksum_only(seed, prefix)
 
 def is_old_seed(seed: str) -> bool:
     """ Returns True if `seed` is a valid "old" seed phrase of 12 or 24 words

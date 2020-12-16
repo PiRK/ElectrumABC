@@ -251,7 +251,7 @@ class Commands:
     @command('')
     def make_electrum_seed(self, nbits=132, entropy=1, language=None):
         """Create an Electrum seed"""
-        from .mnemonic import Mnemonic_Electrum
+        from .mnemo import Mnemonic_Electrum
         t = 'electrum'
         s = Mnemonic_Electrum(language).make_seed(t, nbits, custom_entropy=entropy)
         return s
@@ -259,14 +259,14 @@ class Commands:
     @command('')
     def make_seed(self, nbits=128, language=None):
         """Create a BIP39 seed"""
-        from .mnemonic import Mnemonic
+        from .mnemo import Mnemonic
         s = Mnemonic(language).make_seed(num_bits=nbits)
         return s
 
     @command('')
     def check_electrum_seed(self, seed, entropy=1, language=None):
         """Check that an Electrum seed was generated with given entropy"""
-        from .mnemonic import Mnemonic_Electrum
+        from .mnemo import Mnemonic_Electrum
         return Mnemonic_Electrum(language).check_seed(seed, entropy)
 
     @command('')

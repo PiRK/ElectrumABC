@@ -3256,7 +3256,7 @@ def create_new_wallet(*, path, config, passphrase=None, password=None,
     if storage.file_exists():
         raise Exception("Remove the existing wallet first!")
 
-    from .mnemonic import Mnemonic_Electrum, Mnemonic
+    from .mnemo import Mnemonic_Electrum, Mnemonic
     if seed_type == 'electrum':
         seed = Mnemonic_Electrum('en').make_seed()
     else:

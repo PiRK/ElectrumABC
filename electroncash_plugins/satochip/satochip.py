@@ -16,7 +16,7 @@ from electroncash.transaction import Transaction
 from electroncash.wallet import Standard_Wallet
 from electroncash.util import print_error, bfh, bh2u, versiontuple, PrintError, is_verbose
 from electroncash.bitcoin import hash_160, Hash
-from electroncash.mnemonic import Mnemonic, Mnemonic_Electrum, seed_type_name, is_seed
+from electroncash.mnemo import Mnemonic, Mnemonic_Electrum, seed_type_name, is_seed
 from electroncash.plugins import run_hook
 from electroncash.bitcoin import serialize_xpub
 from electroncash_gui.qt.qrcodewidget import QRCodeWidget, QRDialog #from electrum.gui.qt.qrcodewidget import QRCodeWidget, QRDialog

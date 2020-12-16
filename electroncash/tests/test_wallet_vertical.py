@@ -3,7 +3,7 @@ from unittest import mock
 
 from ..address import Address
 from .. import keystore
-from .. import mnemonic
+from .. import mnemo
 from .. import storage
 from .. import wallet
 
@@ -11,7 +11,7 @@ from .. import wallet
 class TestWalletKeystoreAddressIntegrity(unittest.TestCase):
 
     gap_limit = 1  # make tests run faster
-    mnem = mnemonic.Mnemonic()  # cache language data
+    mnem = mnemo.Mnemonic()  # cache language data
 
     def _check_seeded_keystore_sanity(self, ks):
         self.assertTrue (ks.is_deterministic())
@@ -49,7 +49,7 @@ class TestWalletKeystoreAddressIntegrity(unittest.TestCase):
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_electrum_seed_standard(self, mock_write):
         seed_words = 'cycle rocket west magnet parrot shuffle foot correct salt library feed song'
-        self.assertEqual(mnemonic.seed_type_name(seed_words), 'electrum')
+        self.assertEqual(mnemo.seed_type_name(seed_words), 'electrum')
 
         ks = keystore.from_seed(seed_words, '', False)
 
@@ -68,7 +68,7 @@ class TestWalletKeystoreAddressIntegrity(unittest.TestCase):
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_electrum_seed_old(self, mock_write):
         seed_words = 'powerful random nobody notice nothing important anyway look away hidden message over'
-        self.assertEqual(mnemonic.seed_type_name(seed_words), 'old')
+        self.assertEqual(mnemo.seed_type_name(seed_words), 'old')
 
         ks = keystore.from_seed(seed_words, '', False)
 
@@ -106,7 +106,7 @@ class TestWalletKeystoreAddressIntegrity(unittest.TestCase):
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_electrum_multisig_seed_standard(self, mock_write):
         seed_words = 'blast uniform dragon fiscal ensure vast young utility dinosaur abandon rookie sure'
-        self.assertEqual(mnemonic.seed_type_name(seed_words), 'electrum')
+        self.assertEqual(mnemo.seed_type_name(seed_words), 'electrum')
 
         ks1 = keystore.from_seed(seed_words, '', True)
         self._check_seeded_keystore_sanity(ks1)

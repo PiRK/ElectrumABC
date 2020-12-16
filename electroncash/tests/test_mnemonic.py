@@ -1,5 +1,5 @@
 import unittest
-from .. import mnemonic
+from .. import mnemo
 from .. import old_mnemonic
 from ..util import bh2u
 
@@ -7,14 +7,14 @@ from ..util import bh2u
 class Test_NewMnemonic(unittest.TestCase):
 
     def test_to_seed(self):
-        seed = mnemonic.Mnemonic_Electrum.mnemonic_to_seed(mnemonic='foobar', passphrase='none')
+        seed = mnemo.Mnemonic_Electrum.mnemonic_to_seed(mnemonic='foobar', passphrase='none')
         self.assertEqual(bh2u(seed),
                           '741b72fd15effece6bfe5a26a52184f66811bd2be363190e07a42cca442b1a5b'
                           'b22b3ad0eb338197287e6d314866c7fba863ac65d3f156087a5052ebc7157fce')
 
     def test_random_seeds(self):
         iters = 10
-        m = mnemonic.Mnemonic_Electrum(lang='en')
+        m = mnemo.Mnemonic_Electrum(lang='en')
         for _ in range(iters):
             seed = m.make_seed()
             i = m.mnemonic_decode(seed)
@@ -34,7 +34,7 @@ class Test_BIP39Checksum(unittest.TestCase):
 
     def test(self):
         seed = u'gravity machine north sort system female filter attitude volume fold club stay feature office ecology stable narrow fog'
-        is_checksum_valid, is_wordlist_valid = mnemonic.Mnemonic().is_checksum_valid(seed)
+        is_checksum_valid, is_wordlist_valid = mnemo.Mnemonic().is_checksum_valid(seed)
         self.assertTrue(is_wordlist_valid)
         self.assertTrue(is_checksum_valid)
 
@@ -61,23 +61,23 @@ class Test_Seeds(unittest.TestCase):
 
     def test_electrum_seed(self):
         seed = "cram swing cover prefer miss modify ritual silly deliver chunk behind inform able"
-        self.assertTrue(mnemonic.is_electrum_seed(seed))
+        self.assertTrue(mnemo.is_electrum_seed(seed))
 
         seed = "cram swing cover prefer miss modify ritual silly deliver chunk behind inform"
-        self.assertFalse(mnemonic.is_electrum_seed(seed))
+        self.assertFalse(mnemo.is_electrum_seed(seed))
 
     def test_old_seed(self):
-        self.assertTrue(mnemonic.is_old_seed(" ".join(["like"] * 12)))
-        self.assertFalse(mnemonic.is_old_seed(" ".join(["like"] * 18)))
-        self.assertTrue(mnemonic.is_old_seed(" ".join(["like"] * 24)))
-        self.assertFalse(mnemonic.is_old_seed("not a seed"))
+        self.assertTrue(mnemo.is_old_seed(" ".join(["like"] * 12)))
+        self.assertFalse(mnemo.is_old_seed(" ".join(["like"] * 18)))
+        self.assertTrue(mnemo.is_old_seed(" ".join(["like"] * 24)))
+        self.assertFalse(mnemo.is_old_seed("not a seed"))
 
-        self.assertTrue(mnemonic.is_old_seed("0123456789ABCDEF" * 2))
-        self.assertTrue(mnemonic.is_old_seed("0123456789ABCDEF" * 4))
+        self.assertTrue(mnemo.is_old_seed("0123456789ABCDEF" * 2))
+        self.assertTrue(mnemo.is_old_seed("0123456789ABCDEF" * 4))
 
     def test_seed_type(self):
         for seed_words, _type in self.mnemonics:
-            self.assertEqual(_type, mnemonic.seed_type_name(seed_words), msg=seed_words)
+            self.assertEqual(_type, mnemo.seed_type_name(seed_words), msg=seed_words)
 
 
 def suite():

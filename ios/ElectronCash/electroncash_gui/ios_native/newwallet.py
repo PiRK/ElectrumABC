@@ -7,7 +7,7 @@
 from . import utils
 from . import gui
 from electroncash.i18n import _, language
-from electroncash import mnemonic
+from electroncash import mnemo
 from electroncash.old_mnemonic import words as old_words
 from typing import Any
 from .uikit_bindings import *
@@ -638,7 +638,7 @@ class RestoreWallet1(NewWalletSeed2):
         is_bip39 = self.bip39.isOn()
         if not is_bip39: seed = seed.lower()
 
-        if not seed or (not is_bip39 and not mnemonic.is_seed(seed)):
+        if not seed or (not is_bip39 and not mnemo.is_seed(seed)):
             err = _('The seed you entered does not appear to be a valid wallet seed.')
             utils.uilabel_replace_attributed_text(self.errMsg, err, font=UIFont.italicSystemFontOfSize_(14.0))
             self.errMsgView.setHidden_(False)
@@ -646,7 +646,7 @@ class RestoreWallet1(NewWalletSeed2):
             return
 
         seedext = self.seedExt.text.strip() if self.seedExt.text else ''
-        seed_type = 'bip39' if is_bip39 else mnemonic.seed_type_name(seed)
+        seed_type = 'bip39' if is_bip39 else mnemo.seed_type_name(seed)
 
         def PushIt() -> None:
             _SetParam(self, 'seed', seed)
@@ -1380,7 +1380,7 @@ def _IsOnBoarding(vc : UIViewController) -> bool:
 _mnem = None
 def _Mnem() -> None:
     global _mnem
-    if not _mnem: _mnem = mnemonic.Mnemonic_Electrum()
+    if not _mnem: _mnem = mnemo.Mnemonic_Electrum()
     return _mnem
 
 def _GetOldSuggestions(prefix) -> set:

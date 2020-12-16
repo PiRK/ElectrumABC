@@ -29,7 +29,7 @@ import sys
 import traceback
 from . import bitcoin
 from . import keystore
-from . import mnemonic
+from . import mnemo
 from . import util
 from .wallet import (ImportedAddressWallet, ImportedPrivkeyWallet,
                      Standard_Wallet, Multisig_Wallet, wallet_types)
@@ -317,11 +317,11 @@ class BaseWizard(util.PrintError):
     def restore_from_seed(self):
         self.opt_bip39 = True
         self.opt_ext = True
-        test = mnemonic.is_seed # TODO FIX #bitcoin.is_seed if self.wallet_type == 'standard' else bitcoin.is_new_seed
+        test = mnemo.is_seed # TODO FIX #bitcoin.is_seed if self.wallet_type == 'standard' else bitcoin.is_new_seed
         self.restore_seed_dialog(run_next=self.on_restore_seed, test=test)
 
     def on_restore_seed(self, seed, is_bip39, is_ext):
-        self.seed_type = 'bip39' if is_bip39 else mnemonic.seed_type_name(seed)  # NB: seed_type_name here may also auto-detect 'bip39'
+        self.seed_type = 'bip39' if is_bip39 else mnemo.seed_type_name(seed)  # NB: seed_type_name here may also auto-detect 'bip39'
         if self.seed_type == 'bip39':
             f=lambda passphrase: self.on_restore_bip39(seed, passphrase)
             self.passphrase_dialog(run_next=f) if is_ext else f('')
@@ -426,12 +426,12 @@ class BaseWizard(util.PrintError):
         self.create_seed('bip39')
 
     def create_seed(self, seed_type):
-        from . import mnemonic
+        from . import mnemo
         self.seed_type = seed_type
         if seed_type in ['standard', 'electrum']:
-            seed = mnemonic.Mnemonic_Electrum('en').make_seed()
+            seed = mnemo.Mnemonic_Electrum('en').make_seed()
         elif seed_type == 'bip39':
-            seed = mnemonic.Mnemonic('en').make_seed()
+            seed = mnemo.Mnemonic('en').make_seed()
         else:
             # This should never happen.
             raise ValueError('Cannot make seed for unknown seed type ' + str(seed_type))

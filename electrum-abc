@@ -104,7 +104,7 @@ from electroncash.i18n import _
 from electroncash.commands import get_parser, known_commands, Commands, config_variables
 from electroncash import daemon
 from electroncash import keystore
-from electroncash.mnemonic import Mnemonic, Mnemonic_Electrum
+from electroncash.mnemo import Mnemonic, Mnemonic_Electrum
 from electroncash.winconsole import create_or_attach_console  # Import ok on other platforms, won't be called.
 import electroncash_plugins
 import electroncash.web as web

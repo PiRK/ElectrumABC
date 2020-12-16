@@ -27,7 +27,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from electroncash.i18n import _
-from electroncash import mnemonic
+from electroncash import mnemo
 from electroncash.constants import PROJECT_NAME
 
 from .util import *
@@ -124,7 +124,7 @@ class SeedLayout(QVBoxLayout):
         grid_maybe.setColumnStretch(1, 1)  # we want the right-hand column to take up as much space as it needs.
         grid_row = 0
         if seed_type:
-            seed_type_text = mnemonic.format_seed_type_name_for_ui(seed_type)
+            seed_type_text = mnemo.format_seed_type_name_for_ui(seed_type)
             grid_maybe.addWidget(QLabel(_("Seed format") + ':'), grid_row, 0)
             grid_maybe.addWidget(QLabel(f'<b>{seed_type_text}</b>'), grid_row, 1, Qt.AlignLeft)
             grid_row += 1
@@ -161,15 +161,15 @@ class SeedLayout(QVBoxLayout):
         if not self._mnem:
             # cache the lang wordlist so it doesn't need to get loaded each time.
             # This speeds up seed_type_name and Mnemonic.is_checksum_valid
-            self._mnem = mnemonic.Mnemonic('en')
+            self._mnem = mnemo.Mnemonic('en')
         s = self.get_seed()
         b = self.is_seed(s)
         if not self.is_bip39:
-            t = mnemonic.format_seed_type_name_for_ui(mnemonic.seed_type_name(s))
+            t = mnemo.format_seed_type_name_for_ui(mnemo.seed_type_name(s))
             label = _('Seed Type') + ': ' + t if t else ''
             if t and may_clear_warning and 'bip39' in self.options:
-                match_set = mnemonic.autodetect_seed_type(s)
-                if len(match_set) > 1 and mnemonic.SeedType.BIP39 in match_set:
+                match_set = mnemo.autodetect_seed_type(s)
+                if len(match_set) > 1 and mnemo.SeedType.BIP39 in match_set:
                     may_clear_warning = False
                     self.seed_warning.setText(
                         _('This seed is ambiguous and may also be interpreted as a <b>BIP39</b> seed.')

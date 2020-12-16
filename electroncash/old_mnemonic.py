@@ -1686,8 +1686,8 @@ def mn_decode( wlist ):
 def mn_is_seed(seed: str) -> bool:
     """ Returns True if seed is a valid "old" seed phrase of 12 or 24 words *OR*
     if it's a hex string encoding 16 or 32 bytes. """
-    from . import mnemonic
-    seed = mnemonic.normalize_text(seed)
+    from . import mnemo
+    seed = mnemo.normalize_text(seed)
     words = seed.split()
     try:
         # checks here are deliberately left weak for legacy reasons, see #3149
