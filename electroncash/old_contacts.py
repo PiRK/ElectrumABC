@@ -1,4 +1,5 @@
-# Electrum - Lightweight Bitcoin Client
+# Electrum ABC - lightweight BCHA client
+# Copyright (C) 2020 The Electrum ABC developers
 # Copyright (c) 2015 Thomas Voegtlin
 #
 # Permission is hereby granted, free of charge, to any person

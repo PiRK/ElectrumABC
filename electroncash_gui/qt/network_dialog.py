@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
-# Electrum - lightweight Bitcoin client
+# Electrum ABC - lightweight BCHA client
+# Copyright (C) 2020 The Electrum ABC developers
 # Copyright (C) 2012 thomasv@gitorious
 #
 # Electron Cash - lightweight Bitcoin Cash client
