@@ -765,11 +765,6 @@ def bip39_normalize_passphrase(passphrase):
     return mnemo.normalize_text(passphrase or '', is_passphrase=True)
 
 
-def bip39_to_seed(seed: str, passphrase: str) -> bytes:
-    """This is called by some plugins """
-    return mnemo.bip39_mnemonic_to_seed(seed, passphrase)
-
-
 def from_seed(seed, passphrase, is_p2sh=None, *, seed_type='', derivation=None) -> KeyStore:
     del is_p2sh  # argument totally ignored.  Legacy API.
     if not seed_type:
