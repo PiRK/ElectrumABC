@@ -431,7 +431,7 @@ class BaseWizard(util.PrintError):
         if seed_type in ['standard', 'electrum']:
             seed = mnemo.Mnemonic_Electrum('en').make_seed()
         elif seed_type == 'bip39':
-            seed = mnemo.Mnemonic('en').make_seed()
+            seed = mnemo.make_bip39_words('english')
         else:
             # This should never happen.
             raise ValueError('Cannot make seed for unknown seed type ' + str(seed_type))

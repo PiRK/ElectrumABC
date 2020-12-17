@@ -43,6 +43,7 @@ from .constants import PROJECT_NAME, SCRIPT_NAME
 from .address import Address, AddressError
 from .bitcoin import hash_160, COIN, TYPE_ADDRESS
 from .i18n import _
+from .mnemo import Mnemonic_Electrum, make_bip39_words
 from .plugins import run_hook
 from .wallet import create_new_wallet, restore_wallet_from_text
 from .transaction import Transaction, multisig_script, OPReturn
@@ -251,7 +252,6 @@ class Commands:
     @command('')
     def make_electrum_seed(self, nbits=132, entropy=1, language=None):
         """Create an Electrum seed"""
-        from .mnemo import Mnemonic_Electrum
         t = 'electrum'
         s = Mnemonic_Electrum(language).make_seed(t, nbits, custom_entropy=entropy)
         return s
@@ -259,14 +259,12 @@ class Commands:
     @command('')
     def make_seed(self, nbits=128, language=None):
         """Create a BIP39 seed"""
-        from .mnemo import Mnemonic
-        s = Mnemonic(language).make_seed(num_bits=nbits)
+        s = make_bip39_words('english')
         return s
 
     @command('')
     def check_electrum_seed(self, seed, entropy=1, language=None):
         """Check that an Electrum seed was generated with given entropy"""
-        from .mnemo import Mnemonic_Electrum
         return Mnemonic_Electrum(language).check_seed(seed, entropy)
 
     @command('')

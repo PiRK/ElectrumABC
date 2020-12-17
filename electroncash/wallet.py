@@ -51,6 +51,7 @@ from .util import (NotEnoughFunds, ExcessiveFee, PrintError,
 from .address import Address, Script, ScriptOutput, PublicKey
 from .version import PACKAGE_VERSION
 from .keystore import load_keystore, Hardware_KeyStore, Imported_KeyStore, BIP32_KeyStore, xpubkey_to_address
+from . import mnemo
 from . import networks
 from . import keystore
 from .storage import multisig_type, WalletStorage
@@ -3256,11 +3257,10 @@ def create_new_wallet(*, path, config, passphrase=None, password=None,
     if storage.file_exists():
         raise Exception("Remove the existing wallet first!")
 
-    from .mnemo import Mnemonic_Electrum, Mnemonic
     if seed_type == 'electrum':
-        seed = Mnemonic_Electrum('en').make_seed()
+        seed = mnemo.Mnemonic_Electrum('en').make_seed()
     else:
-        seed = Mnemonic('en').make_seed()
+        seed = mnemo.make_bip39_words('english')
     k = keystore.from_seed(seed, passphrase, seed_type = seed_type)
     storage.put('keystore', k.dump())
     storage.put('wallet_type', 'standard')
@@ -3297,7 +3297,7 @@ def restore_wallet_from_text(text, *, path, config,
     else:
         if keystore.is_master_key(text):
             k = keystore.from_master_key(text)
-        elif keystore.is_seed(text):
+        elif mnemo.is_seed(text):
             k = keystore.from_seed(text, passphrase)  # auto-detects seed type, preference order: old, electrum, bip39
         else:
             raise Exception("Seed or key not recognized")

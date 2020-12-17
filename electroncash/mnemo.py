@@ -29,6 +29,7 @@ import binascii
 import ecdsa
 import hashlib
 import math
+import mnemonic
 import os
 import pkgutil
 import string
@@ -155,7 +156,7 @@ def autodetect_seed_type(seed: str, lang: Optional[str] = None, *,
     possible for imported seeds to be ambiguous. May return the empty set if the
     seed phrase is invalid and/or fails checksum checks for all three types. '''
     ret = set()
-    if is_bip39_seed(seed, lang):
+    if is_bip39_seed(seed):
         ret.add( SeedType.BIP39 )
     if is_electrum_seed(seed, prefix):
         ret.add( SeedType.Electrum )
@@ -163,12 +164,17 @@ def autodetect_seed_type(seed: str, lang: Optional[str] = None, *,
         ret.add( SeedType.Old )
     return ret
 
-def is_bip39_seed(seed: str, lang: Optional[str]=None) -> bool:
-    """ Checks if `seed` is a valid BIP39 seed phrase (passes wordlist AND
-    checksum tests). If lang=None, then the English wordlist is assumed. This
-    function is added here as a convenience. """
-    from . import mnemo
-    return mnemo.Mnemonic(lang).is_seed(seed)
+
+def is_bip39_seed(seed: str) -> bool:
+    """Checks if `seed` is a valid BIP39 seed phrase (passes wordlist AND
+    checksum tests)."""
+    try:
+        language = mnemonic.Mnemonic.detect_language(seed)
+    except Exception:
+        return False
+    mnemo = mnemonic.Mnemonic(language)
+    return mnemo.check(seed)
+
 
 def is_electrum_seed(seed: str, prefix: str=version.SEED_PREFIX) -> bool:
     """ Checks if `seed` is a valid Electrum seed phrase.
@@ -176,8 +182,8 @@ def is_electrum_seed(seed: str, prefix: str=version.SEED_PREFIX) -> bool:
     Returns True if the text in question matches the checksum for Electrum
     seeds. Does not depend on any particular word list, just checks unicode
     data.  Very fast. """
-    from . import mnemo
-    return mnemo.Mnemonic_Electrum.verify_checksum_only(seed, prefix)
+    return Mnemonic_Electrum.verify_checksum_only(seed, prefix)
+
 
 def is_old_seed(seed: str) -> bool:
     """ Returns True if `seed` is a valid "old" seed phrase of 12 or 24 words
@@ -194,10 +200,12 @@ def seed_type(seed: str) -> Optional[SeedType]:
     elif is_bip39_seed(seed):
         return SeedType.BIP39
 
+
 def seed_type_name(seed: str) -> str:
     return seed_type_names.get(seed_type(seed), '')
 
-def format_seed_type_name_for_ui(name : str) -> str:
+
+def format_seed_type_name_for_ui(name: str) -> str:
     """ Given a seed type name e.g. bip39 or standard, transforms it to a
     canonical UI string "BIP39" or "Electrum" """
     name = name.strip().lower()  # paranoia
@@ -207,8 +215,18 @@ def format_seed_type_name_for_ui(name : str) -> str:
     else:
         return name.title()  # Title Caps for "Old" and "Electrum"
 
+
 is_seed = lambda x: seed_type(x) is not None
 
+
+def bip39_mnemonic_to_seed(words: str, passphrase: str = ""):
+    language = mnemonic.Mnemonic.detect_language(words)
+    return mnemonic.Mnemonic(language).to_seed(words, passphrase)
+
+
+def make_bip39_words(language) -> str:
+    """Return a new 12 words BIP39 seed phrase."""
+    return mnemonic.Mnemonic(language).generate(strength=128)
 
 
 class MnemonicBase(PrintError):
@@ -321,78 +339,6 @@ class MnemonicBase(PrintError):
     def is_seed(self, mnemonic: str) -> bool:
         """ Convenient alias for is_checksum_valid()[0] """
         return self.is_checksum_valid(mnemonic)[0]
-
-
-class Mnemonic(MnemonicBase):
-    """ Implements seed derivation following BIP39, which is now the Electron
-    Cash default. The previous 'Electrum' seedformat is provided by the
-    Mnemonic_Electrum class later in this file.
-
-    BIP39 uses a wordlist-dependent checksum. Because of this we should always
-    accept seeds that fail checksum otherwise users will not always be able to
-    restore their seeds."""
-
-    @classmethod
-    def mnemonic_to_seed(cls, mnemonic: str, passphrase: Optional[str]) -> bytes:
-        PBKDF2_ROUNDS = 2048
-        mnemonic = cls.normalize_text(mnemonic)
-        passphrase = cls.normalize_text(passphrase or '', is_passphrase=True)
-        return hashlib.pbkdf2_hmac('sha512', mnemonic.encode('utf-8'), b'mnemonic' + passphrase.encode('utf-8'), iterations = PBKDF2_ROUNDS)
-
-    def make_seed(self, seed_type=None, num_bits=128, custom_entropy=1) -> str:
-        if self.lang not in ('en', 'es'):
-            raise NotImplementedError(f"Cannot make a seed for language '{self.lang}'. "
-                                      + "Only English and Spanish are supported as seed generation languages in this implementation")
-        if num_bits not in (128, 160, 192, 224, 256):
-            raise ValueError('Strength should be one of the following [128, 160, 192, 224, 256], not %d.' % num_bits)
-        def inner(num_bits):
-            data = os.urandom(num_bits // 8)
-            h = hashlib.sha256(data).hexdigest()
-            b = bin(int(binascii.hexlify(data), 16))[2:].zfill(len(data) * 8) + bin(int(h, 16))[2:].zfill(256)[:len(data) * 8 // 32]
-            result = []
-            for i in range(len(b) // 11):
-                idx = int(b[i * 11:(i + 1) * 11], 2)
-                result.append(self.wordlist[idx])
-            if self.lang == 'ja':  # Japanese must be joined by ideographic space.
-                result_phrase = u'\u3000'.join(result)
-            else:
-                result_phrase = ' '.join(result)
-            return result_phrase
-        iters = 0
-        while True:
-            iters += 1
-            seed = inner(num_bits)
-            # avoid ambiguity between old-style seeds and BIP39, as well as avoid clashes with Electrum seeds
-            if autodetect_seed_type(seed, self.lang) == {SeedType.BIP39}:
-                self.print_error("make_seed iterations:", iters)
-                return seed
-
-    def is_checksum_valid(self, mnemonic : str) -> Tuple[bool, bool]:
-        """Test checksum of BIP39 mnemonic. Returns tuple (is_checksum_valid,
-        is_wordlist_valid). Note that for an invalid worlist, is_checksum_valid
-        will always be False (this is because BIP39 relies on the wordlist for
-        the checksum)."""
-        words = self.normalize_text(mnemonic).split()
-        words_len = len(words)
-        worddict = self.wordlist_indices
-        n = len(worddict)
-        i = 0
-        for w in words:
-            try:
-                k = worddict[w]
-            except KeyError:
-                return False, False
-            i = i*n + k
-        if words_len not in (12, 15, 18, 21, 24):
-            return False, True
-        checksum_length = 11 * words_len // 33  # num bits
-        entropy_length = 32 * checksum_length  # num bits
-        entropy = i >> checksum_length
-        checksum = i % 2**checksum_length
-        entropy_bytes = int.to_bytes(entropy, length=entropy_length//8, byteorder="big")
-        hashed = int.from_bytes(hashlib.sha256(entropy_bytes).digest(), byteorder="big")
-        calculated_checksum = hashed >> (256 - checksum_length)
-        return checksum == calculated_checksum, True
 
 
 class Mnemonic_Electrum(MnemonicBase):

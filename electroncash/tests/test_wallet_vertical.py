@@ -11,7 +11,6 @@ from .. import wallet
 class TestWalletKeystoreAddressIntegrity(unittest.TestCase):
 
     gap_limit = 1  # make tests run faster
-    mnem = mnemo.Mnemonic()  # cache language data
 
     def _check_seeded_keystore_sanity(self, ks):
         self.assertTrue (ks.is_deterministic())
@@ -88,7 +87,7 @@ class TestWalletKeystoreAddressIntegrity(unittest.TestCase):
     def test_bip39_seed_bip44_standard(self, mock_write):
         seed_words = 'treat dwarf wealth gasp brass outside high rent blood crowd make initial'
 
-        self.assertEqual(self.mnem.is_checksum_valid(seed_words), (True, True))
+        self.assertTrue(mnemo.is_bip39_seed(seed_words))
 
         ks = keystore.from_seed(seed_words, '', seed_type='bip39', derivation="m/44'/0'/0'")
 
@@ -125,7 +124,7 @@ class TestWalletKeystoreAddressIntegrity(unittest.TestCase):
     @mock.patch.object(storage.WalletStorage, '_write')
     def test_bip39_multisig_seed_bip45_standard(self, mock_write):
         seed_words = 'treat dwarf wealth gasp brass outside high rent blood crowd make initial'
-        self.assertEqual(self.mnem.is_checksum_valid(seed_words), (True, True))
+        self.assertTrue(mnemo.is_bip39_seed(seed_words))
 
         ks1 = keystore.from_seed(seed_words, '', seed_type='bip39', derivation="m/45'/0")
         self.assertTrue(isinstance(ks1, keystore.BIP32_KeyStore))

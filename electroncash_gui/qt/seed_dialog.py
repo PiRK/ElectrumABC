@@ -22,6 +22,7 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import mnemonic
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -158,17 +159,17 @@ class SeedLayout(QVBoxLayout):
     _mnem = None
     def on_edit(self):
         may_clear_warning = not self.has_warning_message and self.editable
-        if not self._mnem:
+        if self._mnem is None:
             # cache the lang wordlist so it doesn't need to get loaded each time.
-            # This speeds up seed_type_name and Mnemonic.is_checksum_valid
-            self._mnem = mnemo.Mnemonic('en')
-        s = self.get_seed()
-        b = self.is_seed(s)
+            # This speeds up seed_type_name and Mnemonic.check
+            self._mnem = mnemonic.Mnemonic('english')
+        words = self.get_seed()
+        b = self.is_seed(words)
         if not self.is_bip39:
-            t = mnemo.format_seed_type_name_for_ui(mnemo.seed_type_name(s))
+            t = mnemo.format_seed_type_name_for_ui(mnemo.seed_type_name(words))
             label = _('Seed Type') + ': ' + t if t else ''
             if t and may_clear_warning and 'bip39' in self.options:
-                match_set = mnemo.autodetect_seed_type(s)
+                match_set = mnemo.autodetect_seed_type(words)
                 if len(match_set) > 1 and mnemo.SeedType.BIP39 in match_set:
                     may_clear_warning = False
                     self.seed_warning.setText(
@@ -178,9 +179,9 @@ class SeedLayout(QVBoxLayout):
                             'then use the Options button to force BIP39 interpretation of this seed.')
                     )
         else:
-            is_checksum, is_wordlist = self._mnem.is_checksum_valid(s)
-            status = ('checksum: ' + ('ok' if is_checksum else 'failed')) if is_wordlist else 'unknown wordlist'
-            label = 'BIP39' + ' (%s)'%status
+            is_valid = self._mnem.check(words)
+            status = 'valid' if is_valid else 'invalid'
+            label = f'BIP39' + f' ({status})'
         self.seed_type_label.setText(label)
         self.parent.next_button.setEnabled(b)
         if may_clear_warning:

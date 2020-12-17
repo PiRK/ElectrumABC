@@ -27,6 +27,7 @@
 import ecdsa
 import hashlib
 import inspect
+from mnemonic import Mnemonic
 
 from ecdsa.curves import SECP256k1
 
@@ -34,7 +35,7 @@ from . import bitcoin
 
 from .address import Address, PublicKey
 from . import networks
-from .mnemo import Mnemonic, Mnemonic_Electrum, seed_type_name, is_seed
+from . import mnemo
 from .plugins import run_hook
 from .util import PrintError, InvalidPassword, bh2u, print_error
 
@@ -268,7 +269,7 @@ class Deterministic_KeyStore(Software_KeyStore):
     def format_seed(self, seed):
         """ Default impl. for BIP39 or Electrum seed wallets.  Old_Keystore
         overrides this. """
-        return Mnemonic.normalize_text(seed)
+        return Mnemonic.normalize_string(seed)
 
     def get_seed(self, password):
         return bitcoin.pw_decode(self.seed, password)
@@ -745,7 +746,7 @@ def is_private_key_list(text, *, allow_bip38=False):
 
 
 is_mpk = lambda x: is_old_mpk(x) or bitcoin.is_xpub(x)
-is_private = lambda x: is_seed(x) or bitcoin.is_xprv(x) or is_private_key_list(x)
+is_private = lambda x: mnemo.is_seed(x) or bitcoin.is_xprv(x) or is_private_key_list(x)
 is_master_key = lambda x: is_old_mpk(x) or bitcoin.is_xprv(x) or bitcoin.is_xpub(x)
 is_private_key = lambda x: bitcoin.is_xprv(x) or is_private_key_list(x)
 is_bip32_key = lambda x: bitcoin.is_xprv(x) or bitcoin.is_xpub(x)
@@ -761,17 +762,18 @@ def bip44_derivation_145(account_id):
 
 def bip39_normalize_passphrase(passphrase):
     """ This is called by some plugins """
-    return Mnemonic.normalize_text(passphrase or '', is_passphrase=True)
+    return mnemo.normalize_text(passphrase or '', is_passphrase=True)
+
 
 def bip39_to_seed(seed: str, passphrase: str) -> bytes:
     """This is called by some plugins """
-    return Mnemonic.mnemonic_to_seed(seed, passphrase)
+    return mnemo.bip39_mnemonic_to_seed(seed, passphrase)
 
 
 def from_seed(seed, passphrase, is_p2sh=None, *, seed_type='', derivation=None) -> KeyStore:
     del is_p2sh  # argument totally ignored.  Legacy API.
     if not seed_type:
-        seed_type = seed_type_name(seed)  # auto-detect
+        seed_type = mnemo.seed_type_name(seed)  # auto-detect
     if seed_type == 'old':
         keystore = Old_KeyStore({})
         keystore.add_seed(seed, seed_type=seed_type)
@@ -779,7 +781,7 @@ def from_seed(seed, passphrase, is_p2sh=None, *, seed_type='', derivation=None) 
         keystore = BIP32_KeyStore({})
         keystore.add_seed(seed, seed_type = "electrum")  # force it to be "electrum"
         keystore.passphrase = passphrase
-        bip32_seed = Mnemonic_Electrum.mnemonic_to_seed(seed, passphrase)
+        bip32_seed = mnemo.Mnemonic_Electrum.mnemonic_to_seed(seed, passphrase)
         derivation = 'm/'
         xtype = 'standard'
         keystore.add_xprv_from_seed(bip32_seed, xtype, derivation)
@@ -787,7 +789,7 @@ def from_seed(seed, passphrase, is_p2sh=None, *, seed_type='', derivation=None) 
         keystore = BIP32_KeyStore({})
         keystore.add_seed(seed, seed_type = seed_type)
         keystore.passphrase = passphrase
-        bip32_seed = Mnemonic.mnemonic_to_seed(seed, passphrase)
+        bip32_seed = mnemo.bip39_mnemonic_to_seed(seed, passphrase)
         xtype = 'standard'  # bip43
         derivation = derivation or bip44_derivation_145(0)
         keystore.add_xprv_from_seed(bip32_seed, xtype, derivation)

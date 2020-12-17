@@ -1,3 +1,4 @@
+import mnemonic
 import unittest
 from .. import mnemo
 from .. import old_mnemonic
@@ -30,13 +31,16 @@ class Test_OldMnemonic(unittest.TestCase):
         self.assertEqual(result, words.split())
         self.assertEqual(old_mnemonic.mn_decode(result), seed)
 
+
 class Test_BIP39Checksum(unittest.TestCase):
 
     def test(self):
-        seed = u'gravity machine north sort system female filter attitude volume fold club stay feature office ecology stable narrow fog'
-        is_checksum_valid, is_wordlist_valid = mnemo.Mnemonic().is_checksum_valid(seed)
-        self.assertTrue(is_wordlist_valid)
-        self.assertTrue(is_checksum_valid)
+        words = 'gravity machine north sort system female ' \
+                'filter attitude volume fold club stay ' \
+                'feature office ecology stable narrow fog'
+        mnemon = mnemonic.Mnemonic('english')
+        self.assertTrue(mnemon.check(words))
+
 
 class Test_Seeds(unittest.TestCase):
     """ Test old and new seeds. """

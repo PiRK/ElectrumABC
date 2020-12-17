@@ -104,7 +104,7 @@ from electroncash.i18n import _
 from electroncash.commands import get_parser, known_commands, Commands, config_variables
 from electroncash import daemon
 from electroncash import keystore
-from electroncash.mnemo import Mnemonic, Mnemonic_Electrum
+from electroncash import mnemo
 from electroncash.winconsole import create_or_attach_console  # Import ok on other platforms, won't be called.
 import electroncash_plugins
 import electroncash.web as web
@@ -165,7 +165,7 @@ def restore_wallet(simple_config: SimpleConfig,
     elif keystore.is_private_key_list(text):
         wallet = ImportedPrivkeyWallet.from_text(storage, text, password)
     else:
-        if keystore.is_seed(text):
+        if mnemo.is_seed(text):
             # seed format will be auto-detected with preference order:
             # old, electrum, bip39
             k = keystore.from_seed(text, passphrase)
@@ -212,10 +212,10 @@ def create_wallet(simple_config: SimpleConfig,
     passphrase = simple_config.get('passphrase', '')
     seed_type = simple_config.get('seed_type', 'bip39')
     if seed_type == 'bip39':
-        seed = Mnemonic('en').make_seed()
+        seed = mnemo.make_bip39_words('english')
     elif seed_type in ['electrum', 'standard']:
         seed_type = 'electrum'
-        seed = Mnemonic_Electrum('en').make_seed()
+        seed = mnemo.Mnemonic_Electrum('en').make_seed()
     else:
         raise RuntimeError("Unknown seed_type " + str(seed_type))
     k = keystore.from_seed(seed, passphrase, seed_type=seed_type)
