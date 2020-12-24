@@ -31,7 +31,7 @@ from electroncash import mnemonic
 from electroncash.constants import PROJECT_NAME
 
 from .util import *
-from .qrtextedit import ShowQRTextEdit, ScanQRTextEdit
+from .qrtextedit import ScanQRTextEdit
 
 
 def seed_warning_msg(seed, has_der=False, has_ext=False):

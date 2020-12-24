@@ -10,7 +10,6 @@ from collections import namedtuple
 from functools import partial, wraps
 from locale import atof
 
-from electroncash.address import Address
 from electroncash.util import print_error, PrintError, Weak, finalization_print_error
 from electroncash.wallet import Abstract_Wallet
 from PyQt5.QtGui import *

@@ -93,7 +93,7 @@ if not is_android:  # Avoid unnecessarily slowing down app startup.
     check_imports()
 
 
-from electroncash import bitcoin, util
+from electroncash import util
 from electroncash import SimpleConfig, Network
 from electroncash import networks
 from electroncash.wallet import Wallet, ImportedPrivkeyWallet, ImportedAddressWallet
@@ -106,7 +106,6 @@ from electroncash import daemon
 from electroncash import keystore
 from electroncash.mnemonic import Mnemonic, Mnemonic_Electrum
 from electroncash.winconsole import create_or_attach_console  # Import ok on other platforms, won't be called.
-import electroncash_plugins
 import electroncash.web as web
 from electroncash.constants import SCRIPT_NAME, PROJECT_NAME, PORTABLE_DATA_DIR
 from electroncash.migrate_data import migrate_data_from_ec

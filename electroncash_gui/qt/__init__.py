@@ -24,7 +24,13 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import gc, os, platform, shutil, signal, sys, traceback
+import gc
+import os
+import platform
+import shutil
+import signal
+import sys
+import traceback
 
 try:
     import PyQt5

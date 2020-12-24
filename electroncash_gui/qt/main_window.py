@@ -48,8 +48,8 @@ from electroncash import keystore, get_config
 from electroncash import networks
 from electroncash import paymentrequest
 from electroncash import util, bitcoin, commands, cashacct
-from electroncash.address import Address, ScriptOutput
-from electroncash.bitcoin import COIN, TYPE_ADDRESS, TYPE_SCRIPT
+from electroncash.address import Address
+from electroncash.bitcoin import COIN, TYPE_ADDRESS
 from electroncash.constants import PROJECT_NAME, REPOSITORY_URL
 from electroncash.contacts import Contact
 from electroncash.i18n import _, ngettext, pgettext
@@ -63,14 +63,12 @@ from electroncash.util import (format_time, format_satoshis, PrintError,
 from electroncash.wallet import Multisig_Wallet, sweep_preparations
 
 
-import electroncash.web as web
-
-from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, BTCkBEdit, BTCSatsByteEdit
+from .amountedit import AmountEdit, BTCAmountEdit, MyLineEdit, BTCSatsByteEdit
 from .qrcodewidget import QRCodeWidget, QRDialog
 from .qrtextedit import ShowQRTextEdit, ScanQRTextEdit
 from .transaction_dialog import show_transaction
 from .fee_slider import FeeSlider
-from .popup_widget import ShowPopupLabel, KillPopupLabel, PopupWidget
+from .popup_widget import ShowPopupLabel, KillPopupLabel
 from . import cashacctqt
 from .util import *
 

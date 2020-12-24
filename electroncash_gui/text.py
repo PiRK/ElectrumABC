@@ -1,7 +1,12 @@
-import tty, sys
-import curses, datetime, locale
-from decimal import Decimal as PyDecimal
+
+import curses
+import datetime
 import getpass
+import locale
+import sys
+import tty
+
+from decimal import Decimal as PyDecimal
 
 import electroncash
 from electroncash.address import Address
@@ -9,7 +14,7 @@ from electroncash.util import format_satoshis, set_verbosity
 from electroncash.bitcoin import COIN, TYPE_ADDRESS
 from electroncash import Wallet, WalletStorage
 
-_ = lambda x:x
+_ = lambda x: x
 
 
 

@@ -27,7 +27,6 @@ from electroncash.i18n import _
 from electroncash.plugins import run_hook
 from electroncash.address import Address
 from electroncash.bitcoin import COINBASE_MATURITY
-from electroncash import cashacct
 from collections import defaultdict
 from functools import wraps
 from enum import IntEnum

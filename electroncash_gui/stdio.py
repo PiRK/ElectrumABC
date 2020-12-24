@@ -1,11 +1,15 @@
+import getpass
+import datetime
+
 from decimal import Decimal as PyDecimal
-_ = lambda x:x
-#from i18n import _
+
 from electroncash import WalletStorage, Wallet
 from electroncash.util import format_satoshis, set_verbosity
 from electroncash.address import Address
 from electroncash.bitcoin import COIN, TYPE_ADDRESS
-import getpass, datetime
+
+
+_ = lambda x:x
 
 # minimal fdisk like gui for console usage
 # written by rofl0r, with some bits stolen from the text gui (ncurses)

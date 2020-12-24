@@ -29,7 +29,6 @@ import sys
 
 from .constants import PROJECT_NAME, SCRIPT_NAME
 
-# from jsonrpc import JSONRPCResponseManager
 import jsonrpclib
 from .jsonrpc import VerifyingJSONRPCServer
 
