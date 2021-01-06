@@ -166,9 +166,6 @@ class TestTransaction(unittest.TestCase):
         self.assertEqual(tx.txid(), 'e64808c1eb86e8cab68fcbd8b7f3b01f8cc8f39bd05722f1cf2d7cd9b35fb4e3')
 
     def test_errors(self):
-        with self.assertRaises(TypeError):
-            transaction.Transaction.pay_script(output_type=None, addr='')
-
         with self.assertRaises(BaseException):
             xpubkey_to_address('')
 
