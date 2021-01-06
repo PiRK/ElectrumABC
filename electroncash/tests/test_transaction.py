@@ -281,7 +281,7 @@ class TestTransaction(unittest.TestCase):
         self.assertIn("Invalid script", tx.outputs()[0][1].to_ui_string())
         self.assertEqual('72d8af8edcc603c6c64390ac5eb913b97a80efe0f5ae7c00ad5397eb5786cd33', tx.txid())
 
-    def test_parse_output_truncated1(self):
+    def test_parse_output_truncated2(self):
         # truncated in middle of PUSHDATA2's second argument
         tx = transaction.Transaction('01000000010000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000044d0200ff00000000')
         self.assertEqual(tx.outputs(), [(TYPE_SCRIPT, ScriptOutput(b'\x4d\x02\x00\xff'), 0)])
