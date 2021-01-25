@@ -1,4 +1,4 @@
-from typing import Mapping
+from typing import Mapping, List
 from collections import OrderedDict
 
 PROJECT_NAME: str = "Electrum ABC"
@@ -35,3 +35,13 @@ INV_BASE_UNITS: Mapping[int, str] = {v: k for k, v in BASE_UNITS.items()}
 
 BASE_UNIT_8 = INV_BASE_UNITS[8]
 """Previous base unit ("bitcoin"), by convention 10^8 satoshis"""
+
+CASHADDR_PREFIX: str = "ecash"
+CASHADDR_PREFIX_BCH: str = "bitcoincash"
+CASHADDR_TESTNET_PREFIX = "ectest"
+CASHADDR_TESTNET_PREFIX_BCH = "bchtest"
+
+WHITELISTED_PREFIXES: List[str] = [
+    CASHADDR_PREFIX,
+    CASHADDR_PREFIX_BCH
+]

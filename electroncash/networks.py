@@ -26,6 +26,13 @@
 import json, pkgutil
 
 from .asert_daa import ASERTDaa, Anchor
+from .constants import (
+    CASHADDR_PREFIX,
+    CASHADDR_PREFIX_BCH,
+    CASHADDR_TESTNET_PREFIX,
+    CASHADDR_TESTNET_PREFIX_BCH,
+)
+
 
 def _read_json_dict(filename):
     try:
@@ -49,8 +56,8 @@ class MainNet(AbstractNet):
     ADDRTYPE_P2PKH_BITPAY = 28
     ADDRTYPE_P2SH = 5
     ADDRTYPE_P2SH_BITPAY = 40
-    CASHADDR_PREFIX = "ecash"
-    CASHADDR_PREFIX_BCH = "bitcoincash"
+    CASHADDR_PREFIX = CASHADDR_PREFIX
+    CASHADDR_PREFIX_BCH = CASHADDR_PREFIX_BCH
     GENESIS = "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f"
     DEFAULT_PORTS = {'t': '50001', 's': '50002'}
     DEFAULT_SERVERS = _read_json_dict('servers.json')  # DO NOT MODIFY IN CLIENT CODE
@@ -99,8 +106,8 @@ class TestNet(AbstractNet):
     ADDRTYPE_P2PKH_BITPAY = 111  # Unsure
     ADDRTYPE_P2SH = 196
     ADDRTYPE_P2SH_BITPAY = 196  # Unsure
-    CASHADDR_PREFIX = "ectest"
-    CASHADDR_PREFIX_BCH = "bchtest"
+    CASHADDR_PREFIX = CASHADDR_TESTNET_PREFIX
+    CASHADDR_PREFIX_BCH = CASHADDR_TESTNET_PREFIX_BCH
     GENESIS = "000000000933ea01ad0ee984209779baaec3ced90fa3f408719526f8d77f4943"
     DEFAULT_PORTS = {'t':'51001', 's':'51002'}
     DEFAULT_SERVERS = _read_json_dict('servers_testnet.json')  # DO NOT MODIFY IN CLIENT CODE
