@@ -489,11 +489,10 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
     ADDR_P2SH = 1
 
     # Address formats
+    FMT_CASHADDR = "CashAddr"
     FMT_CASHADDR_BCH = "CashAddr BCH"
     FMT_LEGACY = "Legacy"
     FMT_BITPAY = "BitPay"   # Supported temporarily only for compatibility
-
-    _NUM_FMTS = 3  # <-- Be sure to update this if you add a format above!
 
     # Default to CashAddr
     FMT_UI = FMT_CASHADDR_BCH
@@ -510,7 +509,8 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
         hash160 = to_bytes(hash160)
         assert len(hash160) == 20, "hash must be 20 bytes"
         ret = super().__new__(cls, hash160, kind)
-        ret._addr2str_cache = {cls.FMT_CASHADDR_BCH: None,
+        ret._addr2str_cache = {cls.FMT_CASHADDR: None,
+                               cls.FMT_CASHADDR_BCH: None,
                                cls.FMT_LEGACY: None,
                                cls.FMT_BITPAY: None}
         return ret
@@ -539,27 +539,30 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
             net = networks.net
         string = string.lower()
 
-        supported_prefixes = [net.CASHADDR_PREFIX, ]
+        whitelisted_prefixes = [net.CASHADDR_PREFIX, net.CASHADDR_PREFIX_BCH]
         if ":" in string:
             # Case of prefix being specified
             try:
                 prefix, kind, addr_hash = cashaddr.decode(string)
             except ValueError as e:
                 raise AddressError(str(e))
-            if not support_arbitrary_prefix and prefix not in supported_prefixes:
+            if not support_arbitrary_prefix and prefix not in whitelisted_prefixes:
                 raise AddressError(f'address has unexpected prefix {prefix}')
         else:
             # The input string can omit the prefix, in which case
             # we try supported prefixes
             prefix, kind, addr_hash = None, None, None
             errors = []
-            for p in supported_prefixes:
+            for p in whitelisted_prefixes:
                 full_string = ':'.join([p, string])
                 try:
                     prefix, kind, addr_hash = cashaddr.decode(full_string)
                 except ValueError as e:
                     errors.append(str(e))
-            if len(errors) >= len(supported_prefixes):
+                else:
+                    # accept the first valid address
+                    break
+            if len(errors) >= len(whitelisted_prefixes):
                 raise AddressError(
                     f"Unable to decode CashAddr with supported prefixes."
                     "\n".join([f"{err}" for err in errors]))
