@@ -32,6 +32,7 @@ import urllib
 
 from .address import Address
 from . import bitcoin
+from .constants import WHITELISTED_PREFIXES
 from . import networks
 from .util import format_satoshis_plain, bh2u, bfh, print_error, do_in_main_thread
 from . import cashacct
@@ -143,7 +144,7 @@ def urldecode(url):
 def parseable_schemes(net = None) -> tuple:
     if net is None:
         net = networks.net
-    return (net.CASHADDR_PREFIX, cashacct.URI_SCHEME)
+    return tuple(WHITELISTED_PREFIXES) + (cashacct.URI_SCHEME, )
 
 class ExtraParametersInURIWarning(RuntimeWarning):
     ''' Raised by parse_URI to indicate the parsing succeeded but that
