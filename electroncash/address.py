@@ -764,7 +764,13 @@ class Address(namedtuple("AddressTuple", "hash160 kind")):
     def to_URI_components(self, *, net=None):
         '''Returns a (scheme, path) pair for building a URI.'''
         if net is None: net = networks.net
-        scheme = net.CASHADDR_PREFIX
+
+        if self.FMT_UI != self.FMT_CASHADDR_BCH:
+            scheme = net.CASHADDR_PREFIX
+        else:
+            # keep producing bitcoincash: URIs when requested by users
+            # until the ecosystem widely supports the new prefix
+            scheme = net.CASHADDR_PREFIX_BCH
         path = self.to_ui_string(net=net)
         return scheme, path
 
