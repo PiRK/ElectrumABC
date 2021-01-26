@@ -118,7 +118,8 @@ def create_URI(addr, amount, message, *, op_return=None, op_return_raw=None, net
         scheme, path = addr.to_URI_components(net=net)
     query = []
     if amount:
-        query.append('amount=%s'%format_satoshis_plain(amount))
+        # URI and QR-codes use Satoshis as unit
+        query.append(f'amount={amount}')
     if message:
         query.append('message=%s'%urllib.parse.quote(message))
     if op_return:
