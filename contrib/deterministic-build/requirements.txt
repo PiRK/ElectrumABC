@@ -65,6 +65,9 @@ jsonrpclib-pelix==0.4.2 \
 mnemonic==0.19 \
     --hash=sha256:4e37eb02b2cbd56a0079cabe58a6da93e60e3e4d6e757a586d9f23d96abea931 \
     --hash=sha256:a8d78c5100acfa7df9bab6b9db7390831b0e54490934b718ff9efd68f0d731a6
+pathvalidate==2.3.1 \
+    --hash=sha256:1be91f23dd1fb5002ad2b52cb4e7396deb56092ef29a7facb6e4032c5a444f8a \
+    --hash=sha256:4a84300ec54e00db7bbfbbd65b8f138c44340fac1850d7731228d3b9d6bfa4c5
 protobuf==3.14.0 \
     --hash=sha256:0e247612fadda953047f53301a7b0407cb0c3cb4ae25a6fde661597a04039b3c \
     --hash=sha256:0fc96785262042e4863b3f3b5c429d4636f10d90061e1840fce1baaf59b1a836 \
