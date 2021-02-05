@@ -204,6 +204,11 @@ export GIT_DIR_NAME=`basename $GIT_REPO`
 export PACKAGE="ElectrumABC"
 export SCRIPTNAME="electrum-abc"
 export PYI_SKIP_TAG="${PYI_SKIP_TAG:-0}" # Set this to non-zero to make PyInstaller skip tagging the bootloader
+export DEFAULT_UBUNTU_MIRROR="http://archive.ubuntu.com/ubuntu/"
+export UBUNTU_MIRROR="${UBUNTU_MIRROR:-$DEFAULT_UBUNTU_MIRROR}"
+if [ "$UBUNTU_MIRROR" != "$DEFAULT_UBUNTU_MIRROR" ]; then
+    info "Picked up override from env: UBUNTU_MIRROR=${UBUNTU_MIRROR}"
+fi
 
 # Build a command line argument for docker, enabling interactive mode if stdin
 # is a tty and enabling tty in docker if stdout is a tty.

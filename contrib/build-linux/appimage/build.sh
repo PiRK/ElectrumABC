@@ -53,6 +53,7 @@ CONTAINERNAME="electrumabc-appimage-builder-cont-$DOCKER_SUFFIX"
 info "Creating docker image ..."
 $SUDO docker build -t $IMGNAME \
     -f contrib/build-linux/appimage/Dockerfile_$DOCKER_SUFFIX \
+    --build-arg UBUNTU_MIRROR=$UBUNTU_MIRROR \
     contrib/build-linux/appimage \
     || fail "Failed to create docker image"
 
