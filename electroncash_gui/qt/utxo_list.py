@@ -23,14 +23,20 @@
 # ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from collections import defaultdict
+from enum import IntEnum
+import json
+from functools import wraps
+from typing import List
+
 from .util import *
 from electroncash.i18n import _
 from electroncash.plugins import run_hook
 from electroncash.address import Address
 from electroncash.bitcoin import COINBASE_MATURITY
-from collections import defaultdict
-from functools import wraps
-from enum import IntEnum
+
+from PyQt5.QtWidgets import QFileDialog
+
 
 
 class UTXOList(MyTreeWidget):
@@ -219,7 +225,7 @@ class UTXOList(MyTreeWidget):
         def create_menu_inner():
             if not selected:
                 return
-            coins = filter(lambda x: self.get_name(x) in selected, self.utxos)
+            coins = list(filter(lambda x: self.get_name(x) in selected, self.utxos))
             if not coins:
                 return
             spendable_coins = list(filter(lambda x: not selected.get(self.get_name(x), ''), coins))
@@ -267,6 +273,7 @@ class UTXOList(MyTreeWidget):
                 if tx:
                     label = self.wallet.get_label(txid) or None
                     menu.addAction(_("Details"), lambda: self.parent.show_transaction(tx, label))
+                menu.addAction("Export coin details", lambda: self.dump_utxo(coins))
                 act = None
                 needsep = True
                 if 'c' in frozen_flags:
@@ -291,6 +298,7 @@ class UTXOList(MyTreeWidget):
             else:
                 # multi-selection
                 menu.addSeparator()
+                menu.addAction("Export coin details", lambda: self.dump_utxo(coins))
                 if any(['c' not in flags for flags in selected.values()]):
                     # they have some coin-level non-frozen in the selection, so add the menu action "Freeze coins"
                     menu.addAction(_("Freeze Coins"), lambda: self.set_frozen_coins(list(selected.keys()), True))
@@ -366,3 +374,29 @@ class UTXOList(MyTreeWidget):
         if was != b:
             self.wallet.storage.put('utxo_list_show_cash_accounts', b)
             self.update()
+
+    def dump_utxo(self, utxos: List[dict]):
+        """Dump utxo to a file """
+        if not len(utxos):
+            return
+
+        # Specify betters names for the fields, serialize the Address
+        utxos_for_json = [
+            {
+                "txid": utxo["prevout_hash"],
+                "vout": utxo["prevout_n"],
+                "height": utxo["height"],
+                "amount": utxo["value"],
+                "address": utxo["address"].to_full_string(Address.FMT_CASHADDR_BCH),
+                "is_coinbase": utxo["coinbase"],
+                "slp_token": utxo["slp_token"],
+             } for utxo in utxos
+        ]
+
+        fileName, _filter = QFileDialog.getSaveFileName(
+            self, "Save UTXOs to file",
+            filter="JSON files (*.json); All files (*)")
+        if not fileName:
+            return
+        with open(fileName, 'w') as outfile:
+            json.dump(utxos_for_json, outfile)
