@@ -30,6 +30,8 @@ from functools import wraps
 from typing import List
 
 from .util import *
+from .avaproof_dialog import AvaProofDialog
+
 from electroncash.i18n import _
 from electroncash.plugins import run_hook
 from electroncash.address import Address
@@ -232,6 +234,13 @@ class UTXOList(MyTreeWidget):
             # Unconditionally add the "Spend" option but leave it disabled if there are no spendable_coins
             spend_action = menu.addAction(_("Spend"), lambda: self.parent.spend_coins(spendable_coins))
             spend_action.setEnabled(bool(spendable_coins))
+            menu.addAction("Export coin details", lambda: self.dump_utxo(coins))
+            avaproof_action = menu.addAction("Build avalanche proof", lambda: self.build_avaproof(coins))
+            if not self.parent.wallet.is_schnorr_possible() or self.parent.wallet.is_watching_only():
+                avaproof_action.setEnabled(False)
+                avaproof_action.set_tooltip(
+                    "Cannot build avalanche proof for hardware, multisig or "
+                    "watch-only wallet (Schnorr signature is required).")
             if len(selected) == 1:
                 # "Copy ..."
                 item = self.itemAt(position)
@@ -273,7 +282,6 @@ class UTXOList(MyTreeWidget):
                 if tx:
                     label = self.wallet.get_label(txid) or None
                     menu.addAction(_("Details"), lambda: self.parent.show_transaction(tx, label))
-                menu.addAction("Export coin details", lambda: self.dump_utxo(coins))
                 act = None
                 needsep = True
                 if 'c' in frozen_flags:
@@ -298,7 +306,6 @@ class UTXOList(MyTreeWidget):
             else:
                 # multi-selection
                 menu.addSeparator()
-                menu.addAction("Export coin details", lambda: self.dump_utxo(coins))
                 if any(['c' not in flags for flags in selected.values()]):
                     # they have some coin-level non-frozen in the selection, so add the menu action "Freeze coins"
                     menu.addAction(_("Freeze Coins"), lambda: self.set_frozen_coins(list(selected.keys()), True))
@@ -400,3 +407,10 @@ class UTXOList(MyTreeWidget):
             return
         with open(fileName, 'w') as outfile:
             json.dump(utxos_for_json, outfile)
+
+    def build_avaproof(self,  utxos: List[dict]):
+        """Open a dialog to generate an Avalanche proof using the coins as
+        stakes.
+        """
+        dialog = AvaProofDialog(utxos, wallet=self.parent.wallet, parent=self)
+        dialog.exec_()
