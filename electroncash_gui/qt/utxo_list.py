@@ -413,4 +413,4 @@ class UTXOList(MyTreeWidget):
         stakes.
         """
         dialog = AvaProofDialog(utxos, wallet=self.parent.wallet, parent=self)
-        dialog.exec_()
+        dialog.show()
