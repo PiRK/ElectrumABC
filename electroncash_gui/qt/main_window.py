@@ -2094,22 +2094,21 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             line = line.strip()
             if Address.is_legacy(line):
                 msg1 = (
-                    _("You are about to send eCash (BCHA) to a legacy address.")
+                    _("You are about to send {} to a legacy address.").format(CURRENCY)
                     + "<br><br>"
                     + _(
-                        "Legacy addresses are deprecated for eCash "
-                        "(BCHA), and used by Bitcoin (BTC)."
-                    )
+                        "Legacy addresses are deprecated for {} "
+                        ", and used by Bitcoin (BTC)."
+                    ).format(CURRENCY)
                 )
                 msg2 = _(
-                    "Proceed if what you are intending to do is sending "
-                    "eCash (BCHA)."
-                )
+                    "Proceed if what you intend to do is to send {}."
+                ).format(CURRENCY)
                 msg3 = _(
-                    "If you are intending to send BTC, close the "
-                    "application and use a BTC wallet instead.  Electrum ABC "
-                    "is an eCash (BCHA) wallet, not a BTC wallet."
-                )
+                     "If you intend to send BTC, close the application "
+                     "and use a BTC wallet instead. {} is a "
+                     "{} wallet, not a BTC wallet."
+                ).format(PROJECT_NAME, CURRENCY)
                 res = self.msg_box(
                     parent=self,
                     icon=QMessageBox.Warning,
