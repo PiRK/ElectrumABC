@@ -12,8 +12,8 @@ rdymac - Website and translations.
 kyuupichan - Miscellaneous.
 Sombernight - many fixes
 Jonald Fyookball - Imperator
-Calin Culianu - iOS version, MacOS packaging, MacOS QRScanner, CashShuffle, miscellaneous
-Malcolm Smith - New Android Version, tuneups and fixups
+Calin Culianu - MacOS packaging, MacOS QRScanner, CashShuffle, miscellaneous
+Malcolm Smith - tuneups and fixups
 Roger Taylor - new version 1.4 blockchain synch code, external plugin system, miscellanous
 Mark Lundeberg - Windows zbar, SLP (Tokens) work, cryptography, CashShuffle, miscellaneous
 James Cramer - Simple Ledger Protocol (Tokens)

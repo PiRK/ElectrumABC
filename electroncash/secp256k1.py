@@ -39,17 +39,6 @@ def _load_library():
     elif sys.platform in ('windows', 'win32'):
         library_paths = ('libsecp256k1-0.dll',  # on Windows it's in the pyinstaller top level folder, which is in the path
                          os.path.join(os.path.dirname(__file__), 'libsecp256k1-0.dll'))  # does running from source even make sense on Windows? Enquiring minds want to know.
-    elif 'ANDROID_DATA' in os.environ:
-        # We don't actually use coincurve's Python API, it's just a convenient way to load
-        # libsecp256k1.
-        import coincurve  # noqa: F401
-        library_paths = 'libsecp256k1.so',
-    elif sys.platform == 'ios':
-        # On iOS, we link secp256k1 directly into the produced binary. We load
-        # the current executable as a shared library (this works on darwin/iOS).
-        # iOS build note: In Xcode you need to set "Symbols Hidden by Default"
-        # to "No" for Debug & Release builds for this to work.
-        library_paths =  (sys.executable,)
     else:
         library_paths = (os.path.join(os.path.dirname(__file__), 'libsecp256k1.so.0'),  # on linux we install it alongside the python scripts.
                          'libsecp256k1.so.0')  # fall back to system lib, if any

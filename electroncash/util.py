@@ -354,13 +354,6 @@ def profiler(func):
     return lambda *args, **kw_args: do_profile(args, kw_args)
 
 
-@lru_cache()
-def get_android_data_dir():
-    from com.chaquo.python import Python
-    context = Python.getPlatform().getApplication()
-    return context.getFilesDir().getPath() + '/data'
-
-
 def ensure_sparse_file(filename):
     if os.name == "nt":
         try:
@@ -369,7 +362,7 @@ def ensure_sparse_file(filename):
             pass
 
 def get_headers_dir(config):
-    return get_android_data_dir() if 'ANDROID_DATA' in os.environ else config.path
+    return config.path
 
 
 def assert_datadir_available(config_path):
@@ -467,9 +460,7 @@ def bh2u(x):
 
 
 def get_user_dir(prefer_local=False):
-    if 'ANDROID_DATA' in os.environ:
-        return get_android_data_dir()
-    elif os.name == 'posix' and "HOME" in os.environ:
+    if os.name == 'posix' and "HOME" in os.environ:
         return os.path.join(os.environ["HOME"], POSIX_DATA_DIR)
     elif "APPDATA" in os.environ or "LOCALAPPDATA" in os.environ:
         app_dir = os.environ.get("APPDATA")
