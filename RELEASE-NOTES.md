@@ -87,3 +87,36 @@ Electron Cash 4.2.0 codebase with the following changes
   Electron Cash data directory on Windows. The configuration paths were not
   changed accordingly, causing new wallets to be automatically saved in the
   Electron Cash directory.
+
+
+## Release 4.3.3
+
+- Support restoring wallets from BIP39 word lists in other languages than
+  english. New seeds phrases are still generated in english, because most
+  other wallets only support english.
+- Use the new derivation path `m/44'/899'/0` by default when creating or
+  restoring a wallet. This is a pre-filled parameter that can be modified
+  by the user. The BCH and BTC derivations paths are shown in a help
+  message for users who wish to restore pre-fork wallets.
+- Prefer sending confirmed coins when sending a transaction. Unconfirmed coins
+  can still be used when necessary or when they are manually selected.
+- Display a warning when sending funds to a legacy BTC address.
+- Update some default configuration parameters the first time the user runs
+  a new version of Electrum ABC (default fee, default CashFusion server).
+- Display localized amounts with thousands separators to improve readability
+  when switching the unit to mBCHA or bits.
+- Always show the prefix when displaying a CashAddr in the user interface.
+  This will prevent confusion when the prefix is changed, in the future.
+- Support arbitrary CashAddr prefixes for the address conversion tool.
+- Improvements to the Satochip plugin:
+  - use BIP39 seeds by default instead of electrum seeds.
+  - 2FA config is removed from initial setup, and can be activated from the
+    option menu instead (clicking on the Satochip logo on the lower right
+    corner).
+  - PIN can have a maximum length of 16, not 64.
+- Add a menu action in the Coins tab to export data for selected UTXOs to a
+  JSON file.
+- Use satoshis as a unit for amounts when generating payment URIs and QR codes.
+  This aligns Electrum ABC with CashTab, Stamp and Cashew.
+- Lower the default transaction fee from 10 satoshis/byte to 5 satoshis/byte.
+- Minor performance improvements when freezing coins and saving wallet files.
