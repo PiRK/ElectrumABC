@@ -1,41 +1,27 @@
 Electrum ABC is a fork of the open source Electron Cash wallet
-(www.electroncash.org) for BCHA. The first release is based on the
-Electron Cash 4.2.0 codebase with the following changes
-
-- updated list of electrum servers
-- updated icons and branding
-- use different directory for wallets and configuration
-- automatically import wallets and some configuration files from Electron Cash
+(www.electroncash.org) for BCHA.
 
 The Electrum ABC software is NOT affiliated, associated, or endorsed by
-Electron Cash, electroncahs.org or the Electrum developers.
+Electron Cash, electroncash.org, Electrum or electrum.org.
 
 
 # Usage
 
 When you first run Electrum ABC it will use a different configuration
 directory to Electron Cash. On Unix it is ".electrum-abc", and on Windows/MacOS
-it is "ElectronCash".  Your wallet files will be copied from the Electrum
-configuration directory (".electrum" on unix, "ElectrumABC" on Windows/MacOS),
-if found.  Initially transactions will show up as unverified because
+it is "ElectrumABC".  Your wallet files will be copied from the Electron Cash
+configuration directory if found.
+
+Initially transactions will show up as unverified because
 Electrum ABC is downloading the blockchain headers to verify the transactions.
 This can take up to 10 minutes, but is only done once.
 
 Ensure you are running Electrum ABC and not Electron Cash by checking for
-"ElectrumABC" in the title bar wording.
+"Electrum ABC" in the title bar wording.
 
 We STRONGLY recommend you get comfortable and only send a small amount of BCHA
 coins at first, to yourself, to confirm the network is processing your
 transactions as expected.
-
-After the recent network fork, it can take time for the Electrum server network
-to split into two separate networks.  You should ensure you are connected to a
-BCHA Electrum server in order to send transactions successfully. For this,
-it is recommended that you leave the option "Connect only to preferred servers"
-checked in the "Tools -> Network -> Server" menu.
-
-In the future, there will be more servers available and there will no longer
-be a risk to connect to the wrong network.
 
 
 # Miscellaneous
@@ -54,6 +40,17 @@ In the meantime you can find out more about BCHA here:
 https://bitcoinabc.org/bcha/
 
 # Release notes
+
+## Release 4.3.0
+
+ The first release is based on the
+Electron Cash 4.2.0 codebase with the following changes
+
+- updated list of electrum servers
+- updated icons and branding
+- use different directory for wallets and configuration
+- automatically import wallets and some configuration files from Electron Cash
+
 
 ## Release 4.3.1
 
