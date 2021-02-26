@@ -25,7 +25,8 @@ try:
     from trezorlib.messages import (
         RecoveryDeviceType, HDNodeType, HDNodePathType,
         InputScriptType, OutputScriptType, MultisigRedeemScriptType,
-        TxInputType, TxOutputType, TxOutputBinType, TransactionType, SignTx)
+        TxInputType, TxOutputType, TxOutputBinType, TransactionType, SignTx,
+        SigningAlgo)
 
     RECOVERY_TYPE_SCRAMBLED_WORDS = RecoveryDeviceType.ScrambledWords
     RECOVERY_TYPE_MATRIX = RecoveryDeviceType.Matrix
@@ -62,10 +63,23 @@ class TrezorKeyStore(Hardware_KeyStore):
     def decrypt_message(self, sequence, message, password):
         raise RuntimeError(_('Encryption and decryption are not implemented by {}').format(self.device))
 
-    def sign_message(self, sequence, message, password):
+    def is_model_t(self) -> bool:
+        return self.get_client().get_trezor_model() == "T"
+
+    def sign_message(self, sequence, message, password,
+                     use_schnorr=False):
         client = self.get_client()
-        address_path = self.get_derivation() + "/%d/%d"%sequence
-        msg_sig = client.sign_message(address_path, message)
+        if use_schnorr:
+            if not self.is_model_t():
+                raise RuntimeError(
+                    "Schnorr signature is only available for Trezor model T")
+            signing_algo = SigningAlgo.SCHNORRBCH
+            sign_raw = True
+        else:
+            signing_algo = SigningAlgo.ECDSA
+            sign_raw = False
+        address_path = self.get_derivation() + "/%d/%d" % sequence
+        msg_sig = client.sign_message(address_path, message, signing_algo, sign_raw)
         return msg_sig.signature
 
     def sign_transaction(self, tx, password, *, use_cache=False):
@@ -112,7 +126,7 @@ class TrezorPlugin(HW_PluginBase):
     minimum_firmware = (1, 5, 2)
     keystore_class = TrezorKeyStore
     minimum_library = (0, 12, 0)
-    maximum_library = (0, 13)
+    maximum_library = (0, 14)
 
     DEVICE_IDS = (TREZOR_PRODUCT_KEY,)
 

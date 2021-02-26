@@ -8,7 +8,13 @@ from electroncash.bitcoin import serialize_xpub
 
 from trezorlib.client import TrezorClient, PASSPHRASE_ON_DEVICE
 from trezorlib.exceptions import TrezorFailure, Cancelled, OutdatedFirmwareError, TrezorException
-from trezorlib.messages import WordRequestType, FailureType, RecoveryDeviceType, ButtonRequestType
+from trezorlib.messages import (
+    WordRequestType,
+    FailureType,
+    RecoveryDeviceType,
+    ButtonRequestType,
+    SigningAlgo,
+)
 import trezorlib.btc
 import trezorlib.device
 
@@ -218,7 +224,13 @@ class TrezorClientBase(PrintError):
                 script_type=script_type,
                 multisig=multisig)
 
-    def sign_message(self, address_str, message):
+    def sign_message(self, address_str, message,
+                     signing_algo=SigningAlgo.ECDSA,
+                     is_digest: bool = False):
+        if self.get_trezor_model() != "T" and signing_algo == SigningAlgo.SCHNORRBCH:
+            raise RuntimeError("Schnorr signature is only available for Trezor T")
+        if is_digest:
+            assert isinstance(message, bytes)
         coin_name = self.plugin.get_coin_name()
         address_n = parse_path(address_str)
         with self.run_flow():
@@ -226,7 +238,9 @@ class TrezorClientBase(PrintError):
                 self.client,
                 coin_name,
                 address_n,
-                message)
+                message,
+                signing_algo=signing_algo,
+                is_digest=is_digest)
 
     def recover_device(self, recovery_type, *args, **kwargs):
         input_callback = self.mnemonic_callback(recovery_type)

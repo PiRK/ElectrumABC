@@ -2565,8 +2565,10 @@ class Abstract_Wallet(PrintError, SPVDelegate):
     def check_password(self, password):
         self.keystore.check_password(password)
 
-    def sign_message(self, address, message, password):
+    def sign_message(self, address, message, password, use_schnorr=False):
         index = self.get_address_index(address)
+        if self.is_hardware() and self.is_schnorr_message_signing_possible() and use_schnorr:
+            return self.keystore.sign_message(index, message, password, use_schnorr=use_schnorr)
         return self.keystore.sign_message(index, message, password)
 
     def decrypt_message(self, pubkey, message, password):
@@ -2605,6 +2607,16 @@ class Abstract_Wallet(PrintError, SPVDelegate):
         self.storage.write()
         self.start_threads(network)
         self.network.trigger_callback('wallet_updated', self)
+
+    def is_schnorr_message_signing_possible(self) -> bool:
+        """Return True if this wallet can sign a message with Schnorr.
+        This is similar to :func:`is_schnorr_possible` but also works
+        for a Trezor T hardware wallet (with the proper firmware version).
+        """
+        ok = bool(not self.is_multisig())
+        if ok and self.is_hardware():
+            ok = all([hasattr(k, "is_model_t") and k.is_model_t() for k in self.get_keystores()])
+        return ok
 
     def is_schnorr_possible(self, reason: list = None) -> bool:
         ''' Returns True if this wallet type is compatible.
