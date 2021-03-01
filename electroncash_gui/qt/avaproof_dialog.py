@@ -163,20 +163,24 @@ class AvaProofWidget(QtWidgets.QWidget):
         proofbuilder = ProofBuilder(
             sequence=self.sequence_sb.value(),
             expiration_time=self.calendar.dateTime().toSecsSinceEpoch(),
-            master=master)
+            master=master,
+            wallet=self.wallet)
         for utxo in self.utxos:
             address = utxo['address']
             if not isinstance(utxo['address'], Address):
                 # utxo loaded from JSON file (serialized)
                 address = Address.from_string(address)
-            priv_key = self.wallet.export_private_key(address, self._pwd)
+            priv_key = None
+            if self.wallet.can_export():
+                priv_key = self.wallet.export_private_key(address, self._pwd)
             proofbuilder.add_utxo(
                 txid=utxo['prevout_hash'],
                 vout=utxo['prevout_n'],
                 # we need the value in "bitcoins"
                 value=utxo['value'] * 10**-8,
                 height=utxo['height'],
-                wif_privkey=priv_key)
+                wif_privkey=priv_key,
+                address=address)
         proof = proofbuilder.build()
         return proof.serialize().hex()
 

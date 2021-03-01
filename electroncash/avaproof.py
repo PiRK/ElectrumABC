@@ -31,11 +31,13 @@ the hash of the stakes to prove ownership of the UTXO.
 
 
 import struct
-from typing import List
+from typing import List, Optional
 
 from . import schnorr
+from .address import Address
 from .bitcoin import public_key_from_private_key, deserialize_privkey
 from .bitcoin import Hash as sha256d
+from .wallet import Abstract_Wallet
 
 
 def write_compact_size(nsize: int) -> bytes:
@@ -128,8 +130,8 @@ class Stake:
 
         return self.utxo.serialize() + struct.pack('qI', self.amount, height_ser) + self.pubkey.serialize()
 
-    def get_hash(self, proofid) -> bytes:
-        """Return the bitcoin hash of the concatenation of proofid
+    def get_hash(self, proofid: bytes) -> bytes:
+        """Return the double SHA256 hash of the concatenation of proofid
         and the serialized stake."""
         return sha256d(proofid + self.serialize())
 
@@ -162,13 +164,30 @@ class SignedStake:
 
 
 class StakeSigner:
-    def __init__(self, stake, key):
+    def __init__(self, stake, key=None,
+                 wallet=None, address=None):
         self.stake: Stake = stake
-        self.key: Key = key
+        self.key: Optional[Key] = key
+        """Private key to be used to sign this stake"""
+        self.wallet: Optional[Abstract_Wallet] = wallet
+        """Wallet used to sign the stake. This is only used if
+        :attr:`key` is not specified. Only Trezor Model T with a
+        custom firmware is currently compatible with Schnorr
+        signatures of arbitrary data."""
+        self.address: Optional[Address] = address
+        """Address must be specified in case the private key is not
+        specified, to let the wallet find the derivation path
+        and do the Schnorr signature (for Trezor Model T only)."""
 
     def sign(self, proofid: bytes) -> SignedStake:
-        return SignedStake(self.stake,
-                           self.key.sign_schnorr(self.stake.get_hash(proofid)))
+        if self.key is not None:
+            sig = self.key.sign_schnorr(self.stake.get_hash(proofid))
+        else:
+            assert self.address is not None and self.wallet is not None
+            sig = self.wallet.sign_message(
+                self.address, self.stake.get_hash(proofid), "",
+                use_schnorr=True)
+        return SignedStake(self.stake, sig)
 
 
 class Proof:
@@ -203,7 +222,7 @@ class Proof:
 
 class ProofBuilder(object):
     def __init__(self, sequence: int, expiration_time: int,
-                 master: str):
+                 master: str, wallet: Optional[Abstract_Wallet] = None):
         """
 
         :param sequence:
@@ -217,26 +236,51 @@ class ProofBuilder(object):
         self.master: PublicKey = PublicKey(bytes.fromhex(master))
         """Master public key"""
 
+        self.wallet = wallet
+        """Wallet used to sign the stakes. If the utxos are specified with
+        private keys, this is ignored. If not so, and this wallet is a
+        Trezor Model T, the wallet can take care of the Schnorr signature.
+        """
+
         self.stake_signers: List[StakeSigner] = []
 
-    def add_utxo(self, txid, vout, value, height, wif_privkey):
+    def add_utxo(self, txid: str, vout: int, value: float, height: int,
+                 wif_privkey: Optional[str] = None,
+                 address: Optional[Address] = None):
         """
 
-        :param str txid: Transaction hash (hex str)
-        :param int vout: Output index for this utxo in the transaction.
-        :param float value: Amount in bitcoins
-        :param int height: Block height containing this transaction
-        :param str wif_privkey: Private key unlocking this UTXO (in WIF format)
+        :param txid: Transaction hash (hex str)
+        :param vout: Output index for this utxo in the transaction.
+        :param value: Amount in bitcoins
+        :param height: Block height containing this transaction
+        :param wif_privkey: Private key unlocking this UTXO (in WIF format)
+        :param address: P2PKH address for this UTXO. This must be specified
+            if `wif_privkey` is not specified, and it is ignored if a private
+            key is specified.
         :return:
         """
-        _txin_type, deser_privkey, compressed = deserialize_privkey(wif_privkey)
-        privkey = Key(deser_privkey, compressed)
+        if wif_privkey is None and address is None:
+            return RuntimeError("One of wif_privkey or address must be specified")
+        if wif_privkey is None:
+            if self.wallet is None or not self.wallet.is_schnorr_message_signing_possible():
+                raise RuntimeError(
+                    "This wallet type does not implement Schnorr signature for "
+                    "messages ")
+            privkey = None
+            pubkeys = self.wallet.get_public_keys(address)
+            assert len(pubkeys) == 1
+            pubkey = PublicKey(bytes.fromhex(pubkeys[0]))
+        else:
+            _txin_type, deser_privkey, compressed = deserialize_privkey(wif_privkey)
+            privkey = Key(deser_privkey, compressed)
+            pubkey = privkey.get_pubkey()
 
         utxo = COutPoint(bytes.fromhex(txid), vout)
         amount = int(10 ** 8 * value)
-        stake = Stake(utxo, amount, height, privkey.get_pubkey())
+        stake = Stake(utxo, amount, height, pubkey)
 
-        self.stake_signers.append(StakeSigner(stake, privkey))
+        self.stake_signers.append(
+            StakeSigner(stake, privkey, self.wallet, address))
 
     def build(self):
         proofid = compute_proof_id(

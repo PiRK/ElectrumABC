@@ -2565,7 +2565,8 @@ class Abstract_Wallet(PrintError, SPVDelegate):
     def check_password(self, password):
         self.keystore.check_password(password)
 
-    def sign_message(self, address, message, password, use_schnorr=False):
+    def sign_message(self, address: Address, message: str, password: str,
+                     use_schnorr: bool = False):
         index = self.get_address_index(address)
         if self.is_hardware() and self.is_schnorr_message_signing_possible() and use_schnorr:
             return self.keystore.sign_message(index, message, password, use_schnorr=use_schnorr)

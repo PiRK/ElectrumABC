@@ -236,7 +236,8 @@ class UTXOList(MyTreeWidget):
             spend_action.setEnabled(bool(spendable_coins))
             menu.addAction("Export coin details", lambda: self.dump_utxo(coins))
             avaproof_action = menu.addAction("Build avalanche proof", lambda: self.build_avaproof(coins))
-            if not self.parent.wallet.is_schnorr_possible() or self.parent.wallet.is_watching_only():
+            if (not self.parent.wallet.is_schnorr_message_signing_possible() or
+                self.parent.wallet.is_watching_only()):
                 avaproof_action.setEnabled(False)
                 avaproof_action.setToolTip(
                     "Cannot build avalanche proof for hardware, multisig or "
