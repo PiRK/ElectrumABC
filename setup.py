@@ -20,6 +20,9 @@ with open('contrib/requirements/requirements.txt') as f:
 with open('contrib/requirements/requirements-hw.txt') as f:
     requirements_hw = f.read().splitlines()
 
+with open('contrib/requirements/requirements-binaries.txt') as f:
+    requirements_binaries = f.read().splitlines()
+
 # We use this convoluted way of importing version.py and constants.py
 # because the setup.py scripts tends to be called with python option
 # -O, which is not allowed for electroncash (see comment in module
@@ -168,8 +171,8 @@ setup(
     install_requires=requirements,
     extras_require={
         'hardware': requirements_hw,
-        'gui': ['pyqt5'],
-        'all': requirements_hw + ['pyqt5']
+        'gui': requirements_binaries,
+        'all': requirements_hw + requirements_binaries
     },
     packages=[
         'electroncash',
