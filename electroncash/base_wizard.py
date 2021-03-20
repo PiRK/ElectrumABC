@@ -282,7 +282,8 @@ class BaseWizard(util.PrintError):
     def derivation_dialog(self,
                           run_next: Callable,
                           default_derivation: str,
-                          is_hw_wallet: bool = False):
+                          is_hw_wallet: bool = False,
+                          seed: str = ''):
         bip44_btc = keystore.bip44_derivation_btc(0)
         bip44_bch = keystore.bip44_derivation_bch(0)
         bip44_bcha = keystore.bip44_derivation_bcha(0)
@@ -301,10 +302,15 @@ class BaseWizard(util.PrintError):
                          " unless you know that your device already supports"
                          " the new BCHA derivation path.")
         message = '\n'.join(lines)
-        self.line_dialog(run_next=run_next,
-                         title=_(f'Derivation for {self.wallet_type} wallet'),
-                         message=message, default=default_derivation,
-                         test=bitcoin.is_bip32_derivation)
+        scannable = True if self.wallet_type == 'standard' else False
+        self.derivation_path_dialog(
+            run_next=run_next,
+            title=_(f'Derivation for {self.wallet_type} wallet'),
+            message=message, default=default_derivation,
+            test=bitcoin.is_bip32_derivation,
+            seed=seed,
+            scannable=scannable
+        )
 
     def on_hw_derivation(self, name, device_info, derivation):
         from .keystore import hardware_keystore
@@ -358,7 +364,7 @@ class BaseWizard(util.PrintError):
 
     def on_restore_bip39(self, seed, passphrase):
         f = lambda x: self.run('on_bip44', seed, passphrase, str(x))
-        self.derivation_dialog(f, keystore.bip44_derivation_bcha(0))
+        self.derivation_dialog(f, keystore.bip44_derivation_bcha(0), seed=seed)
 
     def create_keystore(self, seed, passphrase):
         # auto-detect, prefers old, electrum, bip39 in that order. Since we

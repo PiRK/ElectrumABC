@@ -759,6 +759,11 @@ def bip44_derivation_bch(account_id: int) -> str:
     return _bip44_derivation(145, account_id)
 
 
+def bip44_derivation_bch_tokens(account_id: int) -> str:
+    """Return the BCH derivation path."""
+    return _bip44_derivation(245, account_id)
+
+
 def bip44_derivation_bcha(account_id: int) -> str:
     """Return the BCHA BIP44 derivation path for an account id.
     """
