@@ -46,7 +46,7 @@ from .i18n import ngettext
 from .util import (NotEnoughFunds, ExcessiveFee, PrintError,
                    UserCancelled, InvalidPassword, profiler,
                    format_satoshis, format_time, finalization_print_error,
-                   to_string, bh2u)
+                   to_string, bh2u, TimeoutException)
 
 from .address import Address, Script, ScriptOutput, PublicKey
 from .version import PACKAGE_VERSION
@@ -2131,7 +2131,11 @@ class Abstract_Wallet(PrintError, SPVDelegate):
             # a network call and it will eventually exit.
             t.join(timeout=3.0)
 
-    def wait_until_synchronized(self, callback=None):
+    def wait_until_synchronized(self, callback=None, *, timeout=None):
+        tstart = time.time()
+        def check_timed_out():
+            if timeout is not None and time.time() - tstart > timeout:
+                raise TimeoutException()
         def wait_for_wallet():
             self.set_up_to_date(False)
             while not self.is_up_to_date():
@@ -2142,12 +2146,14 @@ class Abstract_Wallet(PrintError, SPVDelegate):
                         len(self.addresses(True)))
                     callback(msg)
                 time.sleep(0.1)
+                check_timed_out()
         def wait_for_network():
             while not self.network.is_connected():
                 if callback:
                     msg = "%s \n" % (_("Connecting..."))
                     callback(msg)
                 time.sleep(0.1)
+                check_timed_out()
         # wait until we are connected, because the user
         # might have selected another server
         if self.network:

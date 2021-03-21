@@ -303,14 +303,9 @@ class BaseWizard(util.PrintError):
                          " the new BCHA derivation path.")
         message = '\n'.join(lines)
         scannable = True if self.wallet_type == 'standard' else False
-        self.derivation_path_dialog(
-            run_next=run_next,
-            title=_(f'Derivation for {self.wallet_type} wallet'),
-            message=message, default=default_derivation,
-            test=bitcoin.is_bip32_derivation,
-            seed=seed,
-            scannable=scannable
-        )
+        self.derivation_path_dialog(run_next=run_next, title=_(f'Derivation for {self.wallet_type} wallet'),
+                                    message=message, default=default_derivation, test=bitcoin.is_bip32_derivation,
+                                    seed=seed, scannable=scannable)
 
     def on_hw_derivation(self, name, device_info, derivation):
         from .keystore import hardware_keystore

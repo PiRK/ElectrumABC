@@ -1,6 +1,8 @@
 # -*- mode: python3 -*-
 import os
+import random
 import sys
+import tempfile
 import threading
 import traceback
 
@@ -8,12 +10,15 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from electroncash import Wallet, WalletStorage
-from electroncash.util import UserCancelled, InvalidPassword, finalization_print_error
+
+from electroncash import keystore, Wallet, WalletStorage
+from electroncash.network import Network
+from electroncash.util import UserCancelled, InvalidPassword, finalization_print_error, TimeoutException
 from electroncash.base_wizard import BaseWizard
 from electroncash.i18n import _
 from electroncash.constants import PROJECT_NAME
 from electroncash import keystore
+from electroncash.wallet import Standard_Wallet
 
 from .seed_dialog import SeedLayout, KeysLayout
 from .network_dialog import NetworkChoiceLayout
@@ -74,7 +79,6 @@ class CosignWidget(QWidget):
         qp.end()
 
 
-
 def wizard_dialog(func):
     def func_wrapper(*args, **kwargs):
         run_next = kwargs['run_next']
@@ -92,7 +96,6 @@ def wizard_dialog(func):
             out = (out,)
         run_next(*out)
     return func_wrapper
-
 
 
 # WindowModalDialog must come first as it overrides show_error
@@ -287,8 +290,6 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         self.wallet = Wallet(self.storage)
         return self.wallet, password
 
-
-
     def finished(self):
         """Called in hardware client wrapper, in order to close popups."""
         return
@@ -417,7 +418,8 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         cannot go back, and instead the user can only cancel."""
         return self.pw_layout(MSG_ENTER_PASSWORD, PW_NEW)
 
-    def _add_extra_button_to_layout(self, extra_button, layout):
+    @staticmethod
+    def _add_extra_button_to_layout(extra_button, layout):
         if (not isinstance(extra_button, (list, tuple))
                 or not len(extra_button) == 2):
             return
@@ -429,7 +431,6 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         hbox.addWidget(but)
         layout.addLayout(hbox)
         but.clicked.connect(but_action)
-
 
     @wizard_dialog
     def confirm_dialog(self, title, message, run_next, extra_button=None):
@@ -478,7 +479,6 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         action = c_values[clayout.selected_index()]
         return action
 
-
     def query_choice(self, msg, choices):
         """called by hardware wallets"""
         clayout = ChoicesLayout(msg, choices)
@@ -522,7 +522,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         if scannable:
             hbox = QHBoxLayout()
             hbox.setContentsMargins(12,24,12,12)
-            but = QPushButton(_("Scan for derivation paths"))
+            but = QPushButton(_("Scan Derivation Paths..."))
             hbox.addStretch(1)
             hbox.addWidget(but)
             vbox.addLayout(hbox)
@@ -530,7 +530,6 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
 
         self.exec_layout(vbox, title, next_enabled=test(default))
         return ' '.join(line.text().split())
-
 
     @wizard_dialog
     def show_xpub_dialog(self, xpub, run_next):
@@ -604,6 +603,7 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
         return (m, n)
 
     linux_hw_wallet_support_dialog = None
+
     def on_hw_wallet_support(self):
         ''' Overrides base wizard's noop impl. '''
         if sys.platform.startswith("linux"):
@@ -620,67 +620,110 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
             self.show_error("Linux only facility. FIXME!")
 
 
+
 class DerivationPathScanner(QThread):
 
     DERIVATION_PATHS = [
+        keystore.bip44_derivation_bcha(0),
+        keystore.bip44_derivation_bcha_tokens(0),
         keystore.bip44_derivation_bch(0),
+        keystore.bip44_derivation_btc(0),
+        keystore.bip44_derivation_bch_tokens(0),
         "m/144'/44'/0'",
         "m/144'/0'/0'",
         "m/44'/0'/0'/0",
-        "m/0'/0",
         "m/0",
+        "m/0'",
+        "m/0'/0",
         "m/0'/0'",
+        "m/0'/0'/0'",
         "m/44'/145'/0'/0",
-        keystore.bip44_derivation_bch_tokens(0),
-        keystore.bip44_derivation_bcha(0),
-        keystore.bip44_derivation_bcha_tokens(0),]
+        "m/44'/245'/0",
+        "m/44'/245'/0'/0",
+        "m/49'/0'/0'",
+        "m/84'/0'/0'",
+    ]
 
-    def __init__(self, parent, seed, update_table_cb):
+    def __init__(self, parent, seed, seed_type, config, update_table_cb):
         QThread.__init__(self, parent)
         self.update_table_cb = update_table_cb
-        self.parent = parent
         self.seed = seed
+        self.seed_type = seed_type
+        self.config = config
         self.aborting = False
 
+    def notify_offline(self):
+        for i, p in enumerate(self.DERIVATION_PATHS):
+            self.update_table_cb(i, _('Offline'))
+
+    def notify_timedout(self, i):
+        self.update_table_cb(i, _('Timed out'))
+
     def run(self):
-        from electroncash.network import Network
         network = Network.get_instance()
         if not network:
-            for i, p in enumerate(self.DERIVATION_PATHS):
-                self.update_table_cb(i, _('Offline'))
+            self.notify_offline()
             return
 
         for i, p in enumerate(self.DERIVATION_PATHS):
             if self.aborting:
                 return
-            from electroncash import keystore
-            from electroncash.wallet import Standard_Wallet
-            from electroncash.storage import WalletStorage
-            k = keystore.from_seed(self.seed, '', derivation=p, seed_type=self.parent.seed_type)
-            storage_path = self.parent.config.get_wallet_path() + "_not_saved_on_disk"
+            k = keystore.from_seed(self.seed, '', derivation=p, seed_type=self.seed_type)
+            p_safe = p.replace('/', '_').replace("'", 'h')
+            storage_path = os.path.join(
+                tempfile.gettempdir(),
+                p_safe + '_' + random.getrandbits(32).to_bytes(4, 'big').hex()[:8] + "_not_saved_"
+            )
             tmp_storage = WalletStorage(storage_path, in_memory_only=True)
-            tmp_storage.put('seed_type', self.parent.seed_type)
-            keys = k.dump()
-            tmp_storage.put('keystore', keys)
+            tmp_storage.put('seed_type', self.seed_type)
+            tmp_storage.put('keystore', k.dump())
             wallet = Standard_Wallet(tmp_storage)
-            wallet.start_threads(network)
-            wallet.synchronize()
-            wallet.wait_until_synchronized()
-            while network.is_connecting():
-                time.sleep(0.1)
-            num_tx = len(wallet.get_history())
-            wallet.clear_history()
-            self.update_table_cb(i, str(num_tx))
+            try:
+                wallet.start_threads(network)
+                wallet.synchronize()
+                wallet.print_error("Scanning", p)
+                synched = False
+                for ctr in range(25):
+                    try:
+                        wallet.wait_until_synchronized(timeout=1.0)
+                        synched = True
+                    except TimeoutException:
+                        wallet.print_error(f'timeout try {ctr+1}/25')
+                    if self.aborting:
+                        return
+                if not synched:
+                    wallet.print_error("Timeout on", p)
+                    self.notify_timedout(i)
+                    continue
+                while network.is_connecting():
+                    time.sleep(0.1)
+                    if self.aborting:
+                        return
+                num_tx = len(wallet.get_history())
+                self.update_table_cb(i, str(num_tx))
+            finally:
+                wallet.clear_history()
+                wallet.stop_threads()
+
 
 class DerivationDialog(QDialog):
     scan_result_signal = pyqtSignal(object, object)
+
     def __init__(self, parent, seed, paths):
         QDialog.__init__(self, parent)
 
-        self.setWindowTitle(_('Select derivation path'))
+        self.seed = seed
+        self.seed_type = parent.seed_type
+        self.config = parent.config
+        self.max_seen = 0
+
+        self.setWindowTitle(_('Select Derivation Path'))
         vbox = QVBoxLayout()
         self.setLayout(vbox)
-        vbox.setContentsMargins(25, 25, 25, 25)
+        vbox.setContentsMargins(24, 24, 24, 24)
+
+        self.label = QLabel(self)
+        vbox.addWidget(self.label)
 
         self.table = QTableWidget(self)
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
@@ -694,6 +737,7 @@ class DerivationDialog(QDialog):
         self.table.setHorizontalHeaderItem(1, QTableWidgetItem(_('Transactions')))
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.table.setMinimumHeight(350)
 
         for row, d_path in enumerate(paths):
             path_item = QTableWidgetItem(d_path)
@@ -712,22 +756,49 @@ class DerivationDialog(QDialog):
         vbox.addStretch(1)
         ok_but.setEnabled(True)
         self.scan_result_signal.connect(self.update_table)
-        self.t = DerivationPathScanner(parent, seed, self.update_table_cb)
-        self.t.start()
+        self.t = None
+
+    def set_scan_progress(self, n):
+        self.label.setText(_('Scanned {}/{}').format(n, len(DerivationPathScanner.DERIVATION_PATHS)))
+
+    def kill_t(self):
+        if self.t and self.t.isRunning():
+            self.t.aborting = True
+            self.t.wait(5000)
+
+    def showEvent(self, e):
+        super().showEvent(e)
+        if e.isAccepted():
+            self.kill_t()
+            self.t = DerivationPathScanner(self, self.seed, self.seed_type, self.config, self.update_table_cb)
+            self.max_seen = 0
+            self.set_scan_progress(0)
+            self.t.start()
+
+    def closeEvent(self, e):
+        super().closeEvent(e)
+        if e.isAccepted():
+            self.kill_t()
 
     def update_table_cb(self, row, scan_result):
         self.scan_result_signal.emit(row, scan_result)
 
     def update_table(self, row, scan_result):
+        self.set_scan_progress(row+1)
+        try:
+            num = int(scan_result)
+            if num > self.max_seen:
+                self.table.selectRow(row)
+                self.max_seen = num
+        except (ValueError, TypeError):
+            pass
         self.table.item(row, 1).setText(scan_result)
 
     def get_selected_path(self):
+        path_to_return = None
         if self.exec_():
-            self.t.aborting = True
             pathstr = self.table.selectionModel().selectedRows()
             row = pathstr[0].row()
-            path_to_return =  self.table.item(row, 0).text()
-            return path_to_return
-
-        self.t.aborting = True
-        return None
+            path_to_return = self.table.item(row, 0).text()
+        self.kill_t()
+        return path_to_return
