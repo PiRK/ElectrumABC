@@ -302,7 +302,7 @@ class BaseWizard(util.PrintError):
                          " unless you know that your device already supports"
                          " the new BCHA derivation path.")
         message = '\n'.join(lines)
-        scannable = True if self.wallet_type == 'standard' and seed else False
+        scannable = (self.wallet_type == "standard") and bool(seed)
         self.derivation_path_dialog(run_next=run_next, title=_(f'Derivation for {self.wallet_type} wallet'),
                                     message=message, default=default_derivation, test=bitcoin.is_bip32_derivation,
                                     seed=seed, scannable=scannable)
