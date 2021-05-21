@@ -2532,12 +2532,16 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         cash_address = ButtonsLineEdit()
         cash_address.addCopyButton()
         cash_address.setReadOnly(True)
+        cash_address_bch = ButtonsLineEdit()
+        cash_address_bch.addCopyButton()
+        cash_address_bch.setReadOnly(True)
         legacy_address = ButtonsLineEdit()
         legacy_address.addCopyButton()
         legacy_address.setReadOnly(True)
 
         widgets = [
             (cash_address, Address.FMT_CASHADDR),
+            (cash_address_bch, Address.FMT_CASHADDR_BCH),
             (legacy_address, Address.FMT_LEGACY),
         ]
 
@@ -2571,10 +2575,15 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         grid.addWidget(label, 1, 0)
         grid.addWidget(cash_address, 1, 1)
 
+        label = QLabel(_('&BCH address'))
+        label.setBuddy(cash_address_bch)
+        grid.addWidget(label, 2, 0)
+        grid.addWidget(cash_address_bch, 2, 1)
+
         label = QLabel(_('&Legacy address'))
         label.setBuddy(legacy_address)
-        grid.addWidget(label, 2, 0)
-        grid.addWidget(legacy_address, 2, 1)
+        grid.addWidget(label, 3, 0)
+        grid.addWidget(legacy_address, 3, 1)
 
         w.setLayout(grid)
 
