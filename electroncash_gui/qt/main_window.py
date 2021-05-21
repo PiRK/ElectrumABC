@@ -771,12 +771,12 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             "</span>" +
             '<span style="font-weight:200;"><p>' +
             _(f"{PROJECT_NAME}'s focus is speed, with low resource usage and"
-              f" simplifying Bitcoin Cash. You do not need to perform regular "
+              f" simplifying {CURRENCY}. You do not need to perform regular "
               f"backups, because your wallet can be recovered from a secret "
               f"phrase that you can memorize or write on paper. Startup times "
               f"are instant because it operates in conjunction with "
               f"high-performance servers that handle the most complicated "
-              f"parts of the Bitcoin Cash system.") +
+              f"parts of the {CURRENCY} system.") +
             "</p></span>"
         )
 
