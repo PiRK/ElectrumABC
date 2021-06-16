@@ -25,7 +25,7 @@ This directory is saved in the local directory containing the exe.
 CURRENCY = "eCash"
 
 BASE_UNITS: Mapping[str, int] = OrderedDict(
-    (('MegaXEC', 8),  ('kXEC', 5), ('XEC', 2)))
+    (('MegaXEC', 8),  ('XEC', 2)))
 """Ordered dict providing the location of the decimal place for all
 conventional units."""
 
