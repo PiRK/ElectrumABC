@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Electrum ABC - lightweight BCHA client
+# Electrum ABC - lightweight eCash client
 # Copyright (C) 2020 The Electrum ABC developers
 # Copyright (C) 2018 Thomas Voegtlin
 #

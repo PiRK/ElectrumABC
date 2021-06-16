@@ -1,4 +1,4 @@
-# Electrum ABC - lightweight BCHA client
+# Electrum ABC - lightweight eCash client
 # Copyright (C) 2020 The Electron Cash developers
 #
 # Permission is hereby granted, free of charge, to any person
