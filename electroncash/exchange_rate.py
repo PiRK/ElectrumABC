@@ -443,7 +443,7 @@ class FxThread(ThreadJob):
         # if base_unit == 'bits', increase precision on fiat as bits is pretty
         # tiny as of 2019
         if base_unit == INV_BASE_UNITS.get(2):
-            default_prec = 4
+            default_prec = 8
 
         return " 1 %s~%s %s" % (
             base_unit,

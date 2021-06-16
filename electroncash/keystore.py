@@ -763,15 +763,14 @@ def bip44_derivation_bch_tokens(account_id: int) -> str:
     """Return the BCH derivation path."""
     return _bip44_derivation(245, account_id)
 
-
-def bip44_derivation_bcha(account_id: int) -> str:
-    """Return the BCHA BIP44 derivation path for an account id.
+def bip44_derivation_xec(account_id: int) -> str:
+    """Return the XEC BIP44 derivation path for an account id.
     """
     return _bip44_derivation(899, account_id)
 
 
-def bip44_derivation_bcha_tokens(account_id: int) -> str:
-    """Return the BIP44 derivation path for BCHA SLP tokens
+def bip44_derivation_xec_tokens(account_id: int) -> str:
+    """Return the BIP44 derivation path for XEC SLP tokens
     """
     return _bip44_derivation(1899, account_id)
 
@@ -802,7 +801,7 @@ def from_seed(seed, passphrase, is_p2sh=None, *, seed_type='', derivation=None) 
         keystore.passphrase = passphrase
         bip32_seed = mnemo.bip39_mnemonic_to_seed(seed, passphrase)
         xtype = 'standard'  # bip43
-        derivation = derivation or bip44_derivation_bcha(0)
+        derivation = derivation or bip44_derivation_xec(0)
         keystore.add_xprv_from_seed(bip32_seed, xtype, derivation)
     else:
         raise InvalidSeed()

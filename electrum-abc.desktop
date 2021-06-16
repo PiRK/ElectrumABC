@@ -3,9 +3,9 @@
 # sudo desktop-file-install electrum-abc.desktop
 
 [Desktop Entry]
-Comment=Lightweight BCHA Client
+Comment=Lightweight eCash Client
 Exec=electrum-abc %u
-GenericName=BCHA Wallet
+GenericName=eCash Wallet
 Icon=electron-cash
 Name=Electrum ABC
 Categories=Finance;Network;

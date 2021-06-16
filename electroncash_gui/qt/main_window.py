@@ -4240,7 +4240,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
         units = tuple(electroncash.constants.BASE_UNITS.keys())
         msg = _('Base unit of your wallet.')\
-              + '\n1 BCHA = 1,000 mBCHA = 1,000,000 bits.\n' \
+              + '\n1 MegaXEC = 1 BCHA = 1,000,000 XEC.\n' \
               + _(' These settings affects the fields in the Send tab')+' '
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()

@@ -1,5 +1,5 @@
-Electrum ABC - Lightweight BCHA client
-======================================
+Electrum ABC - Lightweight eCash client
+=======================================
 
 ::
 

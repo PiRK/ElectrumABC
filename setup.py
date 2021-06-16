@@ -245,7 +245,7 @@ setup(
     ],
     scripts=[SCRIPT_NAME],
     data_files=data_files,
-    description="Lightweight BCHA Wallet",
+    description="Lightweight eCash Wallet",
     author=f"The {PROJECT_NAME} Developers",
     # author_email=
     license="MIT Licence",

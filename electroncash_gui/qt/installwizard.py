@@ -626,8 +626,8 @@ class InstallWizard(QDialog, MessageBoxMixin, BaseWizard):
 class DerivationPathScanner(QThread):
 
     DERIVATION_PATHS = [
-        keystore.bip44_derivation_bcha(0),
-        keystore.bip44_derivation_bcha_tokens(0),
+        keystore.bip44_derivation_xec(0),
+        keystore.bip44_derivation_xec_tokens(0),
         keystore.bip44_derivation_bch(0),
         keystore.bip44_derivation_btc(0),
         keystore.bip44_derivation_bch_tokens(0),
