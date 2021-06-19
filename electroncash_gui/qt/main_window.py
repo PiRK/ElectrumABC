@@ -167,7 +167,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.need_update = threading.Event()
         self.labels_need_update = threading.Event()
 
-        self.decimal_point = config.get('decimal_point', 8)
+        self.decimal_point = config.get('decimal_point', 2)
         self.fee_unit = config.get('fee_unit', 0)
         self.num_zeros     = int(config.get('num_zeros',0))
 
