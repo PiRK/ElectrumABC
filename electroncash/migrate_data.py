@@ -208,6 +208,10 @@ def update_config():
             _logger.info("Updating default CashFusion server")
             config["cashfusion_server"] = DEFAULT_SERVERS[0]
 
+    # Migrate all users to the XEC unit
+    if "decimal_point" in config and tuple(config_version) <= (4, 9, 9):
+        config["decimal_point"] = 2
+
     # update version number, to avoid doing this again for this version
     config["latest_version_used"] = VERSION_TUPLE
     save_user_config(config, get_user_dir())
