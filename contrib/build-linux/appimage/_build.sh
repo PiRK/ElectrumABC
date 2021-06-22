@@ -119,7 +119,7 @@ mkdir -p "$CACHEDIR/pip_cache"
 
 info "Copying desktop integration"
 cp -fp "$PROJECT_ROOT/$SCRIPTNAME.desktop" "$APPDIR/$SCRIPTNAME.desktop"
-cp -fp "$PROJECT_ROOT/icons/electron-cash.png" "$APPDIR/electron-cash.png"
+cp -fp "$PROJECT_ROOT/icons/electrumABC.png" "$APPDIR/electrumABC.png"
 
 
 # add launcher

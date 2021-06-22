@@ -376,15 +376,15 @@ class ElectrumGui(QObject, PrintError):
             # icon, otherwise we get the generic Python icon.
             # In non-running-from-source mode, macOS will get the icon from
             # the .app bundle Info.plist spec (which ends up being
-            # electrum.icns).  However, in .app mode, Qt will not know about
+            # electrumABC.icns).  However, in .app mode, Qt will not know about
             # this icon and won't be able to use it for e.g. the About dialog.
             # In the latter case the branch below will tell Qt to use
-            # electrum.svg as the "window icon".
-            icon = QIcon("electrum.icns") if os.path.exists("electrum.icns") else None
+            # electrumABC.svg as the "window icon".
+            icon = QIcon("electrumABC.icns") if os.path.exists("electrumABC.icns") else None
         if not icon:
             # Set this on all other platforms (and macOS built .app) as it can
             # only help and never harm, and is always available.
-            icon = QIcon(":icons/electrum.svg")
+            icon = QIcon(":icons/electrumABC.svg")
         if icon:
             self.app.setWindowIcon(icon)
 
@@ -903,7 +903,7 @@ class ElectrumGui(QObject, PrintError):
             try:
                 # this requires Qt 5.9
                 self.tray.showMessage(f"{PROJECT_NAME}", message,
-                                      QIcon(":icons/electrum.svg"),
+                                      QIcon(":icons/electrumABC.svg"),
                                       20000)
             except TypeError:
                 self.tray.showMessage(f"{PROJECT_NAME}", message,
