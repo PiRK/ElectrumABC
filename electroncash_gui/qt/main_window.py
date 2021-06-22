@@ -866,8 +866,8 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         return self.decimal_point
 
     def base_unit(self):
-        if self.decimal_point in electroncash.constants.INV_BASE_UNITS:
-            return electroncash.constants.INV_BASE_UNITS[self.decimal_point]
+        if self.decimal_point in electroncash.constants.BASE_UNITS_BY_DECIMALS:
+            return electroncash.constants.BASE_UNITS_BY_DECIMALS[self.decimal_point]
         raise Exception('Unknown base unit')
 
     def connect_fields(self, window, btc_e, fiat_e, fee_e):
@@ -4238,21 +4238,24 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         # Crash reporter box at bottom of this tab
         misc_widgets.append((cr_gb, None))  # commit crash reporter gb to layout
 
-        units = tuple(electroncash.constants.BASE_UNITS.keys())
+        units_for_menu = tuple(u.name_for_selection_menu for
+                               u in electroncash.constants.BASE_UNITS)
+        unit_names = tuple(u.name for u in electroncash.constants.BASE_UNITS)
         msg = _('Base unit of your wallet.')\
               + '\n1 MegaXEC = 1 BCHA = 1,000,000 XEC.\n' \
               + _(' These settings affects the fields in the Send tab')+' '
         unit_label = HelpLabel(_('Base unit') + ':', msg)
         unit_combo = QComboBox()
-        unit_combo.addItems(units)
-        unit_combo.setCurrentIndex(units.index(self.base_unit()))
+        unit_combo.addItems(units_for_menu)
+        unit_combo.setCurrentIndex(unit_names.index(self.base_unit()))
         def on_unit(x, nz):
-            unit_result = units[unit_combo.currentIndex()]
+            unit_index = unit_combo.currentIndex()
+            unit_result = unit_names[unit_index]
             if self.base_unit() == unit_result:
                 return
             edits = self.amount_e, self.fee_e, self.receive_amount_e
             amounts = [edit.get_amount() for edit in edits]
-            dp = electroncash.constants.BASE_UNITS.get(unit_result)
+            dp = electroncash.constants.BASE_UNITS[unit_index].decimals
             if dp is not None:
                 self.decimal_point = dp
             else:

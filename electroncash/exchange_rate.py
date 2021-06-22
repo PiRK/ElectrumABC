@@ -16,7 +16,7 @@ from typing import Dict, List
 import requests
 
 from .bitcoin import COIN
-from .constants import INV_BASE_UNITS, PROJECT_NAME
+from .constants import BASE_UNITS_BY_DECIMALS, PROJECT_NAME
 from .i18n import _
 from .util import PrintError, ThreadJob, print_error
 
@@ -442,7 +442,7 @@ class FxThread(ThreadJob):
         default_prec = 2
         # if base_unit == 'bits', increase precision on fiat as bits is pretty
         # tiny as of 2019
-        if base_unit == INV_BASE_UNITS.get(2):
+        if base_unit == BASE_UNITS_BY_DECIMALS.get(2):
             default_prec = 8
 
         return " 1 %s~%s %s" % (

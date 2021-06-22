@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import (QLineEdit, QStyle, QStyleOptionFrame)
 
 from decimal import Decimal as PyDecimal  # Qt 5.12 also exports Decimal
 from electroncash.util import format_satoshis_plain
-from electroncash.constants import INV_BASE_UNITS
+from electroncash.constants import BASE_UNITS_BY_DECIMALS
 from .util import ColorScheme
 
 class MyLineEdit(QLineEdit):
@@ -78,8 +78,8 @@ class BTCAmountEdit(AmountEdit):
 
     def _base_unit(self):
         p = self.decimal_point()
-        if p in INV_BASE_UNITS:
-            return INV_BASE_UNITS[p]
+        if p in BASE_UNITS_BY_DECIMALS:
+            return BASE_UNITS_BY_DECIMALS[p]
         raise Exception('Unknown base unit')
 
     def get_amount(self):
