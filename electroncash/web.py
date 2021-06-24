@@ -120,8 +120,7 @@ def create_URI(addr, amount, message, *, op_return=None, op_return_raw=None, net
         scheme, path = addr.to_URI_components(net=net)
     query = []
     if amount:
-        # URI and QR-codes use Satoshis as unit
-        query.append(f'amount={amount}')
+        query.append(f'amount={format_satoshis_plain(amount, 2)}')
     if message:
         query.append('message=%s'%urllib.parse.quote(message))
     if op_return:
@@ -240,10 +239,10 @@ def parse_URI(uri, on_pr=None, *, net=None, strict=False, on_exc=None):
             am = out['amount']
             m = re.match(r'([0-9.]+)X([0-9]{2})', am)
             if m:
-                k = int(m.group(2)) - 8
+                k = int(m.group(2)) - 2
                 amount = decimal.Decimal(m.group(1)) * int(pow(10, k))
             else:
-                amount = decimal.Decimal(am) * int(bitcoin.COIN)
+                amount = decimal.Decimal(am) * int(bitcoin.CASH)
             out['amount'] = int(amount)
         except (ValueError, decimal.InvalidOperation, TypeError) as e:
             raise BadURIParameter('amount', e) from e

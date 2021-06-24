@@ -153,12 +153,12 @@ class TestUtil(unittest.TestCase):
              'message': 'electrum test', 'memo': 'electrum test'})
 
     def test_parse_URI_address_amount(self):
-        self._do_test_parse_URI('bitcoincash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.0003',
-                                {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 30000})
+        self._do_test_parse_URI('bitcoincash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=1.03',
+                                {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 103})
         self._do_test_parse_URI(
-            'ecash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.0003',
+            'ecash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=1.03',
             {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma',
-             'amount': 30000})
+             'amount': 103})
 
     def test_parse_URI_address_request_url(self):
         self._do_test_parse_URI('bitcoincash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?r=http://domain.tld/page?h%3D2a8628fc2fbe',
@@ -176,17 +176,17 @@ class TestUtil(unittest.TestCase):
             {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'test': 'test'})
 
     def test_parse_URI_multiple_args(self):
-        self._do_test_parse_URI('bitcoincash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=0.00004&label=electrum-test&message=electrum%20test&test=none&r=http://domain.tld/page',
-                                {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 4000, 'label': 'electrum-test', 'message': u'electrum test', 'memo': u'electrum test', 'r': 'http://domain.tld/page', 'test': 'none'})
+        self._do_test_parse_URI('bitcoincash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?amount=10.04&label=electrum-test&message=electrum%20test&test=none&r=http://domain.tld/page',
+                                {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 1004, 'label': 'electrum-test', 'message': u'electrum test', 'memo': u'electrum test', 'r': 'http://domain.tld/page', 'test': 'none'})
 
         self._do_test_parse_URI(
             'ecash:15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma?'
-            'amount=0.00004&'
+            'amount=10.04&'
             'label=electrum-test&'
             'message=electrum%20test&'
             'test=none&'
             'r=http://domain.tld/page',
-            {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 4000,
+            {'address': '15mKKb2eos1hWa6tisdPwwDC1a5J1y9nma', 'amount': 1004,
              'label': 'electrum-test', 'message': u'electrum test',
              'memo': u'electrum test', 'r': 'http://domain.tld/page',
              'test': 'none'})

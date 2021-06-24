@@ -62,6 +62,7 @@ FEE_STEP = 10000
 
 COINBASE_MATURITY = 100
 COIN = 100000000
+CASH = 100
 
 # supported types of transction outputs
 TYPE_ADDRESS = 0
