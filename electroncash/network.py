@@ -815,7 +815,7 @@ class Network(util.DaemonThread):
         elif method == 'blockchain.relayfee':
             try:
                 if error is None and isinstance(result, (int, float)):
-                    self.relay_fee = int(result * bitcoin.COIN)
+                    self.relay_fee = int(result * bitcoin.CASH)
                     self.print_error("relayfee", self.relay_fee)
             except (TypeError, ValueError) as e:
                 self.print_error("bad server data in blockchain.relayfee:", result, "error:", repr(e))

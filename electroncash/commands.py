@@ -39,9 +39,9 @@ from functools import wraps
 
 from . import bitcoin
 from . import util
-from .constants import PROJECT_NAME, SCRIPT_NAME, BASE_UNIT_8
+from .constants import PROJECT_NAME, SCRIPT_NAME, XEC
 from .address import Address, AddressError
-from .bitcoin import hash_160, COIN, TYPE_ADDRESS
+from .bitcoin import hash_160, CASH, TYPE_ADDRESS
 from .i18n import _
 from .mnemo import Mnemonic_Electrum, make_bip39_words
 from .plugins import run_hook
@@ -55,7 +55,7 @@ known_commands = {}
 
 def satoshis(amount):
     # satoshi conversion must not be performed by the parser
-    return int(COIN*PyDecimal(amount)) if amount not in ['!', None] else amount
+    return int(CASH*PyDecimal(amount)) if amount not in ['!', None] else amount
 
 
 class Command:
@@ -291,7 +291,7 @@ class Commands:
         l = self.wallet.get_utxos(exclude_frozen=False)
         for i in l:
             v = i["value"]
-            i["value"] = str(PyDecimal(v)/COIN) if v is not None else None
+            i["value"] = str(PyDecimal(v)/CASH) if v is not None else None
             i["address"] = i["address"].to_full_ui_string()
         return l
 
@@ -417,11 +417,11 @@ class Commands:
     def getbalance(self):
         """Return the balance of your wallet. """
         c, u, x = self.wallet.get_balance()
-        out = {"confirmed": str(PyDecimal(c)/COIN)}
+        out = {"confirmed": str(PyDecimal(c)/CASH)}
         if u:
-            out["unconfirmed"] = str(PyDecimal(u)/COIN)
+            out["unconfirmed"] = str(PyDecimal(u)/CASH)
         if x:
-            out["unmatured"] = str(PyDecimal(x)/COIN)
+            out["unmatured"] = str(PyDecimal(x)/CASH)
         return out
 
     @command('n')
@@ -431,8 +431,8 @@ class Commands:
         """
         sh = Address.from_string(address).to_scripthash_hex()
         out = self.network.synchronous_get(('blockchain.scripthash.get_balance', [sh]))
-        out["confirmed"] =  str(PyDecimal(out["confirmed"])/COIN)
-        out["unconfirmed"] =  str(PyDecimal(out["unconfirmed"])/COIN)
+        out["confirmed"] =  str(PyDecimal(out["confirmed"])/CASH)
+        out["unconfirmed"] =  str(PyDecimal(out["unconfirmed"])/CASH)
         return out
 
     @command('n')
@@ -660,7 +660,7 @@ class Commands:
             if labels or balance:
                 item = (item,)
             if balance:
-                item += (format_satoshis(sum(self.wallet.get_addr_balance(addr))),)
+                item += (format_satoshis(sum(self.wallet.get_addr_balance(addr)), decimal_point=2),)
             if labels:
                 item += (repr(self.wallet.labels.get(addr.to_storage_string(), '')),)
             out.append(item)
@@ -712,7 +712,7 @@ class Commands:
             PR_EXPIRED: 'Expired',
         }
         out['address'] = out.get('address').to_full_ui_string()
-        out[f'amount ({BASE_UNIT_8})'] = format_satoshis(out.get('amount'))
+        out[f'amount ({XEC.ticker})'] = format_satoshis(out.get('amount'))
         out['status'] = pr_str[out.get('status', PR_UNKNOWN)]
         return out
 
@@ -849,9 +849,9 @@ param_descriptions = {
     'pubkey': 'Public key',
     'message': 'Clear text message. Use quotes if it contains spaces.',
     'encrypted': 'Encrypted message',
-    'amount': f'Amount to be sent (in {BASE_UNIT_8}). Type \'!\' '
+    'amount': f'Amount to be sent (in {XEC.ticker}). Type \'!\' '
               f'to send the maximum available.',
-    'requested_amount': f'Requested amount (in {BASE_UNIT_8}).',
+    'requested_amount': f'Requested amount (in {XEC.ticker}).',
     'outputs': 'list of ["address", amount]',
     'redeem_script': 'redeem script (hexadecimal)',
 }
@@ -866,7 +866,7 @@ command_options = {
     'entropy':     (None, "Custom entropy"),
     'expiration':  (None, "Time in seconds"),
     'expired':     (None, "Show only expired requests."),
-    'fee':         ("-f", f"Transaction fee (in {BASE_UNIT_8})"),
+    'fee':         ("-f", f"Transaction fee (in {XEC.ticker})"),
     'force':       (None, "Create new address beyond gap limit, if no more addresses are available."),
     'from_addr':   ("-F", "Source address (must be a wallet address; use sweep to spend from non-wallet address)."),
     'frozen':      (None, "Show only frozen addresses"),

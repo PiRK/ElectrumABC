@@ -32,7 +32,7 @@ This module has no GUI dependency.
 
 from electroncash import schnorr
 from electroncash.bitcoin import public_key_from_private_key
-from electroncash.constants import BASE_UNIT_8
+from electroncash.constants import XEC
 from electroncash.i18n import _, ngettext, pgettext
 from electroncash.util import format_satoshis, do_in_main_thread, PrintError, ServerError, TxHashMismatch, TimeoutException
 from electroncash.wallet import Standard_Wallet, Multisig_Wallet
@@ -1002,11 +1002,11 @@ class Fusion(threading.Thread, PrintError):
                 txhex = tx.serialize()
 
                 self.txid = txid = tx.txid()
-                sum_in_str = format_satoshis(sum_in, num_zeros=8)
+                sum_in_str = format_satoshis(sum_in, num_zeros=2)
                 fee_str = str(total_fee)
                 feeloc = _('fee')
                 label = f"CashFusion {len(self.inputs)}⇢{len(self.outputs)}," \
-                        f" {sum_in_str} {BASE_UNIT_8} " \
+                        f" {sum_in_str} {XEC.ticker} " \
                         f"(−{fee_str} sats {feeloc})"
                 wallets = set(self.source_wallet_info.keys())
                 wallets.add(self.target_wallet)

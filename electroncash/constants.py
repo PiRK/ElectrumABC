@@ -26,9 +26,9 @@ CURRENCY = "eCash"
 
 
 class Unit:
-    def __init__(self, name: str, decimals: int,
+    def __init__(self, ticker: str, decimals: int,
                  old_name: str = ""):
-        self.name = name
+        self.ticker = ticker
         self.decimals = decimals
         self.old_name = old_name
         """old_unit can be specified to show additional information in the
@@ -36,8 +36,8 @@ class Unit:
 
     @property
     def name_for_selection_menu(self):
-        return self.name if not self.old_name else \
-            f'{self.name} ({self.old_name})'
+        return self.ticker if not self.old_name else \
+            f'{self.ticker} ({self.old_name})'
 
 
 XEC = Unit("XEC", 2, "bits")
@@ -47,13 +47,10 @@ BASE_UNITS: Sequence[Unit] = [XEC, MegaXEC]
 """List of units"""
 
 BASE_UNITS_BY_DECIMALS: Mapping[int, str] = {
-    XEC.decimals: XEC.name,
-    MegaXEC.decimals: MegaXEC.name
+    XEC.decimals: XEC.ticker,
+    MegaXEC.decimals: MegaXEC.ticker
 }
 """Dict of units indexed by number of decimals"""
-
-BASE_UNIT_8 = BASE_UNITS_BY_DECIMALS[8]
-"""Previous base unit ("bitcoin"), by convention 10^8 satoshis"""
 
 CASHADDR_PREFIX: str = "ecash"
 CASHADDR_PREFIX_BCH: str = "bitcoincash"

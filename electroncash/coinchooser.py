@@ -26,7 +26,7 @@
 from collections import defaultdict, namedtuple
 from math import floor, log10
 
-from electroncash.bitcoin import sha256, COIN, TYPE_ADDRESS
+from electroncash.bitcoin import sha256, CASH, TYPE_ADDRESS
 from electroncash.transaction import Transaction
 from electroncash.util import NotEnoughFunds, PrintError
 
@@ -109,7 +109,7 @@ class CoinChooserBase(PrintError):
         # Break change up if bigger than max_change
         output_amounts = [o[2] for o in tx.outputs()]
         # Don't split change of less than 0.02 BTC
-        max_change = max(max(output_amounts) * 1.25, 0.02 * COIN)
+        max_change = max(max(output_amounts) * 1.25, 20000 * CASH)
 
         # Use N change outputs
         for n in range(1, count + 1):
@@ -318,7 +318,7 @@ class CoinChooserPrivacy(CoinChooserRandom):
             elif change > max_change:
                 badness += (change - max_change) / (max_change + 10000)
                 # Penalize large change; 5 BTC excess ~= using 1 more input
-                badness += change / (COIN * 5)
+                badness += change / (CASH * 5000000)
             return badness
 
         return penalty

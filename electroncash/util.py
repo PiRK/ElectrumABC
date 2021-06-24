@@ -509,7 +509,7 @@ from .caches import ExpiringCache
 _fmt_sats_cache = ExpiringCache(maxlen=20000, name='format_satoshis cache')
 
 
-def format_satoshis(x, num_zeros=0, decimal_point=8, precision=None,
+def format_satoshis(x, num_zeros=0, decimal_point=2, precision=None,
                     is_diff=False, whitespaces=False) -> str:
     global _cached_dp
     if x is None:

@@ -11,7 +11,7 @@ from decimal import Decimal as PyDecimal
 import electroncash
 from electroncash.address import Address
 from electroncash.util import format_satoshis, set_verbosity
-from electroncash.bitcoin import COIN, TYPE_ADDRESS
+from electroncash.bitcoin import CASH, TYPE_ADDRESS
 from electroncash import Wallet, WalletStorage
 
 _ = lambda x: x
@@ -138,11 +138,11 @@ class ElectrumGui:
                 msg = _("Synchronizing...")
             else:
                 c, u, x =  self.wallet.get_balance()
-                msg = _("Balance")+": %f  "%(PyDecimal(c) / COIN)
+                msg = _("Balance")+": %f  "%(PyDecimal(c) / CASH)
                 if u:
-                    msg += "  [%f unconfirmed]"%(PyDecimal(u) / COIN)
+                    msg += "  [%f unconfirmed]"%(PyDecimal(u) / CASH)
                 if x:
-                    msg += "  [%f unmatured]"%(PyDecimal(x) / COIN)
+                    msg += "  [%f unmatured]"%(PyDecimal(x) / CASH)
         else:
             msg = _("Not connected")
 
@@ -331,12 +331,12 @@ class ElectrumGui:
             self.show_message(_('Invalid Bitcoin address'))
             return
         try:
-            amount = int(PyDecimal(self.str_amount) * COIN)
+            amount = int(PyDecimal(self.str_amount) * CASH)
         except Exception:
             self.show_message(_('Invalid Amount'))
             return
         try:
-            fee = int(PyDecimal(self.str_fee) * COIN)
+            fee = int(PyDecimal(self.str_fee) * CASH)
         except Exception:
             self.show_message(_('Invalid Fee'))
             return
@@ -404,13 +404,13 @@ class ElectrumGui:
                 self.network.set_parameters(host, port, protocol, proxy, auto_connect)
 
     def settings_dialog(self):
-        fee = str(PyDecimal(self.config.fee_per_kb()) / COIN)
+        fee = str(PyDecimal(self.config.fee_per_kb()) / CASH)
         out = self.run_dialog('Settings', [
             {'label':'Default fee', 'type':'satoshis', 'value': fee}
             ], buttons = 1)
         if out:
             if out.get('Default fee'):
-                fee = int(PyDecimal(out['Default fee']) * COIN)
+                fee = int(PyDecimal(out['Default fee']) * CASH)
                 self.config.set_key('fee_per_kb', fee, True)
 
 

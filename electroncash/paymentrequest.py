@@ -49,7 +49,7 @@ from . import rsakey
 
 from .address import Address, PublicKey
 from .bitcoin import TYPE_ADDRESS
-from .constants import PROJECT_NAME, BASE_UNIT_8
+from .constants import PROJECT_NAME, XEC
 from .util import print_error, bh2u, bfh, PrintError
 from .util import FileImportFailed, FileImportFailedEncrypted
 from .transaction import Transaction
@@ -708,7 +708,7 @@ class PaymentRequest_BitPay20(PaymentRequest, PrintError):
                 time = dateutil.parser.parse(j['time']).timestamp(),
                 expires = dateutil.parser.parse(j['expires']).timestamp(),
                 network = j.get('network', 'main'),
-                currency = j.get('currency', f'{BASE_UNIT_8}'),
+                currency = j.get('currency', f'{XEC.ticker}'),
                 required_fee_rate = j.get('requiredFeeRate', 1),
             )
             self.outputs = []
@@ -889,7 +889,7 @@ class PaymentRequest_BitPay20(PaymentRequest, PrintError):
         h['Content-Type'] = 'application/verify-payment'
         unsigned_raw = unsigned_tx.serialize(True)
         body = {
-            'currency' : self.details.currency or f'{BASE_UNIT_8}',
+            'currency' : self.details.currency or f'{XEC.ticker}',
             'unsignedTransaction' : unsigned_raw,
             'weightedSize' : len(unsigned_raw)//2
         }
@@ -912,7 +912,7 @@ class PaymentRequest_BitPay20(PaymentRequest, PrintError):
         # Ok, all is valid -- now actually send the tx
         h['Content-Type'] = 'application/payment'
         body = {
-            'currency' : self.details.currency or f'{BASE_UNIT_8}',
+            'currency' : self.details.currency or f'{XEC.ticker}',
             'transactions' : [ raw_tx ]
         }
         try:

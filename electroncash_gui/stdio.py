@@ -6,7 +6,7 @@ from decimal import Decimal as PyDecimal
 from electroncash import WalletStorage, Wallet
 from electroncash.util import format_satoshis, set_verbosity
 from electroncash.address import Address
-from electroncash.bitcoin import COIN, TYPE_ADDRESS
+from electroncash.bitcoin import CASH, TYPE_ADDRESS
 
 
 _ = lambda x:x
@@ -124,11 +124,11 @@ class ElectrumGui:
                 msg = _("Synchronizing...")
             else:
                 c, u, x =  self.wallet.get_balance()
-                msg = _("Balance")+": %f  "%(PyDecimal(c) / COIN)
+                msg = _("Balance")+": %f  "%(PyDecimal(c) / CASH)
                 if u:
-                    msg += "  [%f unconfirmed]"%(PyDecimal(u) / COIN)
+                    msg += "  [%f unconfirmed]"%(PyDecimal(u) / CASH)
                 if x:
-                    msg += "  [%f unmatured]"%(PyDecimal(x) / COIN)
+                    msg += "  [%f unmatured]"%(PyDecimal(x) / CASH)
         else:
             msg = _("Not connected")
 
@@ -180,12 +180,12 @@ class ElectrumGui:
             print(_('Invalid Bitcoin address'))
             return
         try:
-            amount = int(PyDecimal(self.str_amount) * COIN)
+            amount = int(PyDecimal(self.str_amount) * CASH)
         except Exception:
             print(_('Invalid Amount'))
             return
         try:
-            fee = int(PyDecimal(self.str_fee) * COIN)
+            fee = int(PyDecimal(self.str_fee) * CASH)
         except Exception:
             print(_('Invalid Fee'))
             return

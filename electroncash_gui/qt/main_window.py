@@ -4240,7 +4240,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
         units_for_menu = tuple(u.name_for_selection_menu for
                                u in electroncash.constants.BASE_UNITS)
-        unit_names = tuple(u.name for u in electroncash.constants.BASE_UNITS)
+        unit_names = tuple(u.ticker for u in electroncash.constants.BASE_UNITS)
         msg = _('Base unit of your wallet.')\
               + '\n1 MegaXEC = 1 BCHA = 1,000,000 XEC.\n' \
               + _(' These settings affects the fields in the Send tab')+' '
