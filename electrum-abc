@@ -54,6 +54,11 @@ from electroncash.commands import (
     get_parser,
     known_commands,
 )
+from electroncash.constants import (
+    SCRIPT_NAME,
+    PROJECT_NAME,
+    PORTABLE_DATA_DIR,
+)
 from electroncash.i18n import _
 from electroncash.migrate_data import migrate_data_from_ec, update_config
 from electroncash.plugins import Plugins
@@ -506,7 +511,7 @@ def process_config_options(args):
     # FIXME: this can probably be achieved with a runtime hook (pyinstaller)
     try:
         tmp_folder = os.path.join(sys._MEIPASS, "is_portable")  # pylint: disable=W0212
-        config_options["portable"] = is_bundle and os.path.exists(tmp_folder)
+        config_options["portable"] = IS_BUNDLE and os.path.exists(tmp_folder)
     except AttributeError:
         config_options["portable"] = False
 
