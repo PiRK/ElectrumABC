@@ -444,6 +444,8 @@ class FxThread(ThreadJob):
         # tiny as of 2019
         if base_unit == BASE_UNITS_BY_DECIMALS.get(2):
             default_prec = 8
+        elif base_unit == BASE_UNITS_BY_DECIMALS.get(0):
+            default_prec = 10
 
         return " 1 %s~%s %s" % (
             base_unit,

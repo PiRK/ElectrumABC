@@ -40,15 +40,17 @@ class Unit:
             f'{self.ticker} ({self.old_name})'
 
 
+SAT = Unit("sats", 0)
 XEC = Unit("XEC", 2, "bits")
 MegaXEC = Unit("MegaXEC", 8)
 
-BASE_UNITS: Sequence[Unit] = [XEC, MegaXEC]
+BASE_UNITS: Sequence[Unit] = [SAT, XEC, MegaXEC]
 """List of units"""
 
 BASE_UNITS_BY_DECIMALS: Mapping[int, str] = {
+    SAT.decimals: SAT.ticker,
     XEC.decimals: XEC.ticker,
-    MegaXEC.decimals: MegaXEC.ticker
+    MegaXEC.decimals: MegaXEC.ticker,
 }
 """Dict of units indexed by number of decimals"""
 
