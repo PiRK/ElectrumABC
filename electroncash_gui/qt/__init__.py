@@ -26,6 +26,7 @@
 # SOFTWARE.
 
 import gc
+import locale
 import os
 import platform
 import shutil
@@ -81,6 +82,26 @@ from .exception_window import ExceptionHook
 from .update_checker import UpdateChecker
 
 
+FALLBACK_LOCALE =  ("en_US", "UTF-8")
+
+
+def set_locale():
+    """Try to set a reasonable LC_NUMERIC locale, to show well formatted
+    amounts, with thousands grouping for large values.
+    """
+    language_code, encoding = locale.getdefaultlocale()
+    try:
+        locale.setlocale(locale.LC_NUMERIC, (language_code, encoding))
+    except locale.Error:
+        try:
+            if language_code is not None:
+                # Windows has exotic encodings that cause failures.
+                locale.setlocale(locale.LC_NUMERIC, (language_code, "UTF-8"))
+            else:
+                locale.setlocale(locale.LC_NUMERIC, FALLBACK_LOCALE)
+        except locale.Error:
+            pass
+
 
 class ElectrumGui(QObject, PrintError):
     new_window_signal = pyqtSignal(str, object)
@@ -117,7 +138,13 @@ class ElectrumGui(QObject, PrintError):
 
         call_after_app = self._pre_and_post_app_setup()
         try:
+            # Fixme: instantiating the QApplication inside the __init__ of
+            #        a QObject is probably the reason for segfault on exit.
             self.app = QApplication(sys.argv)
+            if locale.getlocale(locale.LC_NUMERIC) == (None, None):
+                # On some OS, instantiating the QApplication sets the locale.
+                # But on Windows, doing it manually seems to be required.
+                set_locale()
         finally:
             call_after_app()
 
