@@ -212,6 +212,10 @@ def update_config():
     if "decimal_point" in config and tuple(config_version) <= (4, 9, 9):
         config["decimal_point"] = 2
 
+    # Disable the fiat display by default until we know of a stable API
+    # for XEC. For now, we still use a BCHA fiat rate from CoinGecko.
+    config["use_exchange_rate"] = False
+
     # update version number, to avoid doing this again for this version
     config["latest_version_used"] = VERSION_TUPLE
     save_user_config(config, get_user_dir())
