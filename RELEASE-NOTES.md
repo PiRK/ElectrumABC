@@ -1,5 +1,4 @@
-Electrum ABC is a fork of the open source Electron Cash wallet
-(www.electroncash.org) for BCHA.
+Electrum ABC is a fork of the open source Electron Cash wallet for eCash.
 
 The Electrum ABC software is NOT affiliated, associated, or endorsed by
 Electron Cash, electroncash.org, Electrum or electrum.org.
@@ -19,25 +18,9 @@ This can take up to 10 minutes, but is only done once.
 Ensure you are running Electrum ABC and not Electron Cash by checking for
 "Electrum ABC" in the title bar wording.
 
-We STRONGLY recommend you get comfortable and only send a small amount of BCHA
+We STRONGLY recommend you get comfortable and only send a small amount of eCash
 coins at first, to yourself, to confirm the network is processing your
 transactions as expected.
-
-
-# Miscellaneous
-
-BCHA is a cryptocurrency that was created during the recent Bitcoin Cash chain
-split. When a chain split happens, one chain will typically hold onto the
-original cryptocurrency name and ticker, while the other chain will become
-a separate cryptocurrency with new branding. In this case, BCHN held on to
-the BCH name and ticker.
-
-That means BCHA will soon be branded with an official coin name, logo, and
-ticker. After it launches, there will likely be a new release of Electrum ABC
-with a new name.
-
-In the meantime you can find out more about BCHA here:
-https://bitcoinabc.org/bcha/
 
 # Release notes
 
@@ -120,3 +103,16 @@ Electron Cash 4.2.0 codebase with the following changes
   This aligns Electrum ABC with CashTab, Stamp and Cashew.
 - Lower the default transaction fee from 10 satoshis/byte to 5 satoshis/byte.
 - Minor performance improvements when freezing coins and saving wallet files.
+
+
+## Release 5.0.0
+
+- Rebranding from BCHA to eCash (XEC).
+- Change base unit from BCHA (100 000 000 satoshis) to XEC (100 satoshis).
+- Change CashAddr prefix from "bitcoincash:" to "ecash:".
+- Make the address conversion tool display 3 results: eCash address,
+  BCH address and Legacy Bitcoin address.
+- Interpret amounts as XEC in BIP21 payment URIs. Generate payment URIs and
+  QR codes with amounts in XEC.
+- Add a scanner for usual eCash, BCH or BTC derivation paths to assist users
+  when restoring a wallet from seed (feature backported from Electron Cash).
