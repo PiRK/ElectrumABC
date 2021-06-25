@@ -520,9 +520,9 @@ class ElectrumGui(QObject, PrintError):
 
     def tray_icon(self):
         if self.dark_icon:
-            return QIcon(':icons/electron_dark_icon.svg')
+            return QIcon(':icons/electrumABC_dark_icon.svg')
         else:
-            return QIcon(':icons/electron_light_icon.svg')
+            return QIcon(':icons/electrumABC_light_icon.svg')
 
     def toggle_tray_icon(self):
         self.dark_icon = not self.dark_icon

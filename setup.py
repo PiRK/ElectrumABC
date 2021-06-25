@@ -80,7 +80,7 @@ if platform.system() in ['Linux', 'FreeBSD', 'DragonFly']:
         share_dir = user_share
     data_files += [
         # Menu icon
-        (os.path.join(share_dir, 'icons/hicolor/512x512/apps/'),   ['icons/electrumABC.png']),
+        (os.path.join(share_dir, 'icons/hicolor/256x256/apps/'),   ['icons/electrumABC.png']),
         (os.path.join(share_dir, 'pixmaps/'),                      ['icons/electrumABC.png']),
         (os.path.join(share_dir, 'icons/hicolor/scaleable/apps/'), ['icons/electrumABC.svg']),
         # Menu entry

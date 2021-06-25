@@ -2888,7 +2888,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
         self.search_box.hide()
         sb.addPermanentWidget(self.search_box, 1)
 
-        self.update_available_button = StatusBarButton(QIcon(":icons/electron-cash-update.svg"), _("Update available, click for details"), lambda: self.gui_object.show_update_checker(self, skip_check=True))
+        self.update_available_button = StatusBarButton(QIcon(":icons/electrumABC-update.svg"), _("Update available, click for details"), lambda: self.gui_object.show_update_checker(self, skip_check=True))
         self.update_available_button.setStatusTip(
             _(f"An {PROJECT_NAME} update is available"))
         sb.addPermanentWidget(self.update_available_button)
