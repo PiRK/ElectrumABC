@@ -52,7 +52,7 @@ mainnet_block_explorers = {
                    {'tx': 'tx', 'addr': 'address',
                     'block': 'block'}),
     'BitcoinABC.org': ('https://explorer.bitcoinabc.org',
-                       Address.FMT_CASHADDR_BCH,
+                       Address.FMT_CASHADDR,
                        {'tx': 'tx',
                         'addr': 'address',
                         'block': 'block-height'}),
