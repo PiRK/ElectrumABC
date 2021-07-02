@@ -492,14 +492,25 @@ def format_satoshis_plain(x, decimal_point = 8):
     return "{:.8f}".format(PyDecimal(x) / scale_factor).rstrip('0').rstrip('.')
 
 
-_cached_dp = None
+locale.setlocale(locale.LC_NUMERIC, '')
+LOCALE_HAS_THOUSANDS_SEPARATOR: bool = len(f"{1000:n}") > 4
+
+# If the locale has no thousands separator (eg the C locale),
+# default to ",", so we need to use the point for dp: 1,234,567.89
+_cached_dp = None if LOCALE_HAS_THOUSANDS_SEPARATOR else "."
 
 
 def clear_cached_dp():
     """This function allows to reset the cached locale decimal point.
     This is used for testing amount formatting with various locales."""
     global _cached_dp
-    _cached_dp = None
+    _cached_dp = None if LOCALE_HAS_THOUSANDS_SEPARATOR else "."
+
+
+def set_locale_has_thousands_separator(flag: bool):
+    """for tests"""
+    global LOCALE_HAS_THOUSANDS_SEPARATOR
+    LOCALE_HAS_THOUSANDS_SEPARATOR = flag
 
 
 # fixme: circular import util -> caches -> util
@@ -520,10 +531,7 @@ def format_satoshis(x, num_zeros=0, decimal_point=2, precision=None,
     result = _fmt_sats_cache.get(cache_key)
     if result is not None:
         return result
-    decimal_format = ".0" + str(precision) if precision > 0 else ""
-    if is_diff:
-        decimal_format = '+' + decimal_format
-    decimal_format = "%" + decimal_format + "f"
+
     try:
         value = x / pow(10, decimal_point)
     except ArithmeticError:
@@ -533,15 +541,34 @@ def format_satoshis(x, num_zeros=0, decimal_point=2, precision=None,
         # TODO: this happens only on user input, so just add a range
         #       validator on the wiget
         return 'unknown'
-    result = locale.format_string(decimal_format, value,
-                                  grouping=True).rstrip('0')
+    if LOCALE_HAS_THOUSANDS_SEPARATOR:
+        decimal_format = ".0" + str(precision) if precision > 0 else ""
+        if is_diff:
+            decimal_format = '+' + decimal_format
+        decimal_format = "%" + decimal_format + "f"
+        result = locale.format_string(decimal_format, value,
+                                      grouping=True).rstrip('0')
+    else:
+        # default to ts="," and dp=".", with python local-unaware formatting
+        decimal_format = "{:"
+        if is_diff:
+            decimal_format +="+"
+        decimal_format += ","
+        if precision > 0:
+            decimal_format += ".0" + str(precision)
+        decimal_format += "f}"
+        result = decimal_format.format(value).rstrip('0')
     if not _cached_dp:
         # We lazy init this here rather than at module level because iOS sets
         # locale at startup -- so we should initialize this variable on
         # first run through this function rather than at module load time.
         _cached_dp = locale.localeconv().get('decimal_point') or '.'
     dp = _cached_dp
-    integer_part, fract_part = result.split(dp)
+    try:
+        integer_part, fract_part = result.split(dp)
+    except ValueError:
+        raise
+
     if len(fract_part) < num_zeros:
         fract_part += "0" * (num_zeros - len(fract_part))
     result = integer_part + dp + fract_part
