@@ -40,9 +40,9 @@ class _TestFormatSatoshis(unittest.TestCase):
         locale.setlocale(locale.LC_NUMERIC, initial_locale)
 
     def test_format_satoshis(self):
-        result = format_satoshis(1234)
-        expected = "0" + self.dp + "00001234"
-        self.assertEqual(expected, result)
+        self.assertEqual(format_satoshis(1234), "12" + self.dp + "34")
+        self.assertEqual(format_satoshis(12), "0" + self.dp + "12")
+        self.assertEqual(format_satoshis(7), "0" + self.dp + "07")
 
     def test_format_satoshis_zero(self):
         result = format_satoshis(0)
@@ -50,9 +50,8 @@ class _TestFormatSatoshis(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_format_satoshis_negative(self):
-        result = format_satoshis(-1234)
-        expected = "-0" + self.dp + "00001234"
-        self.assertEqual(expected, result)
+        self.assertEqual(format_satoshis(-1234), "-12" + self.dp + "34")
+        self.assertEqual(format_satoshis(-1), "-0" + self.dp + "01")
 
     def test_format_fee(self):
         result = format_satoshis(1700/1000, 0, 0)
@@ -70,30 +69,30 @@ class _TestFormatSatoshis(unittest.TestCase):
 
     def test_format_satoshis_whitespaces(self):
         result = format_satoshis(12340, whitespaces=True)
-        expected = "     0" + self.dp + "0001234 "
+        expected = "         123" + self.dp + "4 "
         self.assertEqual(expected, result)
 
         result = format_satoshis(1234, whitespaces=True)
-        expected = "     0" + self.dp + "00001234"
+        expected = "          12" + self.dp + "34"
         self.assertEqual(expected, result)
 
     def test_format_satoshis_whitespaces_negative(self):
         result = format_satoshis(-12340, whitespaces=True)
-        expected = "    -0" + self.dp + "0001234 "
+        expected = "        -123" + self.dp + "4 "
         self.assertEqual(expected, result)
 
         result = format_satoshis(-1234, whitespaces=True)
-        expected = "    -0" + self.dp + "00001234"
+        expected = "         -12" + self.dp + "34"
         self.assertEqual(expected, result)
 
     def test_format_satoshis_diff_positive(self):
         result = format_satoshis(1234, is_diff=True)
-        expected = "+0" + self.dp + "00001234"
+        expected = "+12" + self.dp + "34"
         self.assertEqual(expected, result)
 
     def test_format_satoshis_diff_negative(self):
         result = format_satoshis(-1234, is_diff=True)
-        expected = "-0" + self.dp + "00001234"
+        expected = "-12" + self.dp + "34"
         self.assertEqual(expected, result)
 
 
