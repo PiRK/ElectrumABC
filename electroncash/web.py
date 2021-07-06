@@ -43,7 +43,7 @@ DEFAULT_EXPLORER = "Blockchair.com"
 
 # TODO: updated addr format when explorers support the new prefix
 mainnet_block_explorers = {
-    'Blockchair.com': ('https://blockchair.com/bitcoin-abc',
+    'Blockchair.com': ('https://blockchair.com/ecash',
                        Address.FMT_CASHADDR_BCH,
                        {'tx': 'transaction', 'addr': 'address',
                         'block': 'block'}),
