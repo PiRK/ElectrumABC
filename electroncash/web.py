@@ -62,7 +62,7 @@ DEFAULT_EXPLORER_TESTNET = 'BitcoinABC.org'
 
 testnet_block_explorers = {
     'BitcoinABC.org': ('https://texplorer.bitcoinabc.org/',
-                       Address.FMT_CASHADDR_BCH,
+                       Address.FMT_CASHADDR,
                        {'tx': 'tx', 'addr': 'address',
                         'block': 'block-height'}),
 }
