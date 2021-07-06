@@ -492,19 +492,15 @@ def format_satoshis_plain(x, decimal_point = 8):
     return "{:.8f}".format(PyDecimal(x) / scale_factor).rstrip('0').rstrip('.')
 
 
-locale.setlocale(locale.LC_NUMERIC, '')
-LOCALE_HAS_THOUSANDS_SEPARATOR: bool = len(f"{1000:n}") > 4
-
-# If the locale has no thousands separator (eg the C locale),
-# default to ",", so we need to use the point for dp: 1,234,567.89
-_cached_dp = None if LOCALE_HAS_THOUSANDS_SEPARATOR else "."
+_cached_dp = None
+LOCALE_HAS_THOUSANDS_SEPARATOR = None
 
 
 def clear_cached_dp():
     """This function allows to reset the cached locale decimal point.
     This is used for testing amount formatting with various locales."""
     global _cached_dp
-    _cached_dp = None if LOCALE_HAS_THOUSANDS_SEPARATOR else "."
+    _cached_dp = None
 
 
 def set_locale_has_thousands_separator(flag: bool):
@@ -523,6 +519,21 @@ _fmt_sats_cache = ExpiringCache(maxlen=20000, name='format_satoshis cache')
 def format_satoshis(x, num_zeros=0, decimal_point=2, precision=None,
                     is_diff=False, whitespaces=False) -> str:
     global _cached_dp
+    global LOCALE_HAS_THOUSANDS_SEPARATOR
+    # We lazy init this here rather than at module level in case the
+    # locale is not set at program startup when the module is first
+    # imported.
+    if LOCALE_HAS_THOUSANDS_SEPARATOR is None:
+        locale.setlocale(locale.LC_NUMERIC, '')
+        LOCALE_HAS_THOUSANDS_SEPARATOR = len(f"{1000:n}") > 4
+    if _cached_dp is None:
+        if not LOCALE_HAS_THOUSANDS_SEPARATOR:
+            # We will use python's locale-unaware way of formatting numbers
+            # with thousands separators, using a "." for decimal point.
+            _cached_dp = "."
+        else:
+            _cached_dp = locale.localeconv().get('decimal_point') or '.'
+
     if x is None:
         return _('Unknown')
     if precision is None:
@@ -558,11 +569,6 @@ def format_satoshis(x, num_zeros=0, decimal_point=2, precision=None,
             decimal_format += ".0" + str(precision)
         decimal_format += "f}"
         result = decimal_format.format(value).rstrip('0')
-    if not _cached_dp:
-        # We lazy init this here rather than at module level because iOS sets
-        # locale at startup -- so we should initialize this variable on
-        # first run through this function rather than at module load time.
-        _cached_dp = locale.localeconv().get('decimal_point') or '.'
     dp = _cached_dp
     try:
         integer_part, fract_part = result.split(dp)
