@@ -347,7 +347,6 @@ class Daemon(DaemonThread):
         remove_lockfile(get_lockfile(self.config))
         super().stop()
 
-
     def init_gui(self):
         config = self.config
         plugins = self.plugins
@@ -365,5 +364,6 @@ class Daemon(DaemonThread):
             #
             os.environ['QT_OPENGL'] = str(config.get('qt_opengl'))
         gui = __import__('electroncash_gui.' + gui_name, fromlist=['electroncash_gui'])
+        gui.instantiate_qapplication(config)
         self.gui = gui.ElectrumGui(config, self, plugins)
         self.gui.main()

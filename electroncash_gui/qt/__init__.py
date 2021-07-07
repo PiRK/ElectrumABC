@@ -26,13 +26,11 @@
 # SOFTWARE.
 
 import gc
-import locale
-import os
-import platform
 import shutil
 import signal
 import sys
 import traceback
+from typing import Callable
 
 try:
     import PyQt5
@@ -57,17 +55,11 @@ except Exception:
                "    sudo apt-get install python3-pyqt5\n\n")
     sys.exit(msg)
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-
 from electroncash.i18n import _
 from electroncash import i18n
 from electroncash.plugins import run_hook
 from electroncash import WalletStorage
-from electroncash.util import (UserCancelled, PrintError, print_error,
-                               standardize_path, finalization_print_error, Weak,
-                               get_new_wallet_name, Handlers)
+from electroncash.util import (UserCancelled, standardize_path, get_new_wallet_name, Handlers)
 from electroncash import version
 from electroncash.address import Address
 from electroncash.constants import PROJECT_NAME, REPOSITORY_URL
@@ -76,10 +68,81 @@ from .installwizard import InstallWizard, GoBack
 
 from . import icons # This needs to be imported once app-wide then the :icons/ namespace becomes available for Qt icon filenames.
 from .util import *   # * needed for plugins
-from .main_window import ElectrumWindow
+from .main_window import ElectrumWindow, windows_qt_use_freetype
 from .network_dialog import NetworkDialog
 from .exception_window import ExceptionHook
 from .update_checker import UpdateChecker
+
+
+def _pre_and_post_app_setup(config) -> Callable[[], None]:
+    callables = []
+    def call_callables():
+        for func in callables:
+            func()
+    ret = call_callables
+
+    if hasattr(QGuiApplication, 'setDesktopFileName'):
+        QGuiApplication.setDesktopFileName('electrum-abc.desktop')
+
+    if windows_qt_use_freetype(config):
+        # Use FreeType for font rendering on Windows. This fixes rendering
+        # of the Schnorr sigil and allows us to load the Noto Color Emoji
+        # font if needed.
+        os.environ['QT_QPA_PLATFORM'] = 'windows:fontengine=freetype'
+
+    QCoreApplication.setAttribute(Qt.AA_X11InitThreads)
+    if hasattr(Qt, "AA_ShareOpenGLContexts"):
+        QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
+    if sys.platform not in ('darwin',) and hasattr(Qt, "AA_EnableHighDpiScaling"):
+        # The below only applies to non-macOS. On macOS this setting is
+        # never used (because it is implicitly auto-negotiated by the OS
+        # in a differernt way).
+        #
+        # qt_disable_highdpi will be set to None by default, or True if
+        # specified on command-line.  The command-line override is intended
+        # to supporess high-dpi mode just for this run for testing.
+        #
+        # The more permanent setting is qt_enable_highdpi which is the GUI
+        # preferences option, so we don't enable highdpi if it's explicitly
+        # set to False in the GUI.
+        #
+        # The default on Linux, Windows, etc is to enable high dpi
+        disable_scaling = config.get('qt_disable_highdpi', False)
+        enable_scaling = config.get('qt_enable_highdpi', True)
+        if not disable_scaling and enable_scaling:
+            QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
+    if hasattr(Qt, "AA_UseHighDpiPixmaps"):
+        QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
+
+    def setup_layout_direction():
+        """Sets the app layout direction depending on language. To be called
+        after self.app is created successfully. Note this *MUST* be called
+        after set_language has been called."""
+        assert i18n.set_language_called > 0
+        lc = i18n.language.info().get('language')
+        lc = '' if not isinstance(lc, str) else lc
+        lc = lc.split('_')[0]
+        layout_direction = Qt.LeftToRight
+        blurb = "left-to-right"
+        if lc in {'ar', 'fa', 'he', 'ps', 'ug', 'ur'}:  # Right-to-left languages
+            layout_direction = Qt.RightToLeft
+            blurb = "right-to-left"
+        print_error("Setting layout direction:", blurb)
+        QApplication.instance().setLayoutDirection(layout_direction)
+    # callable will be called after self.app is set-up successfully
+    callables.append(setup_layout_direction)
+
+    return ret
+
+app = None
+def instantiate_qapplication(config):
+    global app
+    i18n.set_language(config.get('language'))
+    call_after_app = _pre_and_post_app_setup(config)
+    try:
+        app = QApplication(sys.argv)
+    finally:
+        call_after_app()
 
 
 class ElectrumGui(QObject, PrintError):
@@ -96,7 +159,6 @@ class ElectrumGui(QObject, PrintError):
         super(__class__, self).__init__() # QObject init
         assert __class__.instance is None, "ElectrumGui is a singleton, yet an instance appears to already exist! FIXME!"
         __class__.instance = self
-        i18n.set_language(config.get('language'))
 
         self.config = config
         self.daemon = daemon
@@ -115,13 +177,7 @@ class ElectrumGui(QObject, PrintError):
         #    daemon.network.add_jobs([DebugMem([Abstract_Wallet, SPV, Synchronizer,
         #                                       ElectrumWindow], interval=5)])
 
-        call_after_app = self._pre_and_post_app_setup()
-        try:
-            # Fixme: instantiating the QApplication inside the __init__ of
-            #        a QObject is probably the reason for segfault on exit.
-            self.app = QApplication(sys.argv)
-        finally:
-            call_after_app()
+        self.app = QApplication.instance()
 
         self._load_fonts()  # this needs to be done very early, before the font engine loads fonts.. out of paranoia
         self._exit_if_required_pyqt_is_missing()  # This may immediately exit the app if missing required PyQt5 modules, so it should also be done early.
@@ -202,74 +258,6 @@ class ElectrumGui(QObject, PrintError):
         CashFusion uses this mechanism, but other code may as well.
         """
         func(*args, **kwargs)
-
-    def _pre_and_post_app_setup(self):
-        """
-        Call this before instantiating the QApplication object.  It sets up
-        some platform-specific miscellany that need to happen before the
-        QApplication is constructed.
-
-        A function is returned.  This function *must* be called after the
-        QApplication is constructed.
-        """
-        callables = []
-        def call_callables():
-            for func in callables:
-                func()
-        ret = call_callables
-
-        if hasattr(QGuiApplication, 'setDesktopFileName'):
-            QGuiApplication.setDesktopFileName('electrum-abc.desktop')
-
-        if self.windows_qt_use_freetype:
-            # Use FreeType for font rendering on Windows. This fixes rendering
-            # of the Schnorr sigil and allows us to load the Noto Color Emoji
-            # font if needed.
-            os.environ['QT_QPA_PLATFORM'] = 'windows:fontengine=freetype'
-
-        QCoreApplication.setAttribute(Qt.AA_X11InitThreads)
-        if hasattr(Qt, "AA_ShareOpenGLContexts"):
-            QCoreApplication.setAttribute(Qt.AA_ShareOpenGLContexts)
-        if sys.platform not in ('darwin',) and hasattr(Qt, "AA_EnableHighDpiScaling"):
-            # The below only applies to non-macOS. On macOS this setting is
-            # never used (because it is implicitly auto-negotiated by the OS
-            # in a differernt way).
-            #
-            # qt_disable_highdpi will be set to None by default, or True if
-            # specified on command-line.  The command-line override is intended
-            # to supporess high-dpi mode just for this run for testing.
-            #
-            # The more permanent setting is qt_enable_highdpi which is the GUI
-            # preferences option, so we don't enable highdpi if it's explicitly
-            # set to False in the GUI.
-            #
-            # The default on Linux, Windows, etc is to enable high dpi
-            disable_scaling = self.config.get('qt_disable_highdpi', False)
-            enable_scaling = self.config.get('qt_enable_highdpi', True)
-            if not disable_scaling and enable_scaling:
-                QCoreApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
-        if hasattr(Qt, "AA_UseHighDpiPixmaps"):
-            QCoreApplication.setAttribute(Qt.AA_UseHighDpiPixmaps)
-
-        def setup_layout_direction():
-            """Sets the app layout direction depending on language. To be called
-            after self.app is created successfully. Note this *MUST* be called
-            after set_language has been called."""
-            assert i18n.set_language_called > 0
-            lc = i18n.language.info().get('language')
-            lc = '' if not isinstance(lc, str) else lc
-            lc = lc.split('_')[0]
-            layout_direction = Qt.LeftToRight
-            blurb = "left-to-right"
-            if lc in {'ar', 'fa', 'he', 'ps', 'ug', 'ur'}:  # Right-to-left languages
-                layout_direction = Qt.RightToLeft
-                blurb = "right-to-left"
-            self.print_error("Setting layout direction:", blurb)
-            self.app.setLayoutDirection(layout_direction)
-        # callable will be called after self.app is set-up successfully
-        callables.append(setup_layout_direction)
-
-        return ret
 
     def _exit_if_required_pyqt_is_missing(self):
         ''' Will check if required PyQt5 modules are present and if not,
@@ -941,31 +929,6 @@ class ElectrumGui(QObject, PrintError):
         if was != b:
             self.config.set_key('hide_cashaddr_button', bool(b))
             self.cashaddr_status_button_hidden_signal.emit(b)
-
-    @property
-    def windows_qt_use_freetype(self):
-        ''' Returns True iff we are windows and we are set to use freetype as
-        the font engine.  This will always return false on platforms where the
-        question doesn't apply. This config setting defaults to True for
-        Windows < Win10 and False otherwise. It is only relevant when
-        using the Qt GUI, however. '''
-        if sys.platform not in ('win32', 'cygwin'):
-            return False
-        try:
-            winver = float(platform.win32_ver()[0])  # '7', '8', '8.1', '10', etc
-        except (AttributeError, ValueError, IndexError):
-            # We can get here if cygwin, which has an empty win32_ver tuple
-            # in some cases.
-            # In that case "assume windows 10" and just proceed.  Cygwin users
-            # can always manually override this setting from GUI prefs.
-            winver = 10
-        # setting defaults to on for Windows < Win10
-        return bool(self.config.get('windows_qt_use_freetype', winver < 10))
-
-    @windows_qt_use_freetype.setter
-    def windows_qt_use_freetype(self, b):
-        if self.config.is_modifiable('windows_qt_use_freetype') and sys.platform in ('win32', 'cygwin'):
-            self.config.set_key('windows_qt_use_freetype', bool(b))
 
     @property
     def linux_qt_use_custom_fontconfig(self):

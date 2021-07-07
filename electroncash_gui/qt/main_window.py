@@ -110,6 +110,31 @@ class StatusBarButton(QPushButton):
 from electroncash.paymentrequest import PR_PAID
 
 
+def windows_qt_use_freetype(config):
+    ''' Returns True iff we are windows and we are set to use freetype as
+    the font engine.  This will always return false on platforms where the
+    question doesn't apply. This config setting defaults to True for
+    Windows < Win10 and False otherwise. It is only relevant when
+    using the Qt GUI, however. '''
+    if sys.platform not in ('win32', 'cygwin'):
+        return False
+    try:
+        winver = float(platform.win32_ver()[0])  # '7', '8', '8.1', '10', etc
+    except (AttributeError, ValueError, IndexError):
+        # We can get here if cygwin, which has an empty win32_ver tuple
+        # in some cases.
+        # In that case "assume windows 10" and just proceed.  Cygwin users
+        # can always manually override this setting from GUI prefs.
+        winver = 10
+    # setting defaults to on for Windows < Win10
+    return bool(config.get('windows_qt_use_freetype', winver < 10))
+
+
+def set_windows_qt_use_freetype(config, b):
+    if config.is_modifiable('windows_qt_use_freetype') and sys.platform in ('win32', 'cygwin'):
+        config.set_key('windows_qt_use_freetype', bool(b))
+
+
 class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
     # Note: self.clean_up_connections automatically detects signals named XXX_signal and disconnects them on window close.
@@ -4386,11 +4411,11 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 # Enable/Disable the use of the FreeType library on Qt
                 # (Windows only)
                 freetype_chk = QCheckBox(_('Use FreeType for font rendering'))
-                freetype_chk.setChecked(self.gui_object.windows_qt_use_freetype)
+                freetype_chk.setChecked(windows_qt_use_freetype(self.config))
                 freetype_chk.setEnabled(self.config.is_modifiable('windows_qt_use_freetype'))
                 freetype_chk.setToolTip(_("Enable/disable this option if you experience font rendering glitches (such as blurred text or monochrome emoji characters)"))
                 def on_freetype_chk():
-                    self.gui_object.windows_qt_use_freetype = freetype_chk.isChecked()  # property has a method backing it
+                    set_windows_qt_use_freetype(self.config, freetype_chk.isChecked())
                     self.need_restart = True
                 freetype_chk.stateChanged.connect(on_freetype_chk)
                 gui_widgets.append((freetype_chk, None))
