@@ -135,7 +135,7 @@ def _pre_and_post_app_setup(config) -> Callable[[], None]:
     return ret
 
 app = None
-def instantiate_qapplication(config):
+def init_qapplication(config):
     global app
     i18n.set_language(config.get('language'))
     call_after_app = _pre_and_post_app_setup(config)

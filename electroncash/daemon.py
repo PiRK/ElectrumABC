@@ -364,6 +364,5 @@ class Daemon(DaemonThread):
             #
             os.environ['QT_OPENGL'] = str(config.get('qt_opengl'))
         gui = __import__('electroncash_gui.' + gui_name, fromlist=['electroncash_gui'])
-        gui.instantiate_qapplication(config)
         self.gui = gui.ElectrumGui(config, self, plugins)
         self.gui.main()
