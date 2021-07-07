@@ -53,9 +53,33 @@ from .plugin import FusionPlugin, TOR_PORTS, COIN_FRACTION_FUDGE_FACTOR, select_
 
 from pathlib import Path
 heredir = Path(__file__).parent
-icon_fusion_logo = QIcon(str(heredir / 'Cash Fusion Logo - No Text.svg'))
-icon_fusion_logo_gray = QIcon(str(heredir / 'Cash Fusion Logo - No Text Gray.svg'))
-image_red_exclamation = QImage(str(heredir / 'red_exclamation.png'))
+
+# Lazy init the icons to avoid creating QObject when importing the module,
+# in case the QApplication doesn't exist yet.
+icon_fusion_logo = None
+icon_fusion_logo_gray = None
+image_red_exclamation = None
+
+
+def get_icon_fusion_logo():
+    global icon_fusion_logo
+    if icon_fusion_logo is None:
+        icon_fusion_logo = QIcon(str(heredir / 'Cash Fusion Logo - No Text.svg'))
+    return icon_fusion_logo
+
+
+def get_icon_fusion_logo_gray():
+    global icon_fusion_logo_gray
+    if icon_fusion_logo_gray is None:
+        icon_fusion_logo_gray = QIcon(str(heredir / 'Cash Fusion Logo - No Text Gray.svg'))
+    return icon_fusion_logo_gray
+
+
+def get_image_red_exclamation():
+    global image_red_exclamation
+    if image_red_exclamation is None:
+        image_red_exclamation = QImage(str(heredir / 'red_exclamation.png'))
+    return image_red_exclamation
 
 
 class Plugin(FusionPlugin, QObject):
@@ -258,7 +282,7 @@ class Plugin(FusionPlugin, QObject):
         settings_tab = SettingsWidget(self)
         self.server_status_changed_signal.connect(settings_tab.update_server_error)
         tabs = network_dialog.nlayout.tabs
-        tabs.addTab(settings_tab, icon_fusion_logo, _('CashFusion'))
+        tabs.addTab(settings_tab, get_icon_fusion_logo(), _('CashFusion'))
         self.widgets.add(settings_tab)
         self.weak_settings_tab = weakref.ref(settings_tab)
 
@@ -370,7 +394,7 @@ class Plugin(FusionPlugin, QObject):
             if window and self.active and self.gui and self.gui.windows and self.tor_port_good is None:
                 network = self.gui.daemon.network
                 if network and network.tor_controller.is_available() and not network.tor_controller.is_enabled():
-                    icon_pm = icon_fusion_logo.pixmap(32)
+                    icon_pm = get_icon_fusion_logo().pixmap(32)
                     answer = window.question(
                         _('CashFusion requires Tor to operate anonymously. Would'
                           ' you like to enable the Tor client now?'),
@@ -458,7 +482,7 @@ class PasswordDialog(WindowModalDialog):
     def __init__(self, wallet, message, callback_ok = None, callback_cancel = None):
         parent = Plugin.get_suitable_dialog_window_parent(wallet)
         super().__init__(parent=parent, title=_("Enter Password"))
-        self.setWindowIcon(icon_fusion_logo)
+        self.setWindowIcon(get_icon_fusion_logo())
         self.wallet = wallet
         self.callback_ok = callback_ok
         self.callback_cancel = callback_cancel
@@ -470,7 +494,7 @@ class PasswordDialog(WindowModalDialog):
         self.msglabel.setMinimumWidth(250)
         self.msglabel.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Expanding)
         hbox = QHBoxLayout()
-        iconlabel = QLabel(); iconlabel.setPixmap(icon_fusion_logo.pixmap(32))
+        iconlabel = QLabel(); iconlabel.setPixmap(get_icon_fusion_logo().pixmap(32))
         hbox.addWidget(iconlabel)
         hbox.addWidget(self.msglabel, 1, Qt.AlignLeft|Qt.AlignVCenter)
         cmargins = hbox.contentsMargins(); cmargins.setBottom(10); hbox.setContentsMargins(cmargins)  # pad the bottom a bit
@@ -544,7 +568,7 @@ class PasswordDialog(WindowModalDialog):
 
 class DisabledFusionButton(StatusBarButton):
     def __init__(self, wallet, message):
-        super().__init__(icon_fusion_logo_gray, 'Fusion', self.show_message)
+        super().__init__(get_icon_fusion_logo_gray(), 'Fusion', self.show_message)
         self.wallet = wallet
         self.message = message
         self.setToolTip(_("CashFusion (disabled)"))
@@ -562,8 +586,8 @@ class FusionButton(StatusBarButton):
 
         self.server_error : tuple = None
 
-        self.icon_autofusing_on = icon_fusion_logo
-        self.icon_autofusing_off = icon_fusion_logo_gray
+        self.icon_autofusing_on = get_icon_fusion_logo()
+        self.icon_autofusing_off = get_icon_fusion_logo_gray()
         self.icon_fusing_problem = self.style().standardIcon(QStyle.SP_MessageBoxWarning)
 
 #        title = QWidgetAction(self)
@@ -613,7 +637,7 @@ class FusionButton(StatusBarButton):
                 r = self.rect()
                 r -= QMargins(4,6,4,6)
                 r.moveCenter(r.center() + QPoint(4,4))
-                p.drawImage(r, image_red_exclamation)
+                p.drawImage(r, get_image_red_exclamation())
             finally:
                 # paranoia. The above never raises but.. if it does.. PyQt will
                 # crash hard if we don't end the QPainter properly before
@@ -924,7 +948,7 @@ class SettingsWidget(QWidget):
 class WalletSettingsDialog(WindowModalDialog):
     def __init__(self, parent, plugin, wallet):
         super().__init__(parent=parent, title=_("CashFusion - Wallet Settings"))
-        self.setWindowIcon(icon_fusion_logo)
+        self.setWindowIcon(get_icon_fusion_logo())
         self.plugin = plugin
         self.wallet = wallet
         self.conf = Conf(self.wallet)
@@ -1365,7 +1389,7 @@ class FusionsWindow(ServerFusionsBaseMixin, QDialog):
         ServerFusionsBaseMixin.__init__(self, plugin, refresh_interval=1000)
 
         self.setWindowTitle(_("CashFusion - Fusions"))
-        self.setWindowIcon(icon_fusion_logo)
+        self.setWindowIcon(get_icon_fusion_logo())
 
         main_layout = QVBoxLayout(self)
 
