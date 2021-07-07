@@ -721,12 +721,12 @@ class TxDialog(QDialog, MessageBoxMixin, PrintError):
             # /CashAccounts support
             # Mark B. Lundeberg's patented output formatter logic™
             if v is not None:
-                if len(addrstr) > 42: # for long outputs, make a linebreak.
+                if len(addrstr) > 48: # for long outputs, make a linebreak.
                     cursor.insertBlock()
                     addrstr = '\u21b3'
                     cursor.insertText(addrstr, ext)
                 # insert enough spaces until column 43, to line up amounts
-                cursor.insertText(' '*(43 - len(addrstr)), ext)
+                cursor.insertText(' '*(49 - len(addrstr)), ext)
                 cursor.insertText(format_amount(v), ext)
             cursor.insertBlock()
             # /Mark B. Lundeberg's patented output formatting logic™
