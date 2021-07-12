@@ -24,7 +24,7 @@ from .util import PrintError, ThreadJob, print_error
 DEFAULT_ENABLED = False
 DEFAULT_CURRENCY = "USD"
 # Note the exchange here should ideally also support history rates
-DEFAULT_EXCHANGE = "CoinGeckoBcha"
+DEFAULT_EXCHANGE = "CoinGecko"
 
 # See https://en.wikipedia.org/wiki/ISO_4217
 CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
@@ -36,7 +36,7 @@ CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
 
 
 class ExchangeBase(PrintError):
-    satoshisPerUnit: int = 100_000_000
+    satoshisPerUnit: int = 100
     """Number of satoshis per unit for the exchange's base unit."""
 
     def __init__(self, on_quotes, on_history):
@@ -193,6 +193,35 @@ class ExchangeBase(PrintError):
         raise NotImplementedError(
             "Exchange classes supporting historical exchange rates must "
             "implement this method.")
+
+
+class CoinGecko(ExchangeBase):
+    satoshisPerUnit: int = 100
+
+    def get_rates(self, ccy):
+        json_data = self.get_json(
+            'api.coingecko.com',
+            '/api/v3/coins/ecash?localization=False&sparkline=false')
+        prices = json_data["market_data"]["current_price"]
+        return dict([(a[0].upper(), PyDecimal(a[1])) for a in prices.items()])
+
+    def history_ccys(self):
+        return ['AED', 'ARS', 'AUD', 'BCH', 'BTD', 'BHD', 'BMD', 'BRL', 'BTC',
+                'CAD', 'CHF', 'CLP', 'CNY', 'CZK', 'DKK', 'ETH', 'EUR', 'GBP',
+                'HKD', 'HUF', 'IDR', 'ILS', 'INR', 'JPY', 'KRW', 'KWD', 'LKR',
+                'LTC', 'MMK', 'MXH', 'MYR', 'NOK', 'NZD', 'PHP', 'PKR', 'PLN',
+                'RUB', 'SAR', 'SEK', 'SGD', 'THB', 'TRY', 'TWD', 'USD', 'VEF',
+                'XAG', 'XAU', 'XDR', 'ZAR']
+
+    def request_history(self, ccy):
+        history = self.get_json(
+            'api.coingecko.com',
+            f'/api/v3/coins/ecash/market_chart?'
+            f'vs_currency={ccy}&days=max')
+
+        return {
+            datetime.utcfromtimestamp(h[0] / 1000).strftime('%Y-%m-%d'): h[1]
+            for h in history['prices']}
 
 
 class CoinGeckoBcha(ExchangeBase):
