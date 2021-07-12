@@ -61,7 +61,6 @@ do_monkey_patching_of_python_ecdsa_internals_with_libsecp256k1()
 FEE_STEP = 10000
 
 COINBASE_MATURITY = 100
-COIN = 100000000
 CASH = 100
 
 # supported types of transction outputs
