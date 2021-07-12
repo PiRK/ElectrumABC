@@ -24,7 +24,7 @@ from .util import PrintError, ThreadJob, print_error
 DEFAULT_ENABLED = False
 DEFAULT_CURRENCY = "USD"
 # Note the exchange here should ideally also support history rates
-DEFAULT_EXCHANGE = "CoinGecko"
+DEFAULT_EXCHANGE = "CoinGeckoBcha"
 
 # See https://en.wikipedia.org/wiki/ISO_4217
 CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
@@ -193,7 +193,7 @@ class ExchangeBase(PrintError):
             "implement this method.")
 
 
-class CoinGecko(ExchangeBase):
+class CoinGeckoBcha(ExchangeBase):
 
     def get_rates(self, ccy):
         json_data = self.get_json(
