@@ -15,7 +15,6 @@ from typing import Dict, List, Optional
 
 import requests
 
-from .bitcoin import COIN
 from .constants import BASE_UNITS_BY_DECIMALS, PROJECT_NAME
 from .i18n import _
 from .util import PrintError, ThreadJob, print_error
@@ -468,7 +467,9 @@ class FxThread(ThreadJob):
         return '' if rate is None else self.value_str(
             satoshis, rate, is_diff=is_diff)
 
-    def get_fiat_status_text(self, satoshis, base_unit, decimal_point):
+    def get_fiat_status_text(self, satoshis, base_unit, decimal_point) -> str:
+        """Return the exchange rate for 1 unit of the selected unit.
+        """
         rate = self.exchange_rate()
         if rate is None:
             return _("  (No FX rate available)")
@@ -482,7 +483,7 @@ class FxThread(ThreadJob):
 
         return " 1 %s~%s %s" % (
             base_unit,
-            self.value_str(COIN / (10**(8 - decimal_point)),
+            self.value_str(10 ** decimal_point,
                            rate, default_prec),
             self.ccy)
 
