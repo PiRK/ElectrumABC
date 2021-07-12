@@ -11,7 +11,7 @@ from datetime import datetime
 # Qt 5.12 also exports Decimal
 from decimal import Decimal as PyDecimal
 from threading import Thread
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import requests
 
@@ -36,6 +36,8 @@ CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
 
 
 class ExchangeBase(PrintError):
+    satoshisPerUnit: int = 100_000_000
+    """Number of satoshis per unit for the exchange's base unit."""
 
     def __init__(self, on_quotes, on_history):
         self.history = {}
@@ -194,6 +196,7 @@ class ExchangeBase(PrintError):
 
 
 class CoinGeckoBcha(ExchangeBase):
+    satoshisPerUnit: int = 100_000_000
 
     def get_rates(self, ccy):
         json_data = self.get_json(
@@ -308,6 +311,7 @@ class FxThread(ThreadJob):
         self.hist_checkbox = None
         self.timeout = 0.0
         self.cache_dir = os.path.join(config.path, 'cache')
+        self.exchange: Optional[ExchangeBase] = None
         self.set_exchange(self.config_exchange())
         if not os.path.exists(self.cache_dir):
             os.mkdir(self.cache_dir)
@@ -426,16 +430,16 @@ class FxThread(ThreadJob):
         if rate:
             return PyDecimal(rate)
 
-    def format_amount_and_units(self, btc_balance, is_diff=False):
-        amount_str = self.format_amount(btc_balance, is_diff=is_diff)
+    def format_amount_and_units(self, satoshis: int, is_diff=False):
+        amount_str = self.format_amount(satoshis, is_diff=is_diff)
         return '' if not amount_str else "%s %s" % (amount_str, self.ccy)
 
-    def format_amount(self, btc_balance, is_diff=False):
+    def format_amount(self, satoshis: int, is_diff=False):
         rate = self.exchange_rate()
         return '' if rate is None else self.value_str(
-            btc_balance, rate, is_diff=is_diff)
+            satoshis, rate, is_diff=is_diff)
 
-    def get_fiat_status_text(self, btc_balance, base_unit, decimal_point):
+    def get_fiat_status_text(self, satoshis, base_unit, decimal_point):
         rate = self.exchange_rate()
         if rate is None:
             return _("  (No FX rate available)")
@@ -457,7 +461,7 @@ class FxThread(ThreadJob):
         if satoshis is None:  # Can happen with incomplete history
             return _("Unknown")
         if rate:
-            value = PyDecimal(satoshis) / COIN * PyDecimal(rate)
+            value = PyDecimal(satoshis) / self.exchange.satoshisPerUnit * PyDecimal(rate)
             return "%s" % (self.ccy_amount_str(
                 value, True, default_prec, is_diff=is_diff))
         return _("No data")
@@ -478,7 +482,7 @@ class FxThread(ThreadJob):
     def historical_value(self, satoshis, d_t):
         rate = self.history_rate(d_t)
         if rate:
-            return PyDecimal(satoshis) / COIN * PyDecimal(rate)
+            return PyDecimal(satoshis) / self.exchange.satoshisPerUnit * PyDecimal(rate)
 
     def timestamp_rate(self, timestamp):
         from .util import timestamp_to_datetime
