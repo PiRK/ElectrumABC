@@ -50,7 +50,7 @@ from electroncash import networks
 from electroncash import paymentrequest
 from electroncash import util, bitcoin, commands, cashacct
 from electroncash.address import Address
-from electroncash.bitcoin import COIN, TYPE_ADDRESS
+from electroncash.bitcoin import TYPE_ADDRESS
 from electroncash.constants import PROJECT_NAME, REPOSITORY_URL, CURRENCY
 from electroncash.contacts import Contact
 from electroncash.i18n import _, ngettext, pgettext
@@ -904,6 +904,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             fiat_e.is_last_edited = (edit == fiat_e)
             amount = edit.get_amount()
             rate = self.fx.exchange_rate() if self.fx else None
+            sats_per_unit = self.fx.satoshis_per_unit()
             if rate is None or amount is None:
                 if edit is fiat_e:
                     btc_e.setText("")
@@ -914,7 +915,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
             else:
                 if edit is fiat_e:
                     btc_e.follows = True
-                    btc_e.setAmount(int(amount / PyDecimal(rate) * COIN))
+                    btc_e.setAmount(int(amount / PyDecimal(rate) * sats_per_unit))
                     btc_e.setStyleSheet(ColorScheme.BLUE.as_stylesheet())
                     btc_e.follows = False
                     if fee_e:
@@ -922,7 +923,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 else:
                     fiat_e.follows = True
                     fiat_e.setText(self.fx.ccy_amount_str(
-                        amount * PyDecimal(rate) / COIN, False))
+                        amount * PyDecimal(rate) / sats_per_unit, False))
                     fiat_e.setStyleSheet(ColorScheme.BLUE.as_stylesheet())
                     fiat_e.follows = False
 

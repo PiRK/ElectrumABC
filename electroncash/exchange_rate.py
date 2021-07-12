@@ -35,7 +35,7 @@ CCY_PRECISIONS = {'BHD': 3, 'BIF': 0, 'BYR': 0, 'CLF': 4, 'CLP': 0,
 
 
 class ExchangeBase(PrintError):
-    satoshisPerUnit: int = 100
+    satoshis_per_unit: int = 100
     """Number of satoshis per unit for the exchange's base unit."""
 
     def __init__(self, on_quotes, on_history):
@@ -195,7 +195,7 @@ class ExchangeBase(PrintError):
 
 
 class CoinGecko(ExchangeBase):
-    satoshisPerUnit: int = 100
+    satoshis_per_unit: int = 100
 
     def get_rates(self, ccy):
         json_data = self.get_json(
@@ -224,7 +224,7 @@ class CoinGecko(ExchangeBase):
 
 
 class CoinGeckoBcha(ExchangeBase):
-    satoshisPerUnit: int = 100_000_000
+    satoshis_per_unit: int = 100_000_000
 
     def get_rates(self, ccy):
         json_data = self.get_json(
@@ -458,6 +458,12 @@ class FxThread(ThreadJob):
         if rate:
             return PyDecimal(rate)
 
+    def satoshis_per_unit(self) -> int:
+        """Returns the number of satoshis per unit for the unit used
+        in the exchange rate provided by the API (e.g. 100 for XEC and
+        1000000 for BCHA)"""
+        return self.exchange.satoshis_per_unit
+
     def format_amount_and_units(self, satoshis: int, is_diff=False):
         amount_str = self.format_amount(satoshis, is_diff=is_diff)
         return '' if not amount_str else "%s %s" % (amount_str, self.ccy)
@@ -491,7 +497,7 @@ class FxThread(ThreadJob):
         if satoshis is None:  # Can happen with incomplete history
             return _("Unknown")
         if rate:
-            value = PyDecimal(satoshis) / self.exchange.satoshisPerUnit * PyDecimal(rate)
+            value = PyDecimal(satoshis) / self.exchange.satoshis_per_unit * PyDecimal(rate)
             return "%s" % (self.ccy_amount_str(
                 value, True, default_prec, is_diff=is_diff))
         return _("No data")
@@ -512,7 +518,7 @@ class FxThread(ThreadJob):
     def historical_value(self, satoshis, d_t):
         rate = self.history_rate(d_t)
         if rate:
-            return PyDecimal(satoshis) / self.exchange.satoshisPerUnit * PyDecimal(rate)
+            return PyDecimal(satoshis) / self.exchange.satoshis_per_unit * PyDecimal(rate)
 
     def timestamp_rate(self, timestamp):
         from .util import timestamp_to_datetime
