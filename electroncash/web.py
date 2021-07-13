@@ -46,16 +46,19 @@ mainnet_block_explorers = {
     'Blockchair.com': ('https://blockchair.com/ecash',
                        Address.FMT_CASHADDR_BCH,
                        {'tx': 'transaction', 'addr': 'address',
-                        'block': 'block'}),
+                        'block': 'block'},
+                       False),   # addr_uses_prefix
     'ViaBTC.com': ('https://explorer.viawallet.com/xec',
                    Address.FMT_CASHADDR,
                    {'tx': 'tx', 'addr': 'address',
-                    'block': 'block'}),
+                    'block': 'block'},
+                   False),
     'BitcoinABC.org': ('https://explorer.bitcoinabc.org',
                        Address.FMT_CASHADDR,
                        {'tx': 'tx',
                         'addr': 'address',
-                        'block': 'block-height'}),
+                        'block': 'block-height'},
+                       True)
 }
 
 DEFAULT_EXPLORER_TESTNET = 'BitcoinABC.org'
@@ -91,13 +94,16 @@ def BE_URL(config, kind, item):
     be_tuple = BE_tuple(config)
     if not be_tuple:
         return
-    url_base, addr_fmt, parts = be_tuple
+    url_base, addr_fmt, parts, addr_uses_prefix = be_tuple
     kind_str = parts.get(kind)
     if kind_str is None:
         return
     if kind == 'addr':
         assert isinstance(item, Address)
-        item = item.to_string(addr_fmt)
+        if addr_uses_prefix:
+            item = item.to_full_string(addr_fmt)
+        else:
+            item = item.to_string(addr_fmt)
     return "/".join(part for part in (url_base, kind_str, item) if part)
 
 def BE_sorted_list():
