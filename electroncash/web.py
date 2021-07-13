@@ -58,7 +58,12 @@ mainnet_block_explorers = {
                        {'tx': 'tx',
                         'addr': 'address',
                         'block': 'block-height'},
-                       True)
+                       True),
+    'be.cash': ('https://explorer.be.cash',
+                Address.FMT_CASHADDR,
+                {'tx': 'tx', 'addr': 'address',
+                 'block': 'block'},
+                True)
 }
 
 DEFAULT_EXPLORER_TESTNET = 'BitcoinABC.org'
