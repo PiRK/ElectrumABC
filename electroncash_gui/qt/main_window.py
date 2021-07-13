@@ -2343,7 +2343,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                     if txid is not None:
                         if tx_desc is not None:
                             self.wallet.set_label(txid, tx_desc)
-                        copy_link = web.BE_URL(self.config, 'tx', txid)
+                        copy_link = web.BE_URL(self.config, web.ExplorerUrlParts.TX, txid)
                         if copy_link:
                             # tx is complete and there is a copy_link
                             buttons.insert(0, _("Copy link"))
@@ -5144,7 +5144,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
                 if self.wallet.is_mine(addr):
                     self.show_address(addr)
                 else:
-                    url = web.BE_URL(self.config, 'addr', addr)
+                    url = web.BE_URL(self.config, web.ExplorerUrlParts.ADDR, addr)
                     if url:  webopen(url)
         name, placeholder = '', 'Satoshi_Nakamoto'
         while True:

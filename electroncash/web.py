@@ -22,12 +22,14 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import decimal # Qt 5.12 also exports Decimal, so take the package name
+import decimal
+import enum
 import os
 import re
 import shutil
 import sys
 import threading
+from typing import Dict, Union
 import urllib
 
 from .address import Address
@@ -39,77 +41,100 @@ from . import cashacct
 from .i18n import _
 
 
-DEFAULT_EXPLORER = "Blockchair.com"
-
-# TODO: updated addr format when explorers support the new prefix
-mainnet_block_explorers = {
-    'Blockchair.com': ('https://blockchair.com/ecash',
-                       Address.FMT_CASHADDR_BCH,
-                       {'tx': 'transaction', 'addr': 'address',
-                        'block': 'block'},
-                       False),   # addr_uses_prefix
-    'ViaBTC.com': ('https://explorer.viawallet.com/xec',
-                   Address.FMT_CASHADDR,
-                   {'tx': 'tx', 'addr': 'address',
-                    'block': 'block'},
-                   False),
-    'BitcoinABC.org': ('https://explorer.bitcoinabc.org',
-                       Address.FMT_CASHADDR,
-                       {'tx': 'tx',
-                        'addr': 'address',
-                        'block': 'block-height'},
-                       True),
-    'be.cash': ('https://explorer.be.cash',
-                Address.FMT_CASHADDR,
-                {'tx': 'tx', 'addr': 'address',
-                 'block': 'block'},
-                True)
-}
-
-DEFAULT_EXPLORER_TESTNET = 'BitcoinABC.org'
-
-testnet_block_explorers = {
-    'BitcoinABC.org': ('https://texplorer.bitcoinabc.org/',
-                       Address.FMT_CASHADDR,
-                       {'tx': 'tx', 'addr': 'address',
-                        'block': 'block-height'}),
-}
+class ExplorerUrlParts(enum.Enum):
+    TX = enum.auto()
+    ADDR = enum.auto()
+    BLOCK = enum.auto()
 
 
-def BE_info():
+class BlockchainExplorer:
+    name: str = ""
+    url_base: str = ""
+    addr_fmt: str = Address.FMT_CASHADDR
+    tx_part: str = "tx"
+    addr_part: str = "address"
+    block_part: str = "block"
+    addr_uses_prefix: bool = True
+
+    def get_kind_str(self, kind: ExplorerUrlParts) -> str:
+        if kind == ExplorerUrlParts.TX:
+            return self.tx_part
+        if kind == ExplorerUrlParts.ADDR:
+            return self.addr_part
+        if kind == ExplorerUrlParts.BLOCK:
+            return self.block_part
+        raise RuntimeError(f"Unknown block explorer URL kind {kind} ({type(kind)}")
+
+
+class Blockchair(BlockchainExplorer):
+    name = "Blockchair"
+    url_base = "https://blockchair.com/ecash"
+    addr_fmt = Address.FMT_CASHADDR_BCH
+    tx_part = "transaction"
+    addr_uses_prefix = False
+
+
+class ViaWallet(BlockchainExplorer):
+    name = "ViaWallet"
+    url_base = "https://explorer.viawallet.com/xec"
+    addr_uses_prefix: bool = False
+
+
+class BitcoinABC(BlockchainExplorer):
+    name = "BitcoinABC"
+    url_base = "https://explorer.bitcoinabc.org"
+    block_part = "block-height"
+
+
+class BitcoinABCTestnet(BitcoinABC):
+    url_base = "https://texplorer.bitcoinabc.org"
+
+
+class BeCash(BlockchainExplorer):
+    name = "be.cash"
+    url_base = "https://explorer.be.cash"
+
+
+DEFAULT_EXPLORER = Blockchair
+
+mainnet_block_explorers = {explorer.name: explorer for explorer in
+                           [Blockchair, ViaWallet, BitcoinABC, BeCash]}
+
+DEFAULT_EXPLORER_TESTNET = BitcoinABCTestnet
+
+testnet_block_explorers = {BitcoinABCTestnet.name: BitcoinABCTestnet}
+
+
+def BE_info() -> Dict[str, BlockchainExplorer]:
     if networks.net is networks.TestNet:
         return testnet_block_explorers
     return mainnet_block_explorers
 
-def BE_tuple(config):
-    infodict = BE_info()
-    return (infodict.get(BE_from_config(config))
-            or infodict.get(BE_default_explorer()) # In case block explorer in config is bad/no longer valid
-           )
 
-def BE_default_explorer():
+def BE_default_explorer() -> BlockchainExplorer:
     if networks.net is networks.TestNet:
         return DEFAULT_EXPLORER_TESTNET
     return DEFAULT_EXPLORER
 
-def BE_from_config(config):
+
+def BE_from_config(config) -> str:
     return config.get('block_explorer', BE_default_explorer())
 
-def BE_URL(config, kind, item):
-    be_tuple = BE_tuple(config)
-    if not be_tuple:
-        return
-    url_base, addr_fmt, parts, addr_uses_prefix = be_tuple
-    kind_str = parts.get(kind)
-    if kind_str is None:
-        return
-    if kind == 'addr':
+
+def BE_URL(config, kind: ExplorerUrlParts, item: Union[str, Address]):
+    explorer_name = BE_from_config(config)
+    explorer = BE_info().get(explorer_name, BE_default_explorer())
+
+    kind_str = BlockchainExplorer.get_kind_str(explorer, kind)
+
+    if kind == ExplorerUrlParts.ADDR:
         assert isinstance(item, Address)
-        if addr_uses_prefix:
-            item = item.to_full_string(addr_fmt)
+        if explorer.addr_uses_prefix:
+            item = item.to_full_string(explorer.addr_fmt)
         else:
-            item = item.to_string(addr_fmt)
-    return "/".join(part for part in (url_base, kind_str, item) if part)
+            item = item.to_string(explorer.addr_fmt)
+    return "/".join(part for part in (explorer.url_base, kind_str, item) if part)
+
 
 def BE_sorted_list():
     return sorted(BE_info())

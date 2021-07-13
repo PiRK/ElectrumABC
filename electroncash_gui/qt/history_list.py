@@ -248,7 +248,7 @@ class HistoryList(MyTreeWidget):
             column_title = self.headerItem().text(column)
             column_data = item.text(column)
 
-        tx_URL = web.BE_URL(self.config, 'tx', tx_hash)
+        tx_URL = web.BE_URL(self.config, web.ExplorerUrlParts.TX, tx_hash)
         height, conf, timestamp = self.wallet.get_tx_height(tx_hash)
         tx = self.wallet.transactions.get(tx_hash)
         if not tx: return # this happens sometimes on wallet synch when first starting up.

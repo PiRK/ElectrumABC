@@ -130,9 +130,10 @@ class TxDialog(QDialog, MessageBoxMixin, PrintError):
         def open_be_url(link):
             if link:
                 try:
-                    kind, thing = link.split(':')
-                    url = web.BE_URL(self.main_window.config, kind, thing)
+                    _, txid = link.split(':')
+                    url = web.BE_URL(self.main_window.config, web.ExplorerUrlParts.TX, txid)
                 except:
+                    raise
                     url = None
                 if url:
                     webopen( url )
@@ -837,7 +838,7 @@ class TxDialog(QDialog, MessageBoxMixin, PrintError):
             addr_text = addr.to_full_ui_string()
             if isinstance(addr, Address) and self.wallet.is_mine(addr):
                 show_list += [ ( _("Address Details"), lambda: self._open_internal_link(addr_text) ) ]
-                addr_URL = web.BE_URL(self.main_window.config, 'addr', addr)
+                addr_URL = web.BE_URL(self.main_window.config, web.ExplorerUrlParts.ADDR, addr)
                 if addr_URL:
                     show_list += [ ( _("View on block explorer"), lambda: webopen(addr_URL) ) ]
             if isinstance(addr, ScriptOutput):

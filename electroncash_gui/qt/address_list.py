@@ -328,7 +328,7 @@ class AddressList(MyTreeWidget):
                 menu.addAction(_("Encrypt/decrypt message") + "...", lambda: self.parent.encrypt_message(addr))
             if can_delete:
                 menu.addAction(_("Remove from wallet"), lambda: self.parent.remove_address(addr))
-            addr_URL = web.BE_URL(self.config, 'addr', addr)
+            addr_URL = web.BE_URL(self.config, web.ExplorerUrlParts.ADDR, addr)
             if addr_URL:
                 menu.addAction(_("View on block explorer"), lambda: webopen(addr_URL))
         else:

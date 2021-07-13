@@ -824,7 +824,7 @@ def cash_account_detail_dialog(parent : MessageBoxMixin,  # Should be an Electru
             if wallet.is_mine(addr):
                 parent.show_address(addr)
             else:
-                addr_URL = web.BE_URL(parent.config, 'addr', addr)
+                addr_URL = web.BE_URL(parent.config, web.ExplorerUrlParts.ADDR, addr)
                 if addr_URL:
                     webopen(addr_URL)
             return
