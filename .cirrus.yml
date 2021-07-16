@@ -1,4 +1,5 @@
-task:
+common: &COMMON_TEMPLATE
+  timeout_in: 120m
   clone_script: |
     if [ -z "$CIRRUS_PR" ]; then
       git clone --recursive --branch=$CIRRUS_BRANCH https://x-access-token:${CIRRUS_REPO_CLONE_TOKEN}@github.com/${CIRRUS_REPO_FULL_NAME}.git $CIRRUS_WORKING_DIR
@@ -8,8 +9,10 @@ task:
       git fetch origin pull/$CIRRUS_PR/head:pull/$CIRRUS_PR
       git reset --hard $CIRRUS_CHANGE_IN_REPO
     fi
-  timeout_in: 120m
-  name: "Build macos DMG"
+
+task:
+  name: "Build MacOS DMG"
+  << : *COMMON_TEMPLATE
   macos_instance:
     image: catalina-base
   brew_script:
@@ -19,3 +22,30 @@ task:
     - cd contrib/osx && ./make_osx
   binaries_artifacts:
     path: "dist/*.dmg"
+
+docker_builder:
+  name: "Build Linux AppImage"
+  << : *COMMON_TEMPLATE
+  platform: linux
+  build_script:
+    - GIT_REPO=$PWD contrib/build-linux/appimage/build.sh $CIRRUS_BRANCH
+  binaries_artifacts:
+    path: "dist/*.AppImage"
+
+docker_builder:
+  name: "Build source distribution"
+  << : *COMMON_TEMPLATE
+  platform: linux
+  build_script:
+    - GIT_REPO=$PWD contrib/build-linux/srcdist_docker/build.sh $CIRRUS_BRANCH
+  binaries_artifacts:
+    path: "dist/*.tar.gz"
+
+docker_builder:
+  name: "Build Windows EXE"
+  << : *COMMON_TEMPLATE
+  platform: linux
+  build_script:
+    - GIT_REPO=$PWD contrib/build-wine/build.sh $CIRRUS_BRANCH
+  binaries_artifacts:
+    path: "dist/*.exe"
