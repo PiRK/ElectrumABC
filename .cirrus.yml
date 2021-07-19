@@ -10,6 +10,8 @@ common: &COMMON_TEMPLATE
       git reset --hard $CIRRUS_CHANGE_IN_REPO
     fi
   trigger_type: manual
+  env:
+    GIT_REPO: $CIRRUS_WORKING_DIR
 
 task:
   name: "Build MacOS DMG"
@@ -29,7 +31,7 @@ docker_builder:
   << : *COMMON_TEMPLATE
   platform: linux
   build_script:
-    - GIT_REPO=$PWD contrib/build-linux/appimage/build.sh $CIRRUS_BRANCH
+    - contrib/build-linux/appimage/build.sh $CIRRUS_BRANCH
   binaries_artifacts:
     path: "dist/*.AppImage"
 
@@ -38,7 +40,7 @@ docker_builder:
   << : *COMMON_TEMPLATE
   platform: linux
   build_script:
-    - GIT_REPO=$PWD contrib/build-linux/srcdist_docker/build.sh $CIRRUS_BRANCH
+    - contrib/build-linux/srcdist_docker/build.sh $CIRRUS_BRANCH
   binaries_artifacts:
     path: "dist/*.tar.gz"
 
@@ -47,6 +49,6 @@ docker_builder:
   << : *COMMON_TEMPLATE
   platform: linux
   build_script:
-    - GIT_REPO=$PWD contrib/build-wine/build.sh $CIRRUS_BRANCH
+    - contrib/build-wine/build.sh $CIRRUS_BRANCH
   binaries_artifacts:
     path: "dist/*.exe"
