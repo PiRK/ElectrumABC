@@ -194,7 +194,7 @@ class ElectrumWindow(QMainWindow, MessageBoxMixin, PrintError):
 
         self.decimal_point = config.get('decimal_point', 2)
         self.fee_unit = config.get('fee_unit', 0)
-        self.num_zeros     = int(config.get('num_zeros',0))
+        self.num_zeros     = int(config.get('num_zeros', 2))
 
         self.completions = QStringListModel()
 
