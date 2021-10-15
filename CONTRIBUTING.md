@@ -65,6 +65,16 @@ upstream	https://github.com/Bitcoin-ABC/ElectrumABC.git (fetch)
 upstream	https://github.com/Bitcoin-ABC/ElectrumABC.git (push)
 ```
 
+Before writing or editing code, you must set-up pre-commit hooks to enforce
+a consistent code style.
+This is done by installing the  [`pre-commit` tool](https://pre-commit.com/), and
+then running `pre-commit install` in the root directory of the project.
+
+```shell
+$ pip install pre-commit
+$ pre-commit install
+```
+
 You are now ready to contribute to Electrum ABC.
 
 ### Development workflow
@@ -137,12 +147,10 @@ not plan to immediately fix this problem for the entire codebase, as this would
 make backports from Electron Cash harder. But any new code, or existing code
 that is modified, should be fixed.
 
-To check your modifications before staging and committing your changes, you can
-run the following command:
-
-```shell
-git diff | flake8 --diff
-```
+Automatic formatting is achieved using pre-commit hooks that run the following
+formatting tools:
+- [`isort`](https://pycqa.github.io/isort/)
+- [`black`](https://github.com/psf/black)
 
 The code should be documented and tested.
 
