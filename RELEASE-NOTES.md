@@ -27,7 +27,14 @@ transactions as expected.
 
 ## Current master
 
-- Change command line usage to enforce specifying global options before command name.
+- Redefine the BIP71 MIME types for eCash payment request messages (#213):
+
+    | Message        | Type/Subtype                     |
+    |----------------|----------------------------------|
+    | PaymentRequest | application/ecash-paymentrequest |
+    | Payment        | application/ecash-payment        |
+    | PaymentACK     | application/ecash-paymentack     |
+- Change command line usage to enforce specifying global options before command name (#215).
 
 
 ## Release 5.1.1
