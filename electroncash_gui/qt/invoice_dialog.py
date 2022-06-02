@@ -120,7 +120,7 @@ class InvoiceDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.critical(
                 self,
                 _("Invalid payment address"),
-                _("Unable to decode payement address"),
+                _("Unable to decode payment address"),
             )
             return None
 
