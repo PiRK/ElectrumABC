@@ -33,9 +33,9 @@ from typing import Tuple, Union
 
 import ecdsa
 
-from electroncash.address import Address, OpCodes, ScriptOutput
-from electroncash.bitcoin import TYPE_ADDRESS, TYPE_SCRIPT, hash_160
-from electroncash.transaction import Transaction, get_address_from_output_script
+from electrum_ecf.address import Address, OpCodes, ScriptOutput
+from electrum_ecf.bitcoin import TYPE_ADDRESS, TYPE_SCRIPT, hash_160
+from electrum_ecf.transaction import Transaction, get_address_from_output_script
 
 from . import fusion_pb2 as pb
 from .protocol import Protocol

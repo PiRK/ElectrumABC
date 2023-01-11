@@ -29,15 +29,15 @@ from __future__ import annotations
 from contextlib import suppress
 from typing import TYPE_CHECKING, List, NamedTuple, Optional, Tuple
 
-from electroncash.plugins import daemon_command
-from electroncash.util import InvalidPassword
+from electrum_ecf.plugins import daemon_command
+from electrum_ecf.util import InvalidPassword
 
 from .plugin import FusionPlugin
 
 if TYPE_CHECKING:
-    from electroncash.daemon import Daemon
-    from electroncash.simple_config import SimpleConfig
-    from electroncash.wallet import Abstract_Wallet
+    from electrum_ecf.daemon import Daemon
+    from electrum_ecf.simple_config import SimpleConfig
+    from electrum_ecf.wallet import Abstract_Wallet
 
 
 class WalletToFuse(NamedTuple):

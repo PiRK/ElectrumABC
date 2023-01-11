@@ -8,9 +8,9 @@ from io import BytesIO
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
 
-from electroncash.i18n import _
-from electroncash.plugins import BasePlugin, hook
-from electroncash.printerror import print_error, print_msg
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import BasePlugin, hook
+from electrum_ecf.printerror import print_error, print_msg
 from electrumabc_gui.qt.util import EnterButton, WaitingDialog, WindowModalDialog
 
 PLATFORM_LIBS = {

@@ -18,8 +18,8 @@ env/
 bin/
 /app.fil
 tmp/
-electroncash/*.so.0
-electroncash/*.dylib
+electrum_ecf/*.so.0
+electrum_ecf/*.dylib
 contrib/osx/*.dylib
 
 # tox files

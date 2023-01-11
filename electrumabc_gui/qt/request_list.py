@@ -31,11 +31,11 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
 
-from electroncash.address import Address
-from electroncash.i18n import _
-from electroncash.paymentrequest import PR_UNKNOWN, pr_tooltips
-from electroncash.plugins import run_hook
-from electroncash.util import age, format_time
+from electrum_ecf.address import Address
+from electrum_ecf.i18n import _
+from electrum_ecf.paymentrequest import PR_UNKNOWN, pr_tooltips
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.util import age, format_time
 
 from .util import MyTreeWidget, pr_icons
 

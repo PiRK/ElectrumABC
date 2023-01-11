@@ -53,24 +53,24 @@ from PyQt5.QtCore import (
 )
 from PyQt5.QtGui import QColor, QCursor, QFont, QIcon, QKeySequence, QTextOption
 
-import electroncash.constants
-import electroncash.web as web
-from electroncash import bitcoin, commands, keystore, networks, paymentrequest, util
-from electroncash.address import Address
-from electroncash.bitcoin import TYPE_ADDRESS
-from electroncash.constants import CURRENCY, PROJECT_NAME, REPOSITORY_URL, SCRIPT_NAME
-from electroncash.contacts import Contact
-from electroncash.i18n import _, ngettext, pgettext
-from electroncash.paymentrequest import PR_PAID
-from electroncash.plugins import run_hook
-from electroncash.simple_config import get_config
-from electroncash.transaction import (
+import electrum_ecf.constants
+import electrum_ecf.web as web
+from electrum_ecf import bitcoin, commands, keystore, networks, paymentrequest, util
+from electrum_ecf.address import Address
+from electrum_ecf.bitcoin import TYPE_ADDRESS
+from electrum_ecf.constants import CURRENCY, PROJECT_NAME, REPOSITORY_URL, SCRIPT_NAME
+from electrum_ecf.contacts import Contact
+from electrum_ecf.i18n import _, ngettext, pgettext
+from electrum_ecf.paymentrequest import PR_PAID
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.simple_config import get_config
+from electrum_ecf.transaction import (
     OPReturn,
     SerializationError,
     Transaction,
     tx_from_str,
 )
-from electroncash.util import (
+from electrum_ecf.util import (
     ExcessiveFee,
     InvalidPassword,
     NotEnoughFunds,
@@ -84,7 +84,7 @@ from electroncash.util import (
     format_satoshis_plain,
     format_time,
 )
-from electroncash.wallet import Abstract_Wallet, Multisig_Wallet, sweep_preparations
+from electrum_ecf.wallet import Abstract_Wallet, Multisig_Wallet, sweep_preparations
 
 from . import address_dialog, exception_window, external_plugins_window, qrwindow
 from .address_list import AddressList
@@ -685,7 +685,7 @@ class ElectrumWindow(QtWidgets.QMainWindow, MessageBoxMixin, PrintError):
             and self.wallet.get_master_public_key()
         ) or None
         if xkey:
-            from electroncash.bitcoin import (
+            from electrum_ecf.bitcoin import (
                 InvalidXKeyFormat,
                 InvalidXKeyNotBase58,
                 deserialize_xpub,
@@ -1207,8 +1207,8 @@ class ElectrumWindow(QtWidgets.QMainWindow, MessageBoxMixin, PrintError):
         return self.decimal_point
 
     def base_unit(self):
-        if self.decimal_point in electroncash.constants.BASE_UNITS_BY_DECIMALS:
-            return electroncash.constants.BASE_UNITS_BY_DECIMALS[self.decimal_point]
+        if self.decimal_point in electrum_ecf.constants.BASE_UNITS_BY_DECIMALS:
+            return electrum_ecf.constants.BASE_UNITS_BY_DECIMALS[self.decimal_point]
         raise Exception("Unknown base unit")
 
     def connect_fields(self, window, btc_e, fiat_e, fee_e):
@@ -3411,7 +3411,7 @@ class ElectrumWindow(QtWidgets.QMainWindow, MessageBoxMixin, PrintError):
         self.preview_button.setVisible(True)
 
     def change_password_dialog(self):
-        from electroncash.storage import STO_EV_XPUB_PW
+        from electrum_ecf.storage import STO_EV_XPUB_PW
 
         if self.wallet.get_available_storage_encryption_version() == STO_EV_XPUB_PW:
             d = ChangePasswordDialogForHW(self, self.wallet)
@@ -4758,7 +4758,7 @@ class ElectrumWindow(QtWidgets.QMainWindow, MessageBoxMixin, PrintError):
         lang_help = _("Select which language is used in the GUI (after restart).")
         lang_label = HelpLabel(_("Language") + ":", lang_help)
         lang_combo = QtWidgets.QComboBox()
-        from electroncash.i18n import (
+        from electrum_ecf.i18n import (
             get_system_language_match,
             languages,
             match_language,
@@ -4970,9 +4970,9 @@ class ElectrumWindow(QtWidgets.QMainWindow, MessageBoxMixin, PrintError):
         misc_widgets.append((cr_gb, None))  # commit crash reporter gb to layout
 
         units_for_menu = tuple(
-            u.name_for_selection_menu for u in electroncash.constants.BASE_UNITS
+            u.name_for_selection_menu for u in electrum_ecf.constants.BASE_UNITS
         )
-        unit_names = tuple(u.ticker for u in electroncash.constants.BASE_UNITS)
+        unit_names = tuple(u.ticker for u in electrum_ecf.constants.BASE_UNITS)
         msg = (
             _("Base unit of your wallet.")
             + "\n1 MegaXEC = 1 BCHA = 1,000,000 XEC.\n"
@@ -4991,7 +4991,7 @@ class ElectrumWindow(QtWidgets.QMainWindow, MessageBoxMixin, PrintError):
                 return
             edits = self.amount_e, self.fee_e, self.receive_amount_e
             amounts = [edit.get_amount() for edit in edits]
-            dp = electroncash.constants.BASE_UNITS[unit_index].decimals
+            dp = electrum_ecf.constants.BASE_UNITS[unit_index].decimals
             if dp is not None:
                 self.decimal_point = dp
             else:

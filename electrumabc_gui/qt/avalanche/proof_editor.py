@@ -7,21 +7,21 @@ from typing import List, Optional, Union
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from electroncash.address import Address, AddressError
-from electroncash.avalanche.primitives import COutPoint, Key, PublicKey
-from electroncash.avalanche.proof import Proof, ProofBuilder, SignedStake, Stake
-from electroncash.avalanche.serialize import (
+from electrum_ecf.address import Address, AddressError
+from electrum_ecf.avalanche.primitives import COutPoint, Key, PublicKey
+from electrum_ecf.avalanche.proof import Proof, ProofBuilder, SignedStake, Stake
+from electrum_ecf.avalanche.serialize import (
     DeserializationError,
     serialize_blob,
     write_compact_size,
 )
-from electroncash.bitcoin import is_private_key
-from electroncash.constants import PROOF_DUST_THRESHOLD, STAKE_UTXO_CONFIRMATIONS
-from electroncash.i18n import _
-from electroncash.transaction import get_address_from_output_script
-from electroncash.uint256 import UInt256
-from electroncash.util import format_satoshis
-from electroncash.wallet import AddressNotFoundError, Deterministic_Wallet
+from electrum_ecf.bitcoin import is_private_key
+from electrum_ecf.constants import PROOF_DUST_THRESHOLD, STAKE_UTXO_CONFIRMATIONS
+from electrum_ecf.i18n import _
+from electrum_ecf.transaction import get_address_from_output_script
+from electrum_ecf.uint256 import UInt256
+from electrum_ecf.util import format_satoshis
+from electrum_ecf.wallet import AddressNotFoundError, Deterministic_Wallet
 
 from .delegation_editor import AvaDelegationDialog
 from .util import CachedWalletPasswordWidget, get_auxiliary_privkey

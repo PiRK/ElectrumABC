@@ -3,9 +3,9 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor, QCursor, QPainter, QPen
 
-from electroncash import util
-from electroncash.i18n import _
-from electroncash.printerror import PrintError
+from electrum_ecf import util
+from electrum_ecf.i18n import _
+from electrum_ecf.printerror import PrintError
 
 from .util import CloseButton, MessageBoxMixin, WindowModalDialog
 

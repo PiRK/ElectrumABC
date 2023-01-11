@@ -6,14 +6,14 @@ import sys
 import tty
 from decimal import Decimal as PyDecimal
 
-import electroncash
-from electroncash.address import Address
-from electroncash.bitcoin import CASH, TYPE_ADDRESS
-from electroncash.constants import SCRIPT_NAME
-from electroncash.printerror import set_verbosity
-from electroncash.storage import WalletStorage
-from electroncash.util import format_satoshis
-from electroncash.wallet import Wallet
+import electrum_ecf
+from electrum_ecf.address import Address
+from electrum_ecf.bitcoin import CASH, TYPE_ADDRESS
+from electrum_ecf.constants import SCRIPT_NAME
+from electrum_ecf.printerror import set_verbosity
+from electrum_ecf.storage import WalletStorage
+from electrum_ecf.util import format_satoshis
+from electrum_ecf.wallet import Wallet
 
 _ = lambda x: x
 
@@ -506,7 +506,7 @@ class ElectrumGui:
                         return False
             if out.get("server") or out.get("proxy"):
                 proxy = (
-                    electroncash.network.deserialize_proxy(out.get("proxy"))
+                    electrum_ecf.network.deserialize_proxy(out.get("proxy"))
                     if out.get("proxy")
                     else proxy_config
                 )

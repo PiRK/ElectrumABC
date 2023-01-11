@@ -20,16 +20,16 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from electroncash.address import Address
-from electroncash.bitcoin import SignatureType, verify_message
-from electroncash.constants import CURRENCY, PROJECT_NAME
-from electroncash.i18n import _
+from electrum_ecf.address import Address
+from electrum_ecf.bitcoin import SignatureType, verify_message
+from electrum_ecf.constants import CURRENCY, PROJECT_NAME
+from electrum_ecf.i18n import _
 
 from .password_dialog import PasswordDialog
 from .util import MessageBoxMixin
 
 if TYPE_CHECKING:
-    from electroncash.wallet import Abstract_Wallet
+    from electrum_ecf.wallet import Abstract_Wallet
 
 
 class CollapsibleSection(QWidget):

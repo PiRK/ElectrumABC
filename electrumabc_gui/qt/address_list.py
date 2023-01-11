@@ -34,13 +34,13 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont, QKeySequence
 
-import electroncash.web as web
-from electroncash import networks
-from electroncash.address import Address
-from electroncash.i18n import _
-from electroncash.plugins import run_hook
-from electroncash.util import profiler
-from electroncash.wallet import Multisig_Wallet
+import electrum_ecf.web as web
+from electrum_ecf import networks
+from electrum_ecf.address import Address
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.util import profiler
+from electrum_ecf.wallet import Multisig_Wallet
 
 from .consolidate_coins_dialog import ConsolidateCoinsWizard
 from .invoice_dialog import InvoiceDialog

@@ -32,9 +32,9 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon
 
-from electroncash.i18n import _
-from electroncash.paymentrequest import pr_tooltips
-from electroncash.util import FileImportFailed, format_time
+from electrum_ecf.i18n import _
+from electrum_ecf.paymentrequest import pr_tooltips
+from electrum_ecf.util import FileImportFailed, format_time
 
 from .util import MONOSPACE_FONT, PR_UNPAID, MyTreeWidget, pr_icons
 

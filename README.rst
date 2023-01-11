@@ -92,7 +92,7 @@ For plugin development, see the `plugin documentation <plugins/README.rst>`_.
 
 Running unit tests (optional)::
 
-    python3 -m electroncash.tests
+    python3 -m electrum_ecf.tests
 
 
 Running from source on old Linux

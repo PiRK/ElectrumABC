@@ -30,8 +30,8 @@ from typing import Dict, List
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 
-from electroncash.i18n import _
-from electroncash.qrreaders import QrCodeResult
+from electrum_ecf.i18n import _
+from electrum_ecf.qrreaders import QrCodeResult
 
 from ..util import ColorScheme
 from ..utils import QColorLerp

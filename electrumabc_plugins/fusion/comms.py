@@ -36,8 +36,8 @@ from weakref import WeakSet
 
 from google.protobuf.message import DecodeError
 
-from electroncash import networks
-from electroncash.printerror import PrintError
+from electrum_ecf import networks
+from electrum_ecf.printerror import PrintError
 
 from . import fusion_pb2 as pb
 from .connection import BadFrameError, Connection

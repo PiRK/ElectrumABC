@@ -1,11 +1,11 @@
 import time
 from struct import pack
 
-from electroncash.bitcoin import serialize_xpub
-from electroncash.i18n import _
-from electroncash.keystore import bip39_normalize_passphrase
-from electroncash.printerror import PrintError
-from electroncash.util import UserCancelled
+from electrum_ecf.bitcoin import serialize_xpub
+from electrum_ecf.i18n import _
+from electrum_ecf.keystore import bip39_normalize_passphrase
+from electrum_ecf.printerror import PrintError
+from electrum_ecf.util import UserCancelled
 
 from ..hw_wallet.plugin import HardwareClientBase
 

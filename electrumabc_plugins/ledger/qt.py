@@ -3,9 +3,9 @@ from functools import partial
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal
 
-from electroncash.i18n import _
-from electroncash.plugins import hook
-from electroncash.wallet import Standard_Wallet
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import hook
+from electrum_ecf.wallet import Standard_Wallet
 from electrumabc_gui.qt.util import WindowModalDialog
 
 from ..hw_wallet.qt import QtHandlerBase, QtPluginBase

@@ -33,10 +33,10 @@ import tempfile
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
-from electroncash.constants import PROJECT_NAME
-from electroncash.i18n import _
-from electroncash.plugins import Plugins
-from electroncash.printerror import PrintError
+from electrum_ecf.constants import PROJECT_NAME
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import Plugins
+from electrum_ecf.printerror import PrintError
 
 from .util import WindowModalDialog
 

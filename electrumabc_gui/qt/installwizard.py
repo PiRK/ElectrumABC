@@ -14,20 +14,20 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QEventLoop, QRect, Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QIcon, QPainter, QPalette, QPen
 
-from electroncash import keystore
-from electroncash.base_wizard import HWD_SETUP_DECRYPT_WALLET, BaseWizard, GoBack
-from electroncash.constants import PROJECT_NAME
-from electroncash.i18n import _
-from electroncash.network import Network
-from electroncash.storage import WalletStorage
-from electroncash.util import (
+from electrum_ecf import keystore
+from electrum_ecf.base_wizard import HWD_SETUP_DECRYPT_WALLET, BaseWizard, GoBack
+from electrum_ecf.constants import PROJECT_NAME
+from electrum_ecf.i18n import _
+from electrum_ecf.network import Network
+from electrum_ecf.storage import WalletStorage
+from electrum_ecf.util import (
     InvalidPassword,
     TimeoutException,
     UserCancelled,
     WalletFileException,
     finalization_print_error,
 )
-from electroncash.wallet import Abstract_Wallet, Standard_Wallet
+from electrum_ecf.wallet import Abstract_Wallet, Standard_Wallet
 
 from .bip38_importer import Bip38Importer
 from .network_dialog import NetworkChoiceLayout
@@ -46,8 +46,8 @@ from .util import (
 )
 
 if TYPE_CHECKING:
-    from electroncash.plugins import Plugins
-    from electroncash.simple_config import SimpleConfig
+    from electrum_ecf.plugins import Plugins
+    from electrum_ecf.simple_config import SimpleConfig
 
     from . import ElectrumGui
 

@@ -4,9 +4,9 @@ from typing import Optional
 
 from PyQt5 import QtWidgets
 
-from electroncash.address import PublicKey
-from electroncash.bitcoin import is_private_key
-from electroncash.wallet import Deterministic_Wallet
+from electrum_ecf.address import PublicKey
+from electrum_ecf.bitcoin import is_private_key
+from electrum_ecf.wallet import Deterministic_Wallet
 
 from ..password_dialog import PasswordDialog
 from ..util import ButtonsLineEdit

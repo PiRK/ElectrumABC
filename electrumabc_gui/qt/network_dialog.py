@@ -35,19 +35,19 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QObject, Qt, QThread, QTimer, pyqtSignal
 from PyQt5.QtGui import QIcon
 
-from electroncash import networks
-from electroncash.constants import PROJECT_NAME
-from electroncash.i18n import _, pgettext
-from electroncash.interface import Interface
-from electroncash.network import (
+from electrum_ecf import networks
+from electrum_ecf.constants import PROJECT_NAME
+from electrum_ecf.i18n import _, pgettext
+from electrum_ecf.interface import Interface
+from electrum_ecf.network import (
     deserialize_server,
     get_eligible_servers,
     serialize_server,
 )
-from electroncash.plugins import run_hook
-from electroncash.printerror import PrintError, print_error
-from electroncash.tor import TorController
-from electroncash.util import Weak, in_main_thread
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.printerror import PrintError, print_error
+from electrum_ecf.tor import TorController
+from electrum_ecf.util import Weak, in_main_thread
 
 from .util import (
     Buttons,

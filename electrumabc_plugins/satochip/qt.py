@@ -12,8 +12,8 @@ from pysatochip.version import (
     SATOCHIP_PROTOCOL_MINOR_VERSION,
 )
 
-from electroncash.i18n import _
-from electroncash.printerror import print_error
+from electrum_ecf.i18n import _
+from electrum_ecf.printerror import print_error
 from electrumabc_gui.qt.qrcodewidget import QRDialog
 from electrumabc_gui.qt.util import (
     Buttons,

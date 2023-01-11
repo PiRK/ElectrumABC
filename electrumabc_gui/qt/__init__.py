@@ -65,13 +65,13 @@ except Exception:
         )
     sys.exit(msg)
 
-from electroncash import i18n, version
-from electroncash.address import Address
-from electroncash.constants import PROJECT_NAME
-from electroncash.i18n import _
-from electroncash.plugins import run_hook
-from electroncash.printerror import PrintError, print_error
-from electroncash.util import (
+from electrum_ecf import i18n, version
+from electrum_ecf.address import Address
+from electrum_ecf.constants import PROJECT_NAME
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.printerror import PrintError, print_error
+from electrum_ecf.util import (
     BitcoinException,
     Handlers,
     UserCancelled,
@@ -80,7 +80,7 @@ from electroncash.util import (
     get_new_wallet_name,
     standardize_path,
 )
-from electroncash.wallet import Abstract_Wallet, Wallet
+from electrum_ecf.wallet import Abstract_Wallet, Wallet
 
 # This needs to be imported once app-wide then the :icons/ namespace becomes available
 # for Qt icon filenames.
@@ -99,9 +99,9 @@ from .util import (
 )
 
 if TYPE_CHECKING:
-    from electroncash.daemon import Daemon
-    from electroncash.plugins import Plugins
-    from electroncash.simple_config import SimpleConfig
+    from electrum_ecf.daemon import Daemon
+    from electrum_ecf.plugins import Plugins
+    from electrum_ecf.simple_config import SimpleConfig
 
 
 def _pre_and_post_app_setup(config) -> Callable[[], None]:
@@ -217,10 +217,10 @@ class ElectrumGui(QtCore.QObject, PrintError):
         # Uncomment this call to verify objects are being properly
         # GC-ed when windows are closed
         # if daemon.network:
-        #    from electroncash.util import DebugMem
-        #    from electroncash.wallet import Abstract_Wallet
-        #    from electroncash.verifier import SPV
-        #    from electroncash.synchronizer import Synchronizer
+        #    from electrum_ecf.util import DebugMem
+        #    from electrum_ecf.wallet import Abstract_Wallet
+        #    from electrum_ecf.verifier import SPV
+        #    from electrum_ecf.synchronizer import Synchronizer
         #    daemon.network.add_jobs([DebugMem([Abstract_Wallet, SPV, Synchronizer,
         #                                       ElectrumWindow], interval=5)])
 
@@ -910,7 +910,7 @@ class ElectrumGui(QtCore.QObject, PrintError):
         Pass message (rich text) to provide a custom message.
 
         Note that the URL link to the HOWTO will always be appended to the custom message."""
-        from electroncash import ecc_fast
+        from electrum_ecf import ecc_fast
 
         has_secp = ecc_fast.is_using_fast_ecc()
         if has_secp:

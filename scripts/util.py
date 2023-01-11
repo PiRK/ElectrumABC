@@ -3,10 +3,10 @@ import select
 import time
 from collections import defaultdict
 
-from electroncash import Connection  # fixme
-from electroncash.interface import Interface
-from electroncash.network import parse_servers
-from electroncash.simple_config import SimpleConfig
+from electrum_ecf import Connection  # fixme
+from electrum_ecf.interface import Interface
+from electrum_ecf.network import parse_servers
+from electrum_ecf.simple_config import SimpleConfig
 
 
 # electrum.util.set_verbosity(1)

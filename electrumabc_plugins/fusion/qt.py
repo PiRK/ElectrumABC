@@ -35,11 +35,11 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QMargins, QObject, QPoint, QSize, Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QCursor, QIcon, QImage, QPainter
 
-from electroncash.address import Address
-from electroncash.i18n import _, ngettext
-from electroncash.plugins import hook, run_hook
-from electroncash.util import InvalidPassword, do_in_main_thread, inv_dict
-from electroncash.wallet import Abstract_Wallet
+from electrum_ecf.address import Address
+from electrum_ecf.i18n import _, ngettext
+from electrum_ecf.plugins import hook, run_hook
+from electrum_ecf.util import InvalidPassword, do_in_main_thread, inv_dict
+from electrum_ecf.wallet import Abstract_Wallet
 from electrumabc_gui.qt.amountedit import XECAmountEdit
 from electrumabc_gui.qt.main_window import ElectrumWindow
 from electrumabc_gui.qt.popup_widget import KillPopupLabel, ShowPopupLabel

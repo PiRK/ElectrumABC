@@ -3,8 +3,8 @@ import random
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
 
-from electroncash.i18n import _
-from electroncash.plugins import BasePlugin, hook
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import BasePlugin, hook
 from electrumabc_gui.qt.util import MONOSPACE_FONT
 
 

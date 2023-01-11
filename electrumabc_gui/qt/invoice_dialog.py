@@ -32,9 +32,9 @@ from urllib.error import URLError
 
 from PyQt5 import QtCore, QtWidgets
 
-from electroncash.address import Address, AddressError
-from electroncash.i18n import _
-from electroncash.invoice import (
+from electrum_ecf.address import Address, AddressError
+from electrum_ecf.i18n import _
+from electrum_ecf.invoice import (
     APIS,
     ExchangeRateApi,
     FixedExchangeRate,
@@ -44,7 +44,7 @@ from electroncash.invoice import (
 )
 
 if TYPE_CHECKING:
-    from electroncash.exchange_rate import FxThread
+    from electrum_ecf.exchange_rate import FxThread
 
 
 class InvoiceDialog(QtWidgets.QDialog):

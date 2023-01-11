@@ -6,8 +6,8 @@ import threading
 
 import requests
 
-from electroncash.bitcoin import aes_decrypt_with_iv, aes_encrypt_with_iv
-from electroncash.plugins import BasePlugin, hook
+from electrum_ecf.bitcoin import aes_decrypt_with_iv, aes_encrypt_with_iv
+from electrum_ecf.plugins import BasePlugin, hook
 
 
 class LabelsPlugin(BasePlugin):

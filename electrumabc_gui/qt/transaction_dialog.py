@@ -34,14 +34,14 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, QTimer, QUrl, pyqtSignal
 from PyQt5.QtGui import QBrush, QCursor, QFont, QIcon, QKeySequence, QTextCharFormat
 
-from electroncash import web
-from electroncash.address import Address, PublicKey, ScriptOutput
-from electroncash.bitcoin import base_encode
-from electroncash.i18n import _, ngettext
-from electroncash.plugins import run_hook
-from electroncash.printerror import PrintError
-from electroncash.transaction import InputValueMissing
-from electroncash.util import Weak, bfh
+from electrum_ecf import web
+from electrum_ecf.address import Address, PublicKey, ScriptOutput
+from electrum_ecf.bitcoin import base_encode
+from electrum_ecf.i18n import _, ngettext
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.printerror import PrintError
+from electrum_ecf.transaction import InputValueMissing
+from electrum_ecf.util import Weak, bfh
 
 from .util import (
     MONOSPACE_FONT,

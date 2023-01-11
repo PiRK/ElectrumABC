@@ -35,12 +35,12 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QPoint, Qt, pyqtSignal
 from PyQt5.QtGui import QColor, QFont
 
-from electroncash.address import Address
-from electroncash.bitcoin import COINBASE_MATURITY
-from electroncash.i18n import _
-from electroncash.plugins import run_hook
-from electroncash.util import format_satoshis
-from electroncash.wallet import ImportedAddressWallet, ImportedPrivkeyWallet
+from electrum_ecf.address import Address
+from electrum_ecf.bitcoin import COINBASE_MATURITY
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.util import format_satoshis
+from electrum_ecf.wallet import ImportedAddressWallet, ImportedPrivkeyWallet
 
 from .avalanche.proof_editor import AvaProofDialog
 from .consolidate_coins_dialog import ConsolidateCoinsWizard

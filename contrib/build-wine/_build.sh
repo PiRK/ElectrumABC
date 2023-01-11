@@ -20,7 +20,7 @@ export GCC_TRIPLET_BUILD="x86_64-pc-linux-gnu"
 export GCC_STRIP_BINARIES="1"
 
 # On some systems git complains about permissions here. This fixes it.
-git config --global --add safe.directory $(readlink -f "$here"/../..)  # /homedir/wine/drive_c/electroncash
+git config --global --add safe.directory $(readlink -f "$here"/../..)  # /homedir/wine/drive_c/electrum_ecf
 
 . "$here"/../base.sh # functions we use below (fail, et al)
 
@@ -84,7 +84,7 @@ prepare_wine() {
         # if the verification fails you might need to get more keys from python.org
         # keys from https://www.python.org/downloads/#pubkeys
         info "Importing Python dev keyring (may take a few minutes)..."
-        KEYRING_PYTHON_DEV=keyring-electroncash-build-python-dev.gpg
+        KEYRING_PYTHON_DEV=keyring-electrum_ecf-build-python-dev.gpg
         gpg -v --no-default-keyring --keyring $KEYRING_PYTHON_DEV --import \
             "$here"/pgp/7ed10b6531d7c8e1bc296021fc624643487034e5.asc \
             || fail "Failed to import Python release signing keys"
@@ -181,9 +181,9 @@ prepare_wine() {
 
         # libsecp256k1, libzbar & libusb
         mkdir -p "$WINEPREFIX"/drive_c/tmp
-        cp "$here"/../../electroncash/*.dll "$WINEPREFIX"/drive_c/tmp/ || fail "Could not copy libraries to their destination"
+        cp "$here"/../../electrum_ecf/*.dll "$WINEPREFIX"/drive_c/tmp/ || fail "Could not copy libraries to their destination"
         cp libusb/libusb/.libs/libusb-1.0.dll "$WINEPREFIX"/drive_c/tmp/ || fail "Could not copy libusb to its destination"
-        cp "$here"/../../electroncash/tor/bin/tor.exe "$WINEPREFIX"/drive_c/tmp/ || fail "Could not copy tor.exe to its destination"
+        cp "$here"/../../electrum_ecf/tor/bin/tor.exe "$WINEPREFIX"/drive_c/tmp/ || fail "Could not copy tor.exe to its destination"
 
         popd  # out of homedir/tmp
         popd  # out of $here
@@ -226,7 +226,7 @@ build_the_app() {
         find -exec touch -d '2000-11-11T11:11:11+00:00' {} +
         popd  # go back to $here
 
-        cp -rv "$here"/../build/electrum-locale/locale "$WINEPREFIX"/drive_c/electrumabc/electroncash/
+        cp -rv "$here"/../build/electrum-locale/locale "$WINEPREFIX"/drive_c/electrumabc/electrum_ecf/
 
         # Install frozen dependencies
         info "Installing frozen dependencies ..."

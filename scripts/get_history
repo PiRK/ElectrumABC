@@ -2,10 +2,10 @@
 
 import sys
 
-from electroncash.address import Address
-from electroncash.network import Network
-from electroncash.printerror import print_msg
-from electroncash.util import json_encode
+from electrum_ecf.address import Address
+from electrum_ecf.network import Network
+from electrum_ecf.printerror import print_msg
+from electrum_ecf.util import json_encode
 
 try:
     addr = sys.argv[1]

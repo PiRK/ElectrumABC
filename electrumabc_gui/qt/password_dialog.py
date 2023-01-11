@@ -31,8 +31,8 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QPixmap
 
-from electroncash.i18n import _
-from electroncash.plugins import run_hook
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import run_hook
 
 from .util import Buttons, CancelButton, OkButton, PasswordLineEdit, WindowModalDialog
 

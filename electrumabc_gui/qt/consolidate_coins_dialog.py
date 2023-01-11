@@ -3,15 +3,15 @@ from typing import Optional, Sequence
 
 from PyQt5 import QtCore, QtWidgets
 
-from electroncash.address import Address, AddressError
-from electroncash.consolidate import (
+from electrum_ecf.address import Address, AddressError
+from electrum_ecf.consolidate import (
     MAX_STANDARD_TX_SIZE,
     MAX_TX_SIZE,
     AddressConsolidator,
 )
-from electroncash.constants import PROJECT_NAME, XEC
-from electroncash.transaction import Transaction
-from electroncash.wallet import Abstract_Wallet
+from electrum_ecf.constants import PROJECT_NAME, XEC
+from electrum_ecf.transaction import Transaction
+from electrum_ecf.wallet import Abstract_Wallet
 
 from .multi_transactions_dialog import MultiTransactionsWidget
 

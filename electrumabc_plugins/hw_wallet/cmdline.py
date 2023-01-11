@@ -1,5 +1,5 @@
-from electroncash.printerror import print_error, print_msg
-from electroncash.util import raw_input
+from electrum_ecf.printerror import print_error, print_msg
+from electrum_ecf.util import raw_input
 
 from .plugin import HardwareHandlerBase
 

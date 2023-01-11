@@ -27,9 +27,9 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 
-from electroncash.constants import PROJECT_NAME
-from electroncash.i18n import _
-from electroncash.util import Weak
+from electrum_ecf.constants import PROJECT_NAME
+from electrum_ecf.i18n import _
+from electrum_ecf.util import Weak
 
 from .qrcodewidget import QRCodeWidget, copy_to_clipboard, save_to_file
 from .util import Buttons, MessageBoxMixin, WWLabel

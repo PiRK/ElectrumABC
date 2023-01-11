@@ -2,13 +2,13 @@ import datetime
 import getpass
 from decimal import Decimal as PyDecimal
 
-from electroncash.address import Address
-from electroncash.bitcoin import CASH, TYPE_ADDRESS
-from electroncash.constants import SCRIPT_NAME
-from electroncash.printerror import set_verbosity
-from electroncash.storage import WalletStorage
-from electroncash.util import format_satoshis
-from electroncash.wallet import Wallet
+from electrum_ecf.address import Address
+from electrum_ecf.bitcoin import CASH, TYPE_ADDRESS
+from electrum_ecf.constants import SCRIPT_NAME
+from electrum_ecf.printerror import set_verbosity
+from electrum_ecf.storage import WalletStorage
+from electrum_ecf.util import format_satoshis
+from electrum_ecf.wallet import Wallet
 
 _ = lambda x: x
 

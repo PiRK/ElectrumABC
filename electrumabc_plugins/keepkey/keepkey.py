@@ -1,18 +1,18 @@
 from binascii import unhexlify
 
-from electroncash import networks
-from electroncash.address import Address
-from electroncash.bitcoin import (
+from electrum_ecf import networks
+from electrum_ecf.address import Address
+from electrum_ecf.bitcoin import (
     TYPE_ADDRESS,
     TYPE_SCRIPT,
     SignatureType,
     deserialize_xpub,
 )
-from electroncash.i18n import _
-from electroncash.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey
-from electroncash.plugins import Device
-from electroncash.transaction import deserialize
-from electroncash.util import UserCancelled, bfh, bh2u
+from electrum_ecf.i18n import _
+from electrum_ecf.keystore import Hardware_KeyStore, is_xpubkey, parse_xpubkey
+from electrum_ecf.plugins import Device
+from electrum_ecf.transaction import deserialize
+from electrum_ecf.util import UserCancelled, bfh, bh2u
 
 from ..hw_wallet import HW_PluginBase
 from ..hw_wallet.plugin import (

@@ -35,8 +35,8 @@ from PyQt5.QtMultimedia import (
     QVideoSurfaceFormat,
 )
 
-from electroncash.i18n import _
-from electroncash.printerror import print_error
+from electrum_ecf.i18n import _
+from electrum_ecf.printerror import print_error
 
 
 class QrReaderVideoSurface(QAbstractVideoSurface):

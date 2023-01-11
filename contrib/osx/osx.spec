@@ -5,7 +5,7 @@ import sys, os
 
 PACKAGE='ElectrumABC'
 BUNDLE_IDENTIFIER='org.electrumabc.' + PACKAGE # Used for info.plist
-PYPKG='electroncash'
+PYPKG='electrum_ecf'
 MAIN_SCRIPT='electrum-abc'
 ICONS_FILE='electrumABC.icns'
 
@@ -28,12 +28,12 @@ hiddenimports += collect_submodules('satochip')    # Satochip
 hiddenimports += collect_submodules('smartcard')   # Satochip
 
 datas = [
-    (home+'electroncash/currencies.json', PYPKG),
-    (home+'electroncash/servers.json', PYPKG),
-    (home+'electroncash/servers_testnet.json', PYPKG),
-    (home+'electroncash/servers_regtest.json', PYPKG),
-    (home+'electroncash/wordlist/english.txt', PYPKG + '/wordlist'),
-    (home+'electroncash/locale', PYPKG + '/locale'),
+    (home+'electrum_ecf/currencies.json', PYPKG),
+    (home+'electrum_ecf/servers.json', PYPKG),
+    (home+'electrum_ecf/servers_testnet.json', PYPKG),
+    (home+'electrum_ecf/servers_regtest.json', PYPKG),
+    (home+'electrum_ecf/wordlist/english.txt', PYPKG + '/wordlist'),
+    (home+'electrum_ecf/locale', PYPKG + '/locale'),
     (home+'electrumabc_plugins', PYPKG + '_plugins'),
 ]
 datas += collect_data_files('trezorlib')
@@ -49,7 +49,7 @@ binaries += [(home + "contrib/osx/libsecp256k1.0.dylib", ".")]
 # LibZBar for QR code scanning
 binaries += [(home + "contrib/osx/libzbar.0.dylib", ".")]
 # Add Tor binary
-binaries += [(home + "electroncash/tor/bin/tor", "electroncash/tor/bin")]
+binaries += [(home + "electrum_ecf/tor/bin/tor", "electrum_ecf/tor/bin")]
 
 # Workaround for "Retro Look":
 binaries += [b for b in collect_dynamic_libs('PyQt5') if 'macstyle' in b[0]]
@@ -59,13 +59,13 @@ a = Analysis([home+MAIN_SCRIPT,
               home+'electrumabc_gui/qt/main_window.py',
               home+'electrumabc_gui/qt/qrreader/camera_dialog.py',
               home+'electrumabc_gui/text.py',
-              home+'electroncash/util.py',
-              home+'electroncash/wallet.py',
-              home+'electroncash/simple_config.py',
-              home+'electroncash/bitcoin.py',
-              home+'electroncash/dnssec.py',
-              home+'electroncash/commands.py',
-              home+'electroncash/tor/controller.py',
+              home+'electrum_ecf/util.py',
+              home+'electrum_ecf/wallet.py',
+              home+'electrum_ecf/simple_config.py',
+              home+'electrum_ecf/bitcoin.py',
+              home+'electrum_ecf/dnssec.py',
+              home+'electrum_ecf/commands.py',
+              home+'electrum_ecf/tor/controller.py',
               home+'electrumabc_plugins/cosigner_pool/qt.py',
               home+'electrumabc_plugins/email_requests/qt.py',
               home+'electrumabc_plugins/trezor/clientbase.py',

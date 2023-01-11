@@ -32,10 +32,10 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor, QFont, QIcon
 
-import electroncash.web as web
-from electroncash.i18n import _
-from electroncash.plugins import run_hook
-from electroncash.util import Weak, profiler, timestamp_to_datetime
+import electrum_ecf.web as web
+from electrum_ecf.i18n import _
+from electrum_ecf.plugins import run_hook
+from electrum_ecf.util import Weak, profiler, timestamp_to_datetime
 
 from .util import (
     MONOSPACE_FONT,

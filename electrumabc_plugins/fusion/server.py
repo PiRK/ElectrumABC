@@ -39,11 +39,11 @@ import time
 import traceback
 from collections import defaultdict
 
-import electroncash.schnorr as schnorr
-from electroncash import networks
-from electroncash.address import Address
-from electroncash.printerror import PrintError
-from electroncash.util import ServerError, TimeoutException
+import electrum_ecf.schnorr as schnorr
+from electrum_ecf import networks
+from electrum_ecf.address import Address
+from electrum_ecf.printerror import PrintError
+from electrum_ecf.util import ServerError, TimeoutException
 
 from . import compatibility
 from . import fusion_pb2 as pb

@@ -1,4 +1,4 @@
-from electroncash.i18n import _
+from electrum_ecf.i18n import _
 
 fullname = _("Satochip Wallet")
 description = _("Provides support for Satochip hardware wallet")

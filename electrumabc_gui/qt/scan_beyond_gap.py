@@ -27,9 +27,9 @@ import threading
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, pyqtSignal
 
-from electroncash.i18n import _
-from electroncash.printerror import PrintError
-from electroncash.util import ServerError
+from electrum_ecf.i18n import _
+from electrum_ecf.printerror import PrintError
+from electrum_ecf.util import ServerError
 
 from .util import Buttons, WindowModalDialog
 
