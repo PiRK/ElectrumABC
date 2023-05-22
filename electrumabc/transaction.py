@@ -100,6 +100,9 @@ class TxOutpoint(NamedTuple):
     def to_str(self) -> str:
         return f"{self.txid.hex()}:{self.out_idx}"
 
+    def get_name_short(self) -> str:
+        return self.txid.hex()[:10] + "..." + f":{self.out_idx}"
+
     def __repr__(self):
         return f"TxOutpoint({self.to_str()})"
 

@@ -39,6 +39,7 @@ from electrumabc.address import Address
 from electrumabc.bitcoin import COINBASE_MATURITY
 from electrumabc.i18n import _
 from electrumabc.plugins import run_hook
+from electrumabc.transaction import TxOutpoint
 from electrumabc.util import format_satoshis
 from electrumabc.wallet import ImportedAddressWallet, ImportedPrivkeyWallet
 
@@ -58,19 +59,12 @@ if TYPE_CHECKING:
 
 @dataclass
 class CoinDisplayData:
-    txid: str
-    vout: int
+    outpoint: TxOutpoint
     address: Address
     slp_token: Optional[Tuple[str, int]]
     is_frozen: bool
     is_address_frozen: bool
     is_immature: bool
-
-    def get_name(self) -> str:
-        return self.txid + f":{self.vout}"
-
-    def get_name_short(self) -> str:
-        return self.txid[:10] + "..." + f":{self.vout}"
 
     def is_spendable(self) -> bool:
         return (
@@ -156,11 +150,8 @@ class UTXOList(MyTreeWidget):
 
         return wrapper
 
-    def get_name(self, x):
-        return x.get("prevout_hash") + f':{x.get("prevout_n")}'
-
-    def get_name_short(self, x):
-        return x.get("prevout_hash")[:10] + "..." + f':{x.get("prevout_n")}'
+    def get_outpoint(self, x) -> TxOutpoint:
+        return TxOutpoint(bytes.fromhex(x.get("prevout_hash")), x.get("prevout_n"))
 
     @rate_limited(1.0, ts_after=True)
     def update(self):
@@ -185,8 +176,7 @@ class UTXOList(MyTreeWidget):
             is_immature = x["coinbase"] and height > local_maturity_height
             # Store all needed coin data in item
             coin = CoinDisplayData(
-                x.get("prevout_hash"),
-                x.get("prevout_n"),
+                TxOutpoint(bytes.fromhex(x.get("prevout_hash")), x.get("prevout_n")),
                 address,
                 x["slp_token"],
                 x["is_frozen_coin"],
@@ -202,7 +192,13 @@ class UTXOList(MyTreeWidget):
                 whitespaces=True,
             )
             utxo_item = SortableTreeWidgetItem(
-                [address_text, label, amount, str(height), coin.get_name_short()]
+                [
+                    address_text,
+                    label,
+                    amount,
+                    str(height),
+                    coin.outpoint.get_name_short(),
+                ]
             )
             if label:
                 # just in case it doesn't fit horizontally, we also provide it as a tool tip
@@ -217,7 +213,7 @@ class UTXOList(MyTreeWidget):
             toolTipMisc = ""
             utxo_item.setData(0, Qt.UserRole, coin)
             # just in case they like to see lots of hex digits :)
-            utxo_item.setToolTip(4, coin.get_name())
+            utxo_item.setToolTip(4, coin.outpoint.to_str())
             if coin.is_immature:
                 for colNum in range(self.columnCount()):
                     if colNum == self.Col.label:
@@ -241,9 +237,9 @@ class UTXOList(MyTreeWidget):
                 toolTipMisc = _("Coin & Address are frozen")
             if toolTipMisc:
                 utxo_item.setToolTip(0, toolTipMisc)
-            run_hook("utxo_list_item_setup", self, utxo_item, x, coin.get_name())
+            run_hook("utxo_list_item_setup", self, utxo_item, x, coin.outpoint.to_str())
             self.addChild(utxo_item)
-            if coin.get_name() in prev_selection:
+            if coin.outpoint.to_str() in prev_selection:
                 # NB: This needs to be here after the item is added to the widget. See #979.
                 utxo_item.setSelected(True)  # restore previous selection
         self._update_utxo_count_display(len(self.utxos))
@@ -269,8 +265,12 @@ class UTXOList(MyTreeWidget):
         """
         return [x.data(0, Qt.UserRole) for x in self.selectedItems()]
 
-    def get_utxos_by_names(self, selected_names: List[str]) -> List[Dict]:
-        return list(filter(lambda x: self.get_name(x) in selected_names, self.utxos))
+    def get_utxos_by_outpoints(
+        self, selected_outpoints: List[TxOutpoint]
+    ) -> List[Dict]:
+        return list(
+            filter(lambda x: self.get_outpoint(x) in selected_outpoints, self.utxos)
+        )
 
     @if_not_dead
     def create_menu(self, position):
@@ -291,11 +291,11 @@ class UTXOList(MyTreeWidget):
     ):
         if not selected_coins:
             return
-        utxos = self.get_utxos_by_names([coin.get_name() for coin in selected_coins])
+        utxos = self.get_utxos_by_outpoints([coin.outpoint for coin in selected_coins])
         if not utxos:
             return
-        spendable_coins = self.get_utxos_by_names(
-            [coin.get_name() for coin in selected_coins if coin.is_spendable()]
+        spendable_coins = self.get_utxos_by_outpoints(
+            [coin.outpoint for coin in selected_coins if coin.is_spendable()]
         )
         # Unconditionally add the "Spend" option but leave it disabled if there are no spendable_coins
         spend_action = menu.addAction(
@@ -332,7 +332,7 @@ class UTXOList(MyTreeWidget):
             alt_column_title, alt_copy_text = None, None
             coin: CoinDisplayData = item.data(0, Qt.UserRole)
             if col == self.Col.output_point:
-                copy_text = coin.get_name()
+                copy_text = coin.outpoint.to_str()
             elif col == self.Col.address:
                 # Determine the "alt copy text" "Legacy Address" or "Cash Address"
                 copy_text = coin.address.to_ui_string()
@@ -364,9 +364,9 @@ class UTXOList(MyTreeWidget):
 
             # single selection, offer them the "Details" option and also
             # coin/address "freeze" status, if any
-            tx = self.wallet.transactions.get(coin.txid)
+            tx = self.wallet.transactions.get(coin.outpoint.txid.hex())
             if tx:
-                label = self.wallet.get_label(coin.txid) or None
+                label = self.wallet.get_label(coin.outpoint.txid.hex()) or None
                 menu.addAction(
                     _("Details"),
                     lambda: self.main_window.show_transaction(tx, label),
@@ -377,14 +377,14 @@ class UTXOList(MyTreeWidget):
                 menu.addAction(_("Coin is frozen"), lambda: None).setEnabled(False)
                 menu.addAction(
                     _("Unfreeze Coin"),
-                    lambda: self.set_frozen_coins([coin.get_name()], False),
+                    lambda: self.set_frozen_coins([coin.outpoint], False),
                 )
                 menu.addSeparator()
                 needsep = False
             else:
                 menu.addAction(
                     _("Freeze Coin"),
-                    lambda: self.set_frozen_coins([coin.get_name()], True),
+                    lambda: self.set_frozen_coins([coin.outpoint], True),
                 )
             if coin.is_address_frozen:
                 if needsep:
@@ -392,16 +392,12 @@ class UTXOList(MyTreeWidget):
                 menu.addAction(_("Address is frozen"), lambda: None).setEnabled(False)
                 menu.addAction(
                     _("Unfreeze Address"),
-                    lambda: self.set_frozen_addresses_for_coins(
-                        [coin.get_name()], False
-                    ),
+                    lambda: self.set_frozen_addresses_for_coins([coin.outpoint], False),
                 )
             else:
                 menu.addAction(
                     _("Freeze Address"),
-                    lambda: self.set_frozen_addresses_for_coins(
-                        [coin.get_name()], True
-                    ),
+                    lambda: self.set_frozen_addresses_for_coins([coin.outpoint], True),
                 )
             if not spend_action.isEnabled():
                 if coin.slp_token is not None:
@@ -415,7 +411,7 @@ class UTXOList(MyTreeWidget):
         else:
             # multi-selection
             menu.addSeparator()
-            selected_outpoints = [coin.get_name() for coin in selected_coins]
+            selected_outpoints = [coin.outpoint for coin in selected_coins]
             if any(not coin.is_frozen for coin in selected_coins):
                 # they have some coin-level non-frozen in the selection, so add the
                 # menu action "Freeze coins"
@@ -454,15 +450,15 @@ class UTXOList(MyTreeWidget):
         return False
 
     @if_not_dead
-    def set_frozen_coins(self, coins, b):
+    def set_frozen_coins(self, coins: List[TxOutpoint], b):
         self.main_window.set_frozen_coin_state(coins, b)
 
     @if_not_dead
-    def set_frozen_addresses_for_coins(self, coins, b):
+    def set_frozen_addresses_for_coins(self, coins: List[TxOutpoint], b: bool):
         addrs = set()
         for utxo in self.utxos:
-            name = self.get_name(utxo)
-            if name in coins:
+            outp = self.get_outpoint(utxo)
+            if outp in coins:
                 addrs.add(utxo["address"])
         if addrs:
             self.main_window.set_frozen_state(list(addrs), b)
@@ -523,8 +519,8 @@ class UTXOList(MyTreeWidget):
             dialog.show()
 
     def _emit_selection_signals(self, *args, **kwargs):
-        utxos = self.get_utxos_by_names(
-            [coin.get_name() for coin in self.get_selected()]
+        utxos = self.get_utxos_by_outpoints(
+            [coin.outpoint for coin in self.get_selected()]
         )
         self.selected_amount_changed.emit(sum(utxo["value"] for utxo in utxos))
         if not utxos:
