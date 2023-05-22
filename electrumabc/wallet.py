@@ -44,6 +44,7 @@ from collections import defaultdict, namedtuple
 from enum import Enum, auto
 from typing import (
     TYPE_CHECKING,
+    Dict,
     ItemsView,
     List,
     Optional,
@@ -942,18 +943,20 @@ class AbstractWallet(PrintError, SPVDelegate):
             status_enum,
         )
 
-    def get_addr_io(self, address):
+    def get_addr_io(
+        self, address
+    ) -> Tuple[Dict[TxOutpoint, Tuple[int, int, bool]], Dict[TxOutpoint, int]]:
         history = self.get_address_history(address)
         received = {}
         sent = {}
         for tx_hash, height in history:
             coins = self.txo.get(tx_hash, {}).get(address, [])
             for n, v, is_cb in coins:
-                received[tx_hash + ":%d" % n] = (height, v, is_cb)
+                received[TxOutpoint(bytes.fromhex(tx_hash), n)] = (height, v, is_cb)
         for tx_hash, height in history:
             inputs = self.txi.get(tx_hash, {}).get(address, [])
             for txi, v in inputs:
-                sent[txi] = height
+                sent[TxOutpoint.from_str(txi)] = height
         return received, sent
 
     def get_addr_utxo(self, address):
@@ -961,12 +964,11 @@ class AbstractWallet(PrintError, SPVDelegate):
         for txi in spent:
             coins.pop(txi)
             # cleanup/detect if the 'frozen coin' was spent and remove it from the frozen coin set
-            self.frozen_coins.discard(TxOutpoint.from_str(txi))
-            self.frozen_coins_tmp.discard(TxOutpoint.from_str(txi))
+            self.frozen_coins.discard(txi)
+            self.frozen_coins_tmp.discard(txi)
         out = {}
-        for txo_str, v in coins.items():
+        for txo, v in coins.items():
             tx_height, value, is_cb = v
-            txo = TxOutpoint.from_str(txo_str)
             x = {
                 "address": address,
                 "value": value,
@@ -1003,8 +1005,7 @@ class AbstractWallet(PrintError, SPVDelegate):
         received, sent = self.get_addr_io(address)
         c = u = x = 0
         had_cb = False
-        for txo_str, (tx_height, v, is_cb) in received.items():
-            txo = TxOutpoint.from_str(txo_str)
+        for txo, (tx_height, v, is_cb) in received.items():
             if exclude_frozen_coins and (
                 txo in self.frozen_coins or txo in self.frozen_coins_tmp
             ):
@@ -1018,8 +1019,8 @@ class AbstractWallet(PrintError, SPVDelegate):
                 c += v
             else:
                 u += v
-            if txo_str in sent:
-                if sent[txo_str] > 0:
+            if txo in sent:
+                if sent[txo] > 0:
                     c -= v
                 else:
                     u -= v
@@ -2447,7 +2448,9 @@ class AbstractWallet(PrintError, SPVDelegate):
             txin["type"] = self.get_txin_type(address)
             # eCash needs value to sign
             received, spent = self.get_addr_io(address)
-            item = received.get(txin["prevout_hash"] + ":%d" % txin["prevout_n"])
+            item = received.get(
+                TxOutpoint(bytes.fromhex(txin["prevout_hash"]), txin["prevout_n"])
+            )
             tx_height, value, is_cb = item
             txin["value"] = value
             self.add_input_sig_info(txin, address)
@@ -2594,14 +2597,13 @@ class AbstractWallet(PrintError, SPVDelegate):
         transactions = []
         for txo, x in received.items():
             h, v, is_cb = x
-            txid, n = txo.split(":")
-            info = self.verified_tx.get(txid)
+            info = self.verified_tx.get(txo.txid.hex())
             if info:
                 tx_height, timestamp, pos = info
                 conf = max(local_height - tx_height + 1, 0)
             else:
                 conf = 0
-            transactions.append((conf, v, txid))
+            transactions.append((conf, v, txo.txid.hex()))
         tx_hashes = []
         vsum = 0
         for conf, v, tx_hash in reversed(sorted(transactions)):
