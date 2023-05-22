@@ -66,6 +66,7 @@ from electrumabc.transaction import (
     OPReturn,
     SerializationError,
     Transaction,
+    TxOutpoint,
     TxOutput,
     tx_from_str,
 )
@@ -3047,7 +3048,9 @@ class ElectrumWindow(QtWidgets.QMainWindow, MessageBoxMixin, PrintError):
         self.update_fee()
 
     def set_frozen_coin_state(self, utxos, freeze):
-        self.wallet.set_frozen_coin_state(utxos, freeze)
+        self.wallet.set_frozen_coin_state(
+            [TxOutpoint.from_str(utxo) for utxo in utxos], freeze
+        )
         self.utxo_list.update()
         self.update_fee()
 

@@ -51,6 +51,7 @@ from electrumabc.bitcoin import public_key_from_private_key
 from electrumabc.constants import XEC
 from electrumabc.i18n import _
 from electrumabc.printerror import PrintError
+from electrumabc.transaction import TxOutpoint
 from electrumabc.util import (
     ServerError,
     TimeoutException,
@@ -392,13 +393,16 @@ class Fusion(threading.Thread, PrintError):
             )
             for c in coins
         }
+        txos = [
+            TxOutpoint(bytes.fromhex(c["prevout_hash"]), c["prevout_n"]) for c in coins
+        ]
         self.add_coins(coindict, keypairs)
 
         coinstrs = set(t + ":" + str(i) for t, i in coindict)
         txids = set(t for t, i in coindict)
         self.source_wallet_info[wallet][0].update(coinstrs)
         self.source_wallet_info[wallet][1].update(txids)
-        wallet.set_frozen_coin_state(coinstrs, True, temporary=True)
+        wallet.set_frozen_coin_state(txos, True, temporary=True)
         self.notify_coins_ui(wallet)
 
     def check_coins(self):
@@ -424,7 +428,7 @@ class Fusion(threading.Thread, PrintError):
     def clear_coins(self):
         """Clear the inputs list and release frozen coins."""
         for wallet, (coins, mytxids, checked_txids) in self.source_wallet_info.items():
-            wallet.set_frozen_coin_state(coins, False)
+            wallet.set_frozen_coin_state([TxOutpoint.from_str(c) for c in coins], False)
             self.notify_coins_ui(wallet)
         self.source_wallet_info.clear()  # save some memory as the checked_txids set can be big
         self.coins.clear()

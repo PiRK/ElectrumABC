@@ -528,7 +528,9 @@ class TxDialog(QtWidgets.QDialog, MessageBoxMixin, PrintError):
         base_unit = self.main_window.base_unit()
         format_amount = self.main_window.format_amount
         delta2, info2 = self.wallet.get_tx_extended_info(self.tx)
-        spends_coins_mine = delta2.spends_coins_mine
+        spends_coins_mine = [
+            TxOutpoint.from_str(txo) for txo in delta2.spends_coins_mine
+        ]
         (
             tx_hash,
             status,
@@ -550,9 +552,7 @@ class TxDialog(QtWidgets.QDialog, MessageBoxMixin, PrintError):
         # Update freeze/unfreeze button depending on tx state
         StatusEnum = self.wallet.StatusEnum
         if spends_coins_mine:
-            has_frozen = self.wallet.is_frozen_coin(
-                {TxOutpoint.from_str(s) for s in spends_coins_mine}
-            )
+            has_frozen = self.wallet.is_frozen_coin(set(spends_coins_mine))
             self.freeze_button._coins = spends_coins_mine
             self.freeze_button._op = op = (
                 self.FreezeOp.Freeze if not has_frozen else self.FreezeOp.Unfreeze

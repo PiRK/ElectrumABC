@@ -45,7 +45,14 @@ from .paymentrequest import PR_EXPIRED, PR_PAID, PR_UNCONFIRMED, PR_UNKNOWN, PR_
 from .plugins import run_hook
 from .printerror import print_error
 from .simple_config import SimpleConfig
-from .transaction import OPReturn, Transaction, TxOutput, multisig_script, tx_from_str
+from .transaction import (
+    OPReturn,
+    Transaction,
+    TxOutpoint,
+    TxOutput,
+    multisig_script,
+    tx_from_str,
+)
 from .util import format_satoshis, json_decode, to_bytes
 from .version import PACKAGE_VERSION
 from .wallet import create_new_wallet, restore_wallet_from_text
@@ -56,18 +63,6 @@ known_commands = {}
 def satoshis(amount):
     # satoshi conversion must not be performed by the parser
     return int(CASH * PyDecimal(amount)) if amount not in ["!", None] else amount
-
-
-def assertOutpoint(out: str):
-    """Perform some basic sanity checks on a string that represents a
-    transaction outpoint. Namely, 64 characters and a non-negative integer
-    separated by a colon."""
-    prevoutParts = out.split(":")
-    assert len(prevoutParts) == 2, "invalid outpoint"
-    prevout_hash, prevout_n = prevoutParts
-    prevout_hash = bytes.fromhex(prevout_hash)
-    assert len(prevout_hash) == 32, f"{prevout_hash.hex()} should be a 32-byte hash"
-    assert int(prevout_n) >= 0, f"invalid output index {prevout_n}"
 
 
 class Command:
@@ -488,15 +483,13 @@ class Commands:
     @command("w")
     def freeze_utxo(self, coin: str):
         """Freeze a UTXO so that the wallet will not spend it."""
-        assertOutpoint(coin)
-        self.wallet.set_frozen_coin_state([coin], True)
+        self.wallet.set_frozen_coin_state([TxOutpoint.from_str(coin)], True)
         return True
 
     @command("w")
     def unfreeze_utxo(self, coin: str):
         """Unfreeze a UTXO so that the wallet might spend it."""
-        assertOutpoint(coin)
-        self.wallet.set_frozen_coin_state([coin], False)
+        self.wallet.set_frozen_coin_state([TxOutpoint.from_str(coin)], False)
         return True
 
     @command("wp")

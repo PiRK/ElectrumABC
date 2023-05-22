@@ -48,6 +48,7 @@ from typing import (
     ItemsView,
     List,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Union,
@@ -2232,12 +2233,11 @@ class AbstractWallet(PrintError, SPVDelegate):
             return True
         return False
 
-    def set_frozen_coin_state(self, utxos, freeze, *, temporary=False):
-        """Set frozen state of the `utxos` to `freeze`, True or False. `utxos`
-        is a (possibly mixed) list of either "prevout:n" strings and/or
-        coin-dicts as returned from get_utxos(). Note that if passing prevout:n
-        strings as input, 'is_mine()' status is not checked for the specified
-        coin. Also note that coin-level freezing is set/unset independent of
+    def set_frozen_coin_state(
+        self, utxos: Sequence[TxOutpoint], freeze: bool, *, temporary: bool = False
+    ):
+        """Set frozen state of the `utxos` to `freeze`, True or False.
+        ?ote that coin-level freezing is set/unset independent of
         address-level freezing, however both must be satisfied for a coin to be
         defined as spendable.
 
@@ -2263,26 +2263,15 @@ class AbstractWallet(PrintError, SPVDelegate):
         apply_operation = add if freeze else discard
         original_size = len(self.frozen_coins)
         with self.lock:
-            ok = 0
             for utxo in utxos:
-                if isinstance(utxo, str):
-                    apply_operation(TxOutpoint.from_str(utxo))
-                    ok += 1
-                elif isinstance(utxo, dict):
-                    apply_operation(
-                        TxOutpoint(
-                            bytes.fromhex(utxo["prevout_hash"]), utxo["prevout_n"]
-                        )
-                    )
-                    utxo["is_frozen_coin"] = bool(freeze)
-                    ok += 1
+                assert isinstance(utxo, TxOutpoint)
+                apply_operation(utxo)
             if original_size != len(self.frozen_coins):
                 # Performance optimization: only set storage if the perma-set
                 # changed.
                 self.storage.put(
                     "frozen_coins", [txo.to_str() for txo in self.frozen_coins]
                 )
-            return ok
 
     def prepare_for_verifier(self):
         # review transactions that are in the history
