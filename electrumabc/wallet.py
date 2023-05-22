@@ -744,11 +744,11 @@ class AbstractWallet(PrintError, SPVDelegate):
     def is_found(self):
         return any(value for value in self._history.values())
 
-    def get_num_tx(self, address):
+    def get_num_tx(self, address: Address):
         """return number of transactions where address is involved"""
         return len(self.get_address_history(address))
 
-    def get_tx_delta(self, tx_hash, address):
+    def get_tx_delta(self, tx_hash, address: Address):
         assert isinstance(address, Address)
         "effect of tx on address"
         # pruned
@@ -945,7 +945,7 @@ class AbstractWallet(PrintError, SPVDelegate):
         )
 
     def get_addr_io(
-        self, address
+        self, address: Address
     ) -> Tuple[Dict[TxOutpoint, Tuple[int, int, bool]], Dict[TxOutpoint, int]]:
         history = self.get_address_history(address)
         received = {}
@@ -960,7 +960,7 @@ class AbstractWallet(PrintError, SPVDelegate):
                 sent[TxOutpoint.from_str(txi)] = height
         return received, sent
 
-    def get_addr_utxo(self, address):
+    def get_addr_utxo(self, address: Address):
         coins, spent = self.get_addr_io(address)
         for txi in spent:
             coins.pop(txi)
@@ -987,16 +987,15 @@ class AbstractWallet(PrintError, SPVDelegate):
         return out
 
     # return the total amount ever received by an address
-    def get_addr_received(self, address):
+    def get_addr_received(self, address: Address):
         received, sent = self.get_addr_io(address)
         return sum([v for height, v, is_cb in received.values()])
 
-    def get_addr_balance(self, address, exclude_frozen_coins=False):
+    def get_addr_balance(self, address: Address, exclude_frozen_coins=False):
         """Returns the balance of a bitcoin address as a tuple of:
         (confirmed_matured, unconfirmed, unmatured)
         Note that 'exclude_frozen_coins = True' only checks for coin-level
         freezing, not address-level."""
-        assert isinstance(address, Address)
         mempoolHeight = self.get_local_height() + 1
         # we do not use the cache when excluding frozen coins as frozen status is a dynamic quantity that can change at any time in the UI
         if not exclude_frozen_coins:
@@ -1176,8 +1175,7 @@ class AbstractWallet(PrintError, SPVDelegate):
             xx += x
         return cc, uu, xx
 
-    def get_address_history(self, address):
-        assert isinstance(address, Address)
+    def get_address_history(self, address: Address):
         return self._history.get(address, [])
 
     def _clean_pruned_txo_thread(self):
@@ -1405,11 +1403,8 @@ class AbstractWallet(PrintError, SPVDelegate):
                             return addr2, v
                 return (None, None)
 
-            def txin_get_info(txi):
-                prevout_hash = txi["prevout_hash"]
-                prevout_n = txi["prevout_n"]
-                ser = f"{prevout_hash}:{prevout_n}"
-                return prevout_hash, prevout_n, ser
+            def txin_get_outpoint(txi) -> TxOutpoint:
+                return TxOutpoint(bytes.fromhex(txi["prevout_hash"]), txi["prevout_n"])
 
             def put_pruned_txo(ser, tx_hash):
                 self.pruned_txo[ser] = tx_hash
@@ -1437,28 +1432,28 @@ class AbstractWallet(PrintError, SPVDelegate):
                 addr = txi.get("address")
                 # find value from prev output
                 if self.is_mine(addr):
-                    prevout_hash, prevout_n, ser = txin_get_info(txi)
-                    dd = self.txo.get(prevout_hash, {})
+                    txo = txin_get_outpoint(txi)
+                    dd = self.txo.get(txo.txid.hex(), {})
                     for n, v, is_cb in dd.get(addr, []):
-                        if n == prevout_n:
-                            add_to_self_txi(tx_hash, addr, ser, v)
+                        if n == txo.out_idx:
+                            add_to_self_txi(tx_hash, addr, txo.to_str(), v)
                             break
                     else:
                         # Coin's spend tx came in before its receive tx: flag
                         # the spend for when the receive tx will arrive into
                         # this function later.
-                        put_pruned_txo(ser, tx_hash)
+                        put_pruned_txo(txo.to_str(), tx_hash)
                     self._addr_bal_cache.pop(addr, None)  # invalidate cache entry
-                    del dd, prevout_hash, prevout_n, ser
+                    del dd, txo
                 elif addr is None:
                     # Unknown/unparsed address.. may be a strange p2sh scriptSig
                     # Try and find it in txout's if it's one of ours.
                     # See issue #895.
-                    prevout_hash, prevout_n, ser = txin_get_info(txi)
+                    txo = txin_get_outpoint(txi)
                     # Find address in self.txo for this prevout_hash:prevout_n
-                    addr2, v = find_in_self_txo(prevout_hash, prevout_n)
+                    addr2, v = find_in_self_txo(txo.txid.hex(), txo.out_idx)
                     if addr2 is not None and self.is_mine(addr2):
-                        add_to_self_txi(tx_hash, addr2, ser, v)
+                        add_to_self_txi(tx_hash, addr2, txo.to_str(), v)
                         self._addr_bal_cache.pop(addr2, None)  # invalidate cache entry
                     else:
                         # Not found in self.txo. It may still be one of ours
@@ -1477,8 +1472,8 @@ class AbstractWallet(PrintError, SPVDelegate):
                         # irrelevant entry will eventually be reaped and removed
                         # by the self.pruned_txo_cleaner_thread which runs
                         # periodically in the background.
-                        put_pruned_txo(ser, tx_hash)
-                    del addr2, v, prevout_hash, prevout_n, ser
+                        put_pruned_txo(txo.to_str(), tx_hash)
+                    del addr2, v, txo
             # don't keep empty entries in self.txi
             if not d:
                 self.txi.pop(tx_hash, None)
@@ -2384,14 +2379,13 @@ class AbstractWallet(PrintError, SPVDelegate):
     def can_export(self):
         return not self.is_watching_only() and hasattr(self.keystore, "get_private_key")
 
-    def is_used(self, address):
+    def is_used(self, address: Address):
         return self.get_address_history(address) and self.is_empty(address)
 
-    def is_empty(self, address):
-        assert isinstance(address, Address)
+    def is_empty(self, address: Address):
         return not any(self.get_addr_balance(address))
 
-    def address_is_old(self, address, age_limit=2):
+    def address_is_old(self, address: Address, age_limit=2):
         age = -1
         local_height = self.get_local_height()
         for tx_hash, tx_height in self.get_address_history(address):
@@ -2580,7 +2574,7 @@ class AbstractWallet(PrintError, SPVDelegate):
         if domain:
             return domain[0]
 
-    def get_payment_status(self, address, amount):
+    def get_payment_status(self, address: Address, amount: int):
         local_height = self.get_local_height()
         received, sent = self.get_addr_io(address)
         transactions = []
@@ -2846,8 +2840,7 @@ class AbstractWallet(PrintError, SPVDelegate):
     def is_hardware(self):
         return any([isinstance(k, HardwareKeyStore) for k in self.get_keystores()])
 
-    def add_address(self, address, *, for_change=False):
-        assert isinstance(address, Address)
+    def add_address(self, address: Address, *, for_change=False):
         # paranoia, not really necessary -- just want to maintain the invariant that
         # when we modify address history below we invalidate cache.
         self._addr_bal_cache.pop(address, None)
@@ -2917,7 +2910,7 @@ class AbstractWallet(PrintError, SPVDelegate):
         self.storage.write()
 
     def sign_message(
-        self, address, message, password, sigtype=bitcoin.SignatureType.ECASH
+        self, address: Address, message, password, sigtype=bitcoin.SignatureType.ECASH
     ):
         index = self.get_address_index(address)
         return self.keystore.sign_message(index, message, password, sigtype)
@@ -3088,7 +3081,7 @@ class SimpleWallet(AbstractWallet):
 class ImportedWalletBase(SimpleWallet):
     txin_type = "p2pkh"
 
-    def get_txin_type(self, address):
+    def get_txin_type(self, address: Address):
         return self.txin_type
 
     def can_delete_address(self):
@@ -3100,13 +3093,13 @@ class ImportedWalletBase(SimpleWallet):
     def is_deterministic(self):
         return False
 
-    def is_change(self, address):
+    def is_change(self, address: Address):
         return False
 
     def get_master_public_keys(self):
         return []
 
-    def is_beyond_limit(self, address, is_change):
+    def is_beyond_limit(self, address: Address, is_change):
         return False
 
     def get_fingerprint(self):
@@ -3115,8 +3108,7 @@ class ImportedWalletBase(SimpleWallet):
     def get_receiving_addresses(self):
         return self.get_addresses()
 
-    def delete_address(self, address):
-        assert isinstance(address, Address)
+    def delete_address(self, address: Address):
         all_addrs = self.get_addresses()
         if len(all_addrs) <= 1 or address not in all_addrs:
             return
@@ -3220,8 +3212,7 @@ class ImportedAddressWallet(ImportedWalletBase):
             self._sorted = sorted(self.addresses, key=lambda addr: addr.to_ui_string())
         return self._sorted
 
-    def import_address(self, address):
-        assert isinstance(address, Address)
+    def import_address(self, address: Address):
         if address in self.addresses:
             return False
         self.addresses.append(address)
@@ -3231,11 +3222,11 @@ class ImportedAddressWallet(ImportedWalletBase):
         self._sorted = None
         return True
 
-    def delete_address_derived(self, address):
+    def delete_address_derived(self, address: Address):
         self.addresses.remove(address)
         self._sorted.remove(address)
 
-    def add_input_sig_info(self, txin, address):
+    def add_input_sig_info(self, txin, address: Address):
         x_pubkey = "fd" + address.to_script_hex()
         txin["x_pubkeys"] = [x_pubkey]
         txin["signatures"] = [None]
@@ -3290,14 +3281,14 @@ class ImportedPrivkeyWallet(ImportedWalletBase):
     def get_addresses(self):
         return self.keystore.get_addresses()
 
-    def delete_address_derived(self, address):
+    def delete_address_derived(self, address: Address):
         self.keystore.remove_address(address)
         self.save_keystore()
 
-    def get_address_index(self, address):
+    def get_address_index(self, address: Address):
         return self.get_public_key(address)
 
-    def get_public_key(self, address):
+    def get_public_key(self, address: Address):
         return self.keystore.address_to_pubkey(address)
 
     def import_private_key(self, sec, pw):
@@ -3307,12 +3298,12 @@ class ImportedPrivkeyWallet(ImportedWalletBase):
         self.add_address(pubkey.address)
         return pubkey.address.to_ui_string()
 
-    def export_private_key(self, address, password):
+    def export_private_key(self, address: Address, password):
         """Returned in WIF format."""
         pubkey = self.keystore.address_to_pubkey(address)
         return self.keystore.export_private_key(pubkey, password)
 
-    def add_input_sig_info(self, txin, address):
+    def add_input_sig_info(self, txin, address: Address):
         assert txin["type"] == "p2pkh"
         pubkey = self.keystore.address_to_pubkey(address)
         txin["num_sig"] = 1
@@ -3367,7 +3358,7 @@ class DeterministicWallet(AbstractWallet):
             else:
                 return False
 
-    def num_unused_trailing_addresses(self, addresses):
+    def num_unused_trailing_addresses(self, addresses: List[Address]):
         """This method isn't called anywhere. Perhaps it is here for console use.
         Can't be sure. -Calin"""
         with self.lock:
@@ -3430,7 +3421,7 @@ class DeterministicWallet(AbstractWallet):
             self.synchronize_sequence(False)
             self.synchronize_sequence(True)
 
-    def is_beyond_limit(self, address, is_change):
+    def is_beyond_limit(self, address: Address, is_change):
         with self.lock:
             if is_change:
                 addr_list = self.get_change_addresses()
@@ -3452,7 +3443,7 @@ class DeterministicWallet(AbstractWallet):
     def get_fingerprint(self):
         return self.get_master_public_key()
 
-    def get_txin_type(self, address):
+    def get_txin_type(self, address: Address):
         return self.txin_type
 
     def export_private_key(self, address: Address, password) -> str:
@@ -3492,7 +3483,7 @@ class SimpleDeterministicWallet(SimpleWallet, DeterministicWallet):
     def __init__(self, storage):
         DeterministicWallet.__init__(self, storage)
 
-    def get_public_key(self, address):
+    def get_public_key(self, address: Address):
         sequence = self.get_address_index(address)
         pubkey = self.get_pubkey(*sequence)
         return pubkey
@@ -3508,10 +3499,10 @@ class SimpleDeterministicWallet(SimpleWallet, DeterministicWallet):
     def get_pubkey(self, c, i) -> str:
         return self.derive_pubkeys(c, i)
 
-    def get_public_keys(self, address):
+    def get_public_keys(self, address: Address):
         return [self.get_public_key(address)]
 
-    def add_input_sig_info(self, txin, address):
+    def add_input_sig_info(self, txin, address: Address):
         derivation = self.get_address_index(address)
         x_pubkey = self.keystore.get_xpubkey(*derivation)
         txin["x_pubkeys"] = [x_pubkey]
@@ -3541,7 +3532,7 @@ class MultisigWallet(DeterministicWallet):
         self.m, self.n = multisig_type(self.wallet_type)
         DeterministicWallet.__init__(self, storage)
 
-    def get_public_keys(self, address):
+    def get_public_keys(self, address: Address):
         sequence = self.get_address_index(address)
         return self.get_pubkeys(*sequence)
 
@@ -3612,7 +3603,7 @@ class MultisigWallet(DeterministicWallet):
     def get_fingerprint(self):
         return "".join(sorted(self.get_master_public_keys()))
 
-    def add_input_sig_info(self, txin, address):
+    def add_input_sig_info(self, txin, address: Address):
         # x_pubkeys are not sorted here because it would be too slow
         # they are sorted in transaction.get_sorted_pubkeys
         derivation = self.get_address_index(address)
