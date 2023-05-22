@@ -44,6 +44,7 @@ from collections import defaultdict, namedtuple
 from enum import Enum, auto
 from typing import (
     TYPE_CHECKING,
+    Any,
     Dict,
     ItemsView,
     List,
@@ -960,7 +961,7 @@ class AbstractWallet(PrintError, SPVDelegate):
                 sent[TxOutpoint.from_str(txi)] = height
         return received, sent
 
-    def get_addr_utxo(self, address: Address):
+    def get_addr_utxo(self, address: Address) -> Dict[TxOutpoint, Dict[str, Any]]:
         coins, spent = self.get_addr_io(address)
         for txi in spent:
             coins.pop(txi)
@@ -983,7 +984,7 @@ class AbstractWallet(PrintError, SPVDelegate):
                 # (token_id_hex, qty) tuple or None
                 "slp_token": self.slp.token_info_for_txo(txo),
             }
-            out[txo.to_str()] = x
+            out[txo] = x
         return out
 
     # return the total amount ever received by an address
@@ -2411,7 +2412,7 @@ class AbstractWallet(PrintError, SPVDelegate):
         else:
             return
         coins = self.get_addr_utxo(txo.destination)
-        item = coins.get(txid + ":%d" % i)
+        item = coins.get(TxOutpoint(bytes.fromhex(txid), i))
         if not item:
             return
         self.add_input_info(item)

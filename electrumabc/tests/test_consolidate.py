@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 from .. import consolidate
 from ..address import Address
+from ..transaction import TxOutpoint
 
 TEST_ADDRESS: Address = Address.from_string(
     "ecash:qr3l6uufcuwm9prgpa6cfxnez87fzstxesp7ugp0ez"
@@ -21,7 +22,7 @@ class TestConsolidateCoinSelection(unittest.TestCase):
         for is_coinbase in (True, False):
             for is_frozen_coin in (True, False):
                 for slp in (None, "not None"):
-                    coins[f"dummy_txid:{i}"] = {
+                    coins[TxOutpoint(b"", i)] = {
                         "address": TEST_ADDRESS,
                         "prevout_n": i,
                         "prevout_hash": "a" * 64,

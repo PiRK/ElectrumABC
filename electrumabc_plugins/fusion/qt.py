@@ -437,7 +437,7 @@ class Plugin(FusionPlugin, QObject):
         if not coins or not hasattr(window, "wallet"):
             return
 
-        wallet = window.wallet
+        wallet: AbstractWallet = window.wallet
         if not Conf(wallet).spend_only_fused_coins or not self.wallet_can_fuse(wallet):
             return
 
@@ -475,7 +475,8 @@ class Plugin(FusionPlugin, QObject):
             # Force co-spending of other coins sitting on a fuzed address
             for adr in fuz_adrs_seen:
                 adr_coins = wallet.get_addr_utxo(adr)
-                for name, adr_coin in adr_coins.items():
+                for txo, adr_coin in adr_coins.items():
+                    name = txo.to_str()
                     if (
                         name not in fuz_coins_seen
                         and not adr_coin["is_frozen_coin"]
