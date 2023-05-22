@@ -86,6 +86,39 @@ class TxOutput(NamedTuple):
         return len(ops) >= 1 and ops[0][0] == opcodes.OP_RETURN
 
 
+class TxOutpoint(NamedTuple):
+    txid: bytes
+    """endianness same as hex string displayed, reverse of tx serialization order"""
+    out_idx: int
+
+    @classmethod
+    def from_str(cls, s: str) -> "TxOutpoint":
+        hash_str, idx_str = s.split(":")
+        assert len(hash_str) == 64, f"{hash_str} should be a sha256 hash"
+        return TxOutpoint(txid=bytes.fromhex(hash_str), out_idx=int(idx_str))
+
+    def to_str(self) -> str:
+        return f"{self.txid.hex()}:{self.out_idx}"
+
+    def __repr__(self):
+        return f"TxOutpoint({self.to_str()})"
+
+    def serialize_to_network(self) -> bytes:
+        return self.txid[::-1] + bytes.fromhex(bitcoin.int_to_hex(self.out_idx, 4))
+
+    def is_coinbase(self) -> bool:
+        return self.txid == bytes(32)
+
+    # needed for set operations
+    def __eq__(self, other):
+        if not isinstance(other, TxOutpoint):
+            return False
+        return self.txid == other.txid and self.out_idx == other.out_idx
+
+    def __hash__(self):
+        return hash((self.txid, self.out_idx))
+
+
 class BCDataStream(object):
     def __init__(self):
         self.input = None

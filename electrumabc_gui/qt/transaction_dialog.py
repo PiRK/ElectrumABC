@@ -40,7 +40,7 @@ from electrumabc.bitcoin import base_encode
 from electrumabc.i18n import _, ngettext
 from electrumabc.plugins import run_hook
 from electrumabc.printerror import PrintError
-from electrumabc.transaction import InputValueMissing
+from electrumabc.transaction import InputValueMissing, TxOutpoint
 from electrumabc.util import Weak, bfh
 
 from .util import (
@@ -550,7 +550,9 @@ class TxDialog(QtWidgets.QDialog, MessageBoxMixin, PrintError):
         # Update freeze/unfreeze button depending on tx state
         StatusEnum = self.wallet.StatusEnum
         if spends_coins_mine:
-            has_frozen = bool(self.wallet.is_frozen_coin(set(spends_coins_mine)))
+            has_frozen = self.wallet.is_frozen_coin(
+                {TxOutpoint.from_str(s) for s in spends_coins_mine}
+            )
             self.freeze_button._coins = spends_coins_mine
             self.freeze_button._op = op = (
                 self.FreezeOp.Freeze if not has_frozen else self.FreezeOp.Unfreeze

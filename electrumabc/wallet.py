@@ -89,7 +89,7 @@ from .plugins import plugin_loaders, run_hook
 from .printerror import PrintError
 from .storage import STO_EV_PLAINTEXT, STO_EV_USER_PW, STO_EV_XPUB_PW, WalletStorage
 from .synchronizer import Synchronizer
-from .transaction import InputValueMissing, Transaction, TxOutput
+from .transaction import InputValueMissing, Transaction, TxOutpoint, TxOutput
 from .util import (
     ExcessiveFee,
     InvalidPassword,
@@ -278,8 +278,10 @@ class AbstractWallet(PrintError, SPVDelegate):
         # Frozen coins (UTXOs) -- note that we have 2 independent levels of "freezing": address-level and coin-level.
         # The two types of freezing are flagged independently of each other and 'spendable' is defined as a coin that satisfies
         # BOTH levels of freezing.
-        self.frozen_coins = set(storage.get("frozen_coins", []))
-        self.frozen_coins_tmp = set()  # in-memory only
+        self.frozen_coins: Set[TxOutpoint] = {
+            TxOutpoint.from_str(txo) for txo in storage.get("frozen_coins", [])
+        }
+        self.frozen_coins_tmp: Set[TxOutpoint] = set()
 
         self.change_reserved = set(
             Address.from_string(a) for a in storage.get("change_reserved", ())
@@ -959,27 +961,26 @@ class AbstractWallet(PrintError, SPVDelegate):
         for txi in spent:
             coins.pop(txi)
             # cleanup/detect if the 'frozen coin' was spent and remove it from the frozen coin set
-            self.frozen_coins.discard(txi)
-            self.frozen_coins_tmp.discard(txi)
+            self.frozen_coins.discard(TxOutpoint.from_str(txi))
+            self.frozen_coins_tmp.discard(TxOutpoint.from_str(txi))
         out = {}
-        for txo, v in coins.items():
+        for txo_str, v in coins.items():
             tx_height, value, is_cb = v
-            prevout_hash, prevout_n = txo.split(":")
+            txo = TxOutpoint.from_str(txo_str)
             x = {
                 "address": address,
                 "value": value,
-                "prevout_n": int(prevout_n),
-                "prevout_hash": prevout_hash,
+                "prevout_n": txo.out_idx,
+                "prevout_hash": txo.txid.hex(),
                 "height": tx_height,
                 "coinbase": is_cb,
                 "is_frozen_coin": (
                     txo in self.frozen_coins or txo in self.frozen_coins_tmp
                 ),
-                "slp_token": self.slp.token_info_for_txo(
-                    txo
-                ),  # (token_id_hex, qty) tuple or None
+                # (token_id_hex, qty) tuple or None
+                "slp_token": self.slp.token_info_for_txo(txo),
             }
-            out[txo] = x
+            out[txo.to_str()] = x
         return out
 
     # return the total amount ever received by an address
@@ -1002,7 +1003,8 @@ class AbstractWallet(PrintError, SPVDelegate):
         received, sent = self.get_addr_io(address)
         c = u = x = 0
         had_cb = False
-        for txo, (tx_height, v, is_cb) in received.items():
+        for txo_str, (tx_height, v, is_cb) in received.items():
+            txo = TxOutpoint.from_str(txo_str)
             if exclude_frozen_coins and (
                 txo in self.frozen_coins or txo in self.frozen_coins_tmp
             ):
@@ -1016,8 +1018,8 @@ class AbstractWallet(PrintError, SPVDelegate):
                 c += v
             else:
                 u += v
-            if txo in sent:
-                if sent[txo] > 0:
+            if txo_str in sent:
+                if sent[txo_str] > 0:
                     c -= v
                 else:
                     u -= v
@@ -2206,31 +2208,11 @@ class AbstractWallet(PrintError, SPVDelegate):
         assert isinstance(addr, Address)
         return addr in self.frozen_addresses
 
-    def is_frozen_coin(self, utxo: Union[str, dict, Set[str]]) -> Union[bool, Set[str]]:
-        """'coin' level frozen query. Note: this is set/unset independent of
-        address-level freezing.
-
-        `utxo` is a prevout:n string, or a dict as returned from get_utxos(),
-        in which case a bool is returned.
-
-        `utxo` may also be a set of prevout:n strings in which case a set is
-        returned which is the intersection of the internal frozen coin sets
+    def is_frozen_coin(self, utxo: Set[TxOutpoint]) -> bool:
+        """
+        returned the intersection of the internal frozen coin sets
         and the `utxo` set."""
-        assert isinstance(utxo, (str, dict, set))
-        if isinstance(utxo, dict):
-            name = "{}:{}".format(utxo["prevout_hash"], utxo["prevout_n"])
-            ret = name in self.frozen_coins or name in self.frozen_coins_tmp
-            if ret != utxo["is_frozen_coin"]:
-                self.print_error(
-                    "*** WARNING: utxo has stale is_frozen_coin flag", name
-                )
-                utxo["is_frozen_coin"] = ret  # update stale flag
-            return ret
-        elif isinstance(utxo, set):
-            # set is returned
-            return (self.frozen_coins | self.frozen_coins_tmp) & utxo
-        else:
-            return utxo in self.frozen_coins or utxo in self.frozen_coins_tmp
+        return bool((self.frozen_coins | self.frozen_coins_tmp) & utxo)
 
     def set_frozen_state(self, addrs, freeze):
         """Set frozen state of the addresses to `freeze`, True or False. Note
@@ -2283,17 +2265,22 @@ class AbstractWallet(PrintError, SPVDelegate):
             ok = 0
             for utxo in utxos:
                 if isinstance(utxo, str):
-                    apply_operation(utxo)
+                    apply_operation(TxOutpoint.from_str(utxo))
                     ok += 1
                 elif isinstance(utxo, dict):
-                    txo = "{}:{}".format(utxo["prevout_hash"], utxo["prevout_n"])
-                    apply_operation(txo)
+                    apply_operation(
+                        TxOutpoint(
+                            bytes.fromhex(utxo["prevout_hash"]), utxo["prevout_n"]
+                        )
+                    )
                     utxo["is_frozen_coin"] = bool(freeze)
                     ok += 1
             if original_size != len(self.frozen_coins):
                 # Performance optimization: only set storage if the perma-set
                 # changed.
-                self.storage.put("frozen_coins", list(self.frozen_coins))
+                self.storage.put(
+                    "frozen_coins", [txo.to_str() for txo in self.frozen_coins]
+                )
             return ok
 
     def prepare_for_verifier(self):
@@ -2346,7 +2333,7 @@ class AbstractWallet(PrintError, SPVDelegate):
         self.save_addresses()
         self.save_transactions()
         self.save_verified_tx()
-        self.storage.put("frozen_coins", list(self.frozen_coins))
+        self.storage.put("frozen_coins", [txo.to_str() for txo in self.frozen_coins])
         self.save_change_reservations()
         self.storage.write()
 

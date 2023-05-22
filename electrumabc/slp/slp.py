@@ -3,7 +3,7 @@ from typing import List, Set, Tuple
 from .. import address  # for ScriptOutput, OpCodes, ScriptError, Script
 from .. import bitcoin, caches
 from ..printerror import PrintError
-from ..transaction import Transaction
+from ..transaction import Transaction, TxOutpoint
 from .exceptions import (
     Error,
     InvalidOutputMessage,
@@ -837,20 +837,20 @@ class WalletData(PrintError):
                 self.add_tx(txid, Transaction(tx.raw))
 
     # --- GETTERS / SETTERS from wallet
-    def token_info_for_txo(self, txo) -> Tuple[str, int]:
+    def token_info_for_txo(self, txo: TxOutpoint) -> Tuple[str, int]:
         """Returns the (token_id_hex, quantity) tuple for a particular
         txo if it has a token sitting on it.  Returns None if there is no
         token for a particular txo. Takes no locks.
 
         Note that quantity == -1 indicates a "token baton"
         """
-        token_id_hex = self.txo_token_id.get(txo)
+        token_id_hex = self.txo_token_id.get(txo.to_str())
         if token_id_hex is not None:
             # we want this to raise KeyError here if missing as it indicates a
             # programming error
             return (
                 token_id_hex,
-                self.token_quantities[token_id_hex][txo],
+                self.token_quantities[token_id_hex][txo.to_str()],
             )
 
     def txo_has_token(self, txo) -> bool:
