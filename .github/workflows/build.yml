@@ -1,0 +1,102 @@
+name: Building
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      appimage:
+        type: boolean
+        description: Build AppImage
+        default: true
+      sdist:
+        type: boolean
+        description: Build Linux sdist
+        default: true
+      win32:
+        type: boolean
+        description: Build Win32
+        default: true
+      android:
+        type: boolean
+        description: Build Android
+        default: true
+      # MacOS Building is expensive (in terms of minutes charged)
+      # but also unnecessary since this rarely breaks for us in practice.
+      macos:
+        type: boolean
+        description: Build macOS
+        default: false
+
+  schedule:
+  - cron: '0 0 * * 1'
+
+jobs:
+  build_appimage:
+    if: (github.event.inputs.appimage == 'true' || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+    - name: Check out source
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Build AppImage
+      run: contrib/build-linux/appimage/build.sh
+    - name: Archive build
+      uses: actions/upload-artifact@v4
+      with:
+        name: ElectrumABC-AppImage-${{ github.ref_name }}
+        path: dist/ElectrumABC*.AppImage
+  build_sdist:
+    if: (github.event.inputs.sdist == 'true' || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - name: Check out source
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Build srcdist
+      run: contrib/build-linux/srcdist_docker/build.sh
+    - name: Archive build
+      uses: actions/upload-artifact@v4
+      with:
+        name: ElectrumABC-sdist-${{ github.ref_name }}
+        path: |
+          dist/electrumabc*.zip
+          dist/electrumabc*.tar.gz
+  build_win32:
+    if: (github.event.inputs.win32 == 'true' || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+    - name: Check out source
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Build wine
+      run: contrib/build-wine/build.sh
+    - name: Archive build
+      uses: actions/upload-artifact@v4
+      with:
+        name: ElectrumABC-Win64-${{ github.ref_name }}
+        path: dist/ElectrumABC*.exe
+  build_macos:
+    if: (github.event.inputs.macos == 'true')
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    steps:
+    - name: Check out source
+      uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Build macOS
+      working-directory: contrib/osx
+      run: |
+        brew install coreutils
+        brew install pyenv
+        ./make_osx
+    - name: Archive build
+      uses: actions/upload-artifact@v4
+      with:
+        path: dist/ElectrumABC*.dmg
